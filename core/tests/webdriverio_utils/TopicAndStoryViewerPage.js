@@ -32,9 +32,6 @@ var TopicAndStoryViewerPage = function() {
     '.e2e-test-dismiss-sign-up-section-button');
   var practicetabContainer = $('.e2e-test-practice-tab-container');
   var practiceSessionContainer = $('.e2e-test-practice-session-container');
-  var chapterTitleListSelector = function() {
-    return $$('.e2e-test-chapter-title');
-  };
   var lessonCompletedIconsSelector = function() {
     return $$('.e2e-test-lesson-icon-completed');
   };
@@ -51,7 +48,7 @@ var TopicAndStoryViewerPage = function() {
   };
 
   this.goToChapterIndex = async function(index) {
-    var chapterTitleList = await chapterTitleListSelector();
+    var chapterTitleList = await $$('.e2e-test-chapter-title');
     var chapter = chapterTitleList[index];
     await action.click('Chapter title', chapter);
     await waitFor.pageToFullyLoad();
