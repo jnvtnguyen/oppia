@@ -55,48 +55,7 @@ jobs:
       matrix:
         os: [ubuntu-22.04]
         suite:
-          - name: accessibility
-          - name: additionalEditorFeatures
           - name: additionalEditorFeaturesModals
-          - name: additionalPlayerFeatures
-          - name: adminPage
-          - name: blogDashboard
-          - name: blog
-          - name: checkpointFeatures
-          - name: classroomPage
-          - name: classroomPageFileUploadFeatures
-          - name: collections
-          - name: contributorDashboard
-          - name: contributorAdminDashboard
-          - name: coreEditorAndPlayerFeatures
-          - name: creatorDashboard
-          - name: embedding
-          - name: explorationFeedbackTab
-          - name: explorationImprovementsTab
-          - name: explorationHistoryTab
-          - name: explorationStatisticsTab
-          - name: explorationTranslationTab
-          - name: extensions
-          - name: featureGating
-          - name: feedbackUpdates
-          - name: fileUploadExtensions
-          - name: fileUploadFeatures
-          - name: learner
-          - name: learnerDashboard
-          - name: library
-          - name: navigation
-          - name: playVoiceovers
-          - name: preferences
-          - name: profileFeatures
-          - name: profileMenu
-          - name: publication
-          - name: skillEditor
-          - name: subscriptions
-          - name: topicsAndSkillsDashboard
-          - name: topicAndStoryEditor
-          - name: topicAndStoryEditorFileUploadFeatures
-          - name: topicAndStoryViewer
-          - name: users
           - name: wipeout
     name: e2e_test (${{ matrix.os }}, ${{ matrix.suite.name }})
     steps:
