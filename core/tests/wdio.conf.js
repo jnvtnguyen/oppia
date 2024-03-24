@@ -361,43 +361,39 @@ exports.config = {
     * @param {Object} context scope object the test was executed with
     */
   beforeTest: function(test, context) {
-    if (process.env.GITHUB_ACTIONS &&
-      // eslint-disable-next-line eqeqeq
-      process.env.VIDEO_RECORDING_IS_ENABLED == 1) {
-      let ffmpegArgs = [
-        '-y',
-        '-r', '30',
-        '-f', 'x11grab',
-        '-s', '1285x1000',
-        '-i', process.env.DISPLAY,
-        '-g', '300',
-        '-loglevel', '16',
-      ];
-      const uniqueString = Math.random().toString(36).substring(2, 8);
-      var name = uniqueString + '.mp4';
-      var dirPath = path.resolve(
-        '__dirname', '..', '..', 'webdriverio-video/');
-      try {
-        fs.mkdirSync(dirPath, { recursive: true });
-      } catch (err) {}
-      videoPath = path.resolve(dirPath, name);
-      ffmpegArgs.push(videoPath);
-      ffmpegProcess = childProcess.spawn('ffmpeg', ffmpegArgs);
+    let ffmpegArgs = [
+      '-y',
+      '-r', '30',
+      '-f', 'x11grab',
+      '-s', '1285x1000',
+      '-i', process.env.DISPLAY,
+      '-g', '300',
+      '-loglevel', '16',
+    ];
+    const uniqueString = Math.random().toString(36).substring(2, 8);
+    var name = uniqueString + '.mp4';
+    var dirPath = path.resolve(
+      '__dirname', '..', '..', 'webdriverio-video/');
+    try {
+      fs.mkdirSync(dirPath, { recursive: true });
+    } catch (err) {}
+    videoPath = path.resolve(dirPath, name);
+    ffmpegArgs.push(videoPath);
+    ffmpegProcess = childProcess.spawn('ffmpeg', ffmpegArgs);
+    // eslint-disable-next-line no-console
+    console.log(
+      'Test name: ' + test.fullName + ' has video path ' + videoPath);
+    ffmpegProcess.on('message', (message) => {
       // eslint-disable-next-line no-console
-      console.log(
-        'Test name: ' + test.fullName + ' has video path ' + videoPath);
-      ffmpegProcess.on('message', (message) => {
-        // eslint-disable-next-line no-console
-        console.log(`ffmpeg stdout: ${message}`);
-      });
-      ffmpegProcess.on('error', (errorMessage) => {
-        console.error(`ffmpeg stderr: ${errorMessage}`);
-      });
-      ffmpegProcess.on('close', (code) => {
-        // eslint-disable-next-line no-console
-        console.log(`ffmpeg exited with code ${code}`);
-      });
-    }
+      console.log(`ffmpeg stdout: ${message}`);
+    });
+    ffmpegProcess.on('error', (errorMessage) => {
+      console.error(`ffmpeg stderr: ${errorMessage}`);
+    });
+    ffmpegProcess.on('close', (code) => {
+      // eslint-disable-next-line no-console
+      console.log(`ffmpeg exited with code ${code}`);
+    });
   },
   /**
    * Function to be executed after a test
@@ -413,17 +409,13 @@ exports.config = {
    */
   afterTest: async function(
       test, context, { error, result, duration, passed, retries }) {
-    if (process.env.GITHUB_ACTIONS &&
-      // eslint-disable-next-line eqeqeq
-      process.env.VIDEO_RECORDING_IS_ENABLED == 1) {
       ffmpegProcess.kill();
-      if (passed === true && !ALL_VIDEOS && fs.existsSync(videoPath)) {
-        fs.unlinkSync(videoPath);
-        // eslint-disable-next-line no-console
-        console.log(
-          `Video for test: ${test.fullName}` +
-          'was deleted successfully (test passed).');
-      }
+    if (passed === true && !ALL_VIDEOS && fs.existsSync(videoPath)) {
+      fs.unlinkSync(videoPath);
+      // eslint-disable-next-line no-console
+      console.log(
+        `Video for test: ${test.fullName}` +
+        'was deleted successfully (test passed).');
     }
     // If a test fails then only the error will be defined and
     // the screenshot will be taken and saved.
