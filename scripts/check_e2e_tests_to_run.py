@@ -19,15 +19,22 @@ from __future__ import annotations
 import json
 import os
 
+from typing import TypedDict
+
+class TestSuiteDict(TypedDict):
+
+
+    name: str
+
 # These are just test constants to check if we can output partial tests to the
 # github workflow.
 E2E_TESTS_TO_RUN = [
-    'accessibility',
-    'additionalEditorFeatures',
-    'embedding',
-    'fileUploadFeatures',
-    'navigation',
-    'preferences'
+    TestSuiteDict(name='accessibility'),
+    TestSuiteDict(name='additionalEditorFeatures'),
+    TestSuiteDict(name='embedding'),
+    TestSuiteDict(name='fileUploadFeatures'),
+    TestSuiteDict(name='navigation'),
+    TestSuiteDict(name='preferences')
 ]
 
 LIGHTHOUSE_TESTS_TO_RUN = [
@@ -35,10 +42,10 @@ LIGHTHOUSE_TESTS_TO_RUN = [
 ]
 
 ACCEPTANCE_TESTS_TO_RUN = [
-    'blog-admin-tests/assign-roles-to-users-and-change-tab-properties',
-    'logged-in-user-tests/click-all-buttons-on-navbar',
-    'practice-question-admin-tests/add-and-remove-contribution-rights',
-    'translation-admin-tests/remove-translation-rights'
+    TestSuiteDict(name='blog-admin-tests/assign-roles-to-users-and-change-tab-properties'),
+    TestSuiteDict(name='logged-in-user-tests/click-all-buttons-on-navbar'),
+    TestSuiteDict(name='practice-question-admin-tests/add-and-remove-contribution-rights'),
+    TestSuiteDict(name='translation-admin-tests/remove-translation-rights')
 ]
 
 
