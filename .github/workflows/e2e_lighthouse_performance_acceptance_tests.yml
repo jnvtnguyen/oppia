@@ -37,6 +37,18 @@ jobs:
       - name: Check E2E tests to run
         id: check_e2e_tests_to_run
         run: python -m scripts.check_e2e_tests_to_run
+  aggregate-results:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Aggregate results
+        env:
+          E2E_TESTS_TO_RUN: ${{ needs.check_tests_to_run.outputs.E2E_TESTS_TO_RUN }}
+          LIGHTHOUSE_TESTS_TO_RUN: ${{ needs.check_tests_to_run.outputs.LIGHTHOUSE_TESTS_TO_RUN }}
+          ACCEPTANCE_TESTS_TO_RUN: ${{ needs.check_tests_to_run.outputs.ACCEPTANCE_TESTS_TO_RUN }}
+        run: |
+          echo "$E2E_TESTS_TO_RUN"
+          echo "$LIGHTHOUSE_TESTS_TO_RUN"
+          echo "$ACCEPTANCE_TESTS_TO_RUN"
   build:
     runs-on:  ${{ matrix.os }}
     strategy:
