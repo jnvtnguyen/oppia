@@ -12,6 +12,28 @@ on:
       - release-*
 
 jobs:
+  check_tests_to_run:
+    runs-on: ${{ matrix.os }}
+    outputs:
+      E2E_TESTS_TO_RUN: ${{ steps.check_e2e_tests_to_run.outputs.E2E_TESTS_TO_RUN }}
+      LIGHTHOUSE_TESTS_TO_RUN: ${{ steps.check_e2e_tests_to_run.outputs.LIGHTHOUSE_TESTS_TO_RUN }}
+      ACCEPTANCE_TESTS_TO_RUN: ${{ steps.check_e2e_tests_to_run.outputs.ACCEPTANCE_TESTS_TO_RUN }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.8.15'
+          architecture: 'x64'
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements.in
+            requirements.txt
+            requirements_dev.in
+            requirements_dev.txt
+      - uses: ./.github/actions/merge
+      - name: Check E2E tests to run
+        id: check_e2e_tests_to_run
+        run: python -m scripts.check_e2e_tests_to_run
   build:
     runs-on:  ${{ matrix.os }}
     strategy:
@@ -68,53 +90,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        suite:
-          - name: accessibility
-          - name: additionalEditorFeatures
-          - name: additionalEditorFeaturesModals
-          - name: additionalPlayerFeatures
-          - name: adminPage
-          - name: blogDashboard
-          - name: blog
-          - name: checkpointFeatures
-          - name: classroomPage
-          - name: classroomPageFileUploadFeatures
-          - name: collections
-          - name: contributorDashboard
-          - name: contributorAdminDashboard
-          - name: coreEditorAndPlayerFeatures
-          - name: creatorDashboard
-          - name: embedding
-          - name: explorationFeedbackTab
-          - name: explorationImprovementsTab
-          - name: explorationHistoryTab
-          - name: explorationStatisticsTab
-          - name: explorationTranslationTab
-          - name: extensions
-          - name: featureGating
-          - name: feedbackUpdates
-          - name: fileUploadExtensions
-          - name: fileUploadFeatures
-            flaky_indicators: |
-              Play record button is not clickable
-              Translation tab button is not clickable
-          - name: learner
-          - name: learnerDashboard
-          - name: library
-          - name: navigation
-          - name: playVoiceovers
-          - name: preferences
-          - name: profileFeatures
-          - name: profileMenu
-          - name: publication
-          - name: skillEditor
-          - name: subscriptions
-          - name: topicsAndSkillsDashboard
-          - name: topicAndStoryEditor
-          - name: topicAndStoryEditorFileUploadFeatures
-          - name: topicAndStoryViewer
-          - name: users
-          - name: wipeout
+        suite: ${{ fromJson(needs.check_tests_to_run.outputs.E2E_TESTS_TO_RUN) }}
     name: e2e_test (${{ matrix.os }}, ${{ matrix.suite.name }})
     steps:
       - uses: actions/checkout@v3
@@ -225,7 +201,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        shard: [1, 2]
+        shard: ${{ fromJson(needs.check_tests_to_run.outputs.LIGHTHOUSE_TESTS_TO_RUN) }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -309,16 +285,7 @@ jobs:
       strategy:
         matrix:
           os: [ubuntu-22.04]
-          suite:
-            - blog-admin-tests/assign-roles-to-users-and-change-tag-properties
-            - blog-editor-tests/try-to-publish-a-duplicate-blog-post-and-get-blocked
-            - logged-in-user-tests/click-all-buttons-on-navbar
-            - logged-in-user-tests/click-all-buttons-in-about-page
-            - logged-in-user-tests/click-all-buttons-in-about-foundation-page
-            - logged-in-user-tests/click-all-buttons-in-thanks-for-donating-page
-            - practice-question-admin-tests/add-and-remove-contribution-rights
-            - translation-admin-tests/add-translation-rights
-            - translation-admin-tests/remove-translation-rights
+          suite: ${{ fromJson(needs.check_tests_to_run.outputs.ACCEPTANCE_TESTS_TO_RUN) }}
       steps:
         - uses: actions/checkout@v3
         - uses: actions/setup-python@v3
