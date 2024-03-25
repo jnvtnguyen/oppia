@@ -42,7 +42,7 @@ LIGHTHOUSE_TESTS_TO_RUN = [
 ]
 
 ACCEPTANCE_TESTS_TO_RUN = [
-    TestSuiteDict(name='blog-admin-tests/assign-roles-to-users-and-change-tab-properties'),
+    TestSuiteDict(name='blog-admin-tests/assign-roles-to-users-and-change-tag-properties'),
     TestSuiteDict(name='logged-in-user-tests/click-all-buttons-on-navbar'),
     TestSuiteDict(name='practice-question-admin-tests/add-and-remove-contribution-rights'),
     TestSuiteDict(name='translation-admin-tests/remove-translation-rights')
