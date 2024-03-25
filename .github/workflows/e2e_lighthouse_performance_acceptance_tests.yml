@@ -38,6 +38,7 @@ jobs:
         id: check_e2e_tests_to_run
         run: python -m scripts.check_e2e_tests_to_run
   aggregate-results:
+    needs: check_tests_to_run
     runs-on: ubuntu-22.04
     steps:
       - name: Aggregate results
@@ -100,7 +101,7 @@ jobs:
           path: /home/runner/work/oppia/build_files.zip
           retention-days: 1
   e2e_test:
-    needs: build
+    needs: [build, check_tests_to_run]
     runs-on:  ${{ matrix.os }}
     strategy:
       matrix:
@@ -211,7 +212,7 @@ jobs:
           message: "An E2E test failed on the upstream develop branch."
           webhook-url: ${{ secrets.BUILD_FAILURE_ROOM_WEBHOOK_URL }}
   lighthouse:
-    needs: build
+    needs: [build, check_tests_to_run]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -295,7 +296,7 @@ jobs:
           message: "A Lighthouse test failed on the upstream develop branch."
           webhook-url: ${{ secrets.BUILD_FAILURE_ROOM_WEBHOOK_URL }}
   acceptance_test:
-      needs: build
+      needs: [build, check_tests_to_run]
       runs-on:  ${{ matrix.os }}
       strategy:
         matrix:
