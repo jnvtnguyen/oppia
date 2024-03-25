@@ -37,19 +37,6 @@ jobs:
       - name: Check E2E tests to run
         id: check_e2e_tests_to_run
         run: python -m scripts.check_e2e_tests_to_run
-  aggregate-results:
-    needs: check_tests_to_run
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Aggregate results
-        env:
-          E2E_TESTS_TO_RUN: ${{ needs.check_tests_to_run.outputs.E2E_TESTS_TO_RUN }}
-          LIGHTHOUSE_TESTS_TO_RUN: ${{ needs.check_tests_to_run.outputs.LIGHTHOUSE_TESTS_TO_RUN }}
-          ACCEPTANCE_TESTS_TO_RUN: ${{ needs.check_tests_to_run.outputs.ACCEPTANCE_TESTS_TO_RUN }}
-        run: |
-          echo "$E2E_TESTS_TO_RUN"
-          echo "$LIGHTHOUSE_TESTS_TO_RUN"
-          echo "$ACCEPTANCE_TESTS_TO_RUN"
   build:
     runs-on:  ${{ matrix.os }}
     strategy:
@@ -367,9 +354,9 @@ jobs:
         - name: (Artifact re-build) Build Webpack
           if: steps.download_artifact_1.outcome == 'failure'
           run: python -m scripts.build --prod_env
-        - name: Run Desktop Acceptance Test ${{ matrix.suite }}
+        - name: Run Desktop Acceptance Test ${{ matrix.suite.name }}
           run: xvfb-run -a --server-args="-screen 0, 1285x1000x24" python -m scripts.run_acceptance_tests --skip-build --suite=${{ matrix.suite.name }} --prod_env
-        - name: Run Mobile Acceptance Test ${{ matrix.suite }}
+        - name: Run Mobile Acceptance Test ${{ matrix.suite.name }}
           run: xvfb-run -a --server-args="-screen 0, 1285x1000x24" python -m scripts.run_acceptance_tests --skip-build --suite=${{ matrix.suite.name }} --prod_env --mobile
         - name: Uploading webpack bundles as an artifact
           if: ${{ failure() }}
