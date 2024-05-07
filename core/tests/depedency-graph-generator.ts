@@ -18,10 +18,10 @@ type AngularCommonInformation = {
   templateUrl?: string;
 };
 
-type PreSweepFileInformation =
+type AngularInformation =
   | AngularModuleInformation
   | AngularCommonInformation
-  | {type: 'other'};
+  | {type: 'none'};
 
 // List of directories to exclude from the search.
 const EXCLUSIONS = [
@@ -38,6 +38,7 @@ const EXCLUSIONS = [
   '.direnv'
 ];
 const ROOT = path.resolve(__dirname, '../../');
+let fileAngularInformationsMapping: Record<string, AngularInformation[]> = {};
 
 /*
  * Reads the tsconfig file and returns the parsed JSON.
@@ -58,7 +59,7 @@ const getRelativePathToRoot = (filePath: string) => {
 };
 
 /*
- * Returns the path by alias using the tsconfig file.
+ * Returns the path by alias using the tsconfig file, if it exists.
  */
 const getPathByAlias = (path: string): string | undefined => {
   for (const alias of Object.keys(tsConfig.compilerOptions.paths)) {
@@ -75,7 +76,7 @@ const getPathByAlias = (path: string): string | undefined => {
  * Provided a file path without an extension, it returns the file path with the
  * extension '.ts' or '.js' if it exists.
  */
-const getFileWithExtensionByPath = (path: string): string => {
+const getFileWithExtensionByPathWithoutExtension = (path: string): string => {
   if (fs.existsSync(path + '.ts')) return path + '.ts';
   if (fs.existsSync(path + '.js')) return path + '.js';
   return path;
@@ -84,15 +85,15 @@ const getFileWithExtensionByPath = (path: string): string => {
 /*
  * Resolves any import path to the root directory.
  */
-const resolveImportPathToRoot = (importPath: string, relativeFile?: string): string | undefined => {
+const resolveGenericImportPathToRoot = (importPath: string, relativeFile?: string): string | undefined => {
   if (importPath.startsWith('.') && relativeFile) {
-    return getFileWithExtensionByPath(
+    return getFileWithExtensionByPathWithoutExtension(
       getRelativePathToRoot(path.resolve(path.dirname(relativeFile), importPath))
     );
   } else {
     const pathByAlias = getPathByAlias(importPath);
     if (pathByAlias) {
-      return getFileWithExtensionByPath(pathByAlias);
+      return getFileWithExtensionByPathWithoutExtension(pathByAlias);
     }
   }
 };
@@ -101,14 +102,15 @@ const resolveImportPathToRoot = (importPath: string, relativeFile?: string): str
  * Finds the file depedency that corresponds to the given selector.
  */
 const findSelectorDepedency = (selector: string): string | undefined => {
-  for (const file of Object.keys(preSweepFilesInformations)) {
-    const preSweepFileInformations = preSweepFilesInformations[file];
-    for (const preSweepFileInformation of preSweepFileInformations) {
+  for (const filePath of Object.keys(fileAngularInformationsMapping)) {
+    const fileAngularInformation = fileAngularInformationsMapping[filePath];
+    for (const angularInformation of fileAngularInformation) {
       if (
-        preSweepFileInformation.type === 'component' &&
-        preSweepFileInformation.selector === selector
+        (angularInformation.type === 'component' ||
+         angularInformation.type === 'directive') &&
+         angularInformation.selector === selector
       ) {
-        return file;
+        return filePath;
       }
     }
   }
@@ -138,47 +140,60 @@ const findAttributesDepedencies = (attributes: Record<string, string>): string[]
 const findPipeDepedency = (expression: string): string | undefined => {
   if (!expression.includes('|')) return;
   const pipeFunction = expression.split('|')[1].split(':')[0].trim();
-  for (const file of Object.keys(preSweepFilesInformations)) {
-    const preSweepFileInformations = preSweepFilesInformations[file];
-    for (const preSweepFileInformation of preSweepFileInformations) {
+  for (const filePath of Object.keys(fileAngularInformationsMapping)) {
+    const fileAngularInformation = fileAngularInformationsMapping[filePath];
+    for (const angularInformation of fileAngularInformation) {
       if (
-        preSweepFileInformation.type === 'pipe' &&
-        preSweepFileInformation.selector === pipeFunction
+        angularInformation.type === 'pipe' &&
+        angularInformation.selector === pipeFunction
       ) {
-        return file;
+        return filePath;
       }
     }
   }
 }
 
-const tsConfigPath = path.join(ROOT, 'tsconfig.json');
-const tsConfig = readTSConfig(tsConfigPath);
+/**
+ * Gets the file path by the class name if it exists.
+ */
+const getFileByClassName = (className: string): string | undefined => {
+  for (const filePath of Object.keys(fileAngularInformationsMapping)) {
+    for (const angularInformation of fileAngularInformationsMapping[filePath]) {
+      if (
+        angularInformation.type != 'none' &&
+        angularInformation.class === className
+      ) {
+        return filePath;
+      }
+    }
+  }
+}
 
-let host = ts.createCompilerHost(tsConfig);
-const javascriptAndTypescriptFiles = host.readDirectory!(ROOT, ['.ts', '.js'], EXCLUSIONS, []).reduce(
-  (acc: string[], file: string) => {
-    if (!file.endsWith('.spec.ts') && !file.endsWith('.spec.js')) {
-      acc.push(getRelativePathToRoot(file));
+const tsConfig = readTSConfig(path.join(ROOT, 'tsconfig.json'));
+let tsHost = ts.createCompilerHost(tsConfig);
+const javascriptAndTypescriptFiles = tsHost.readDirectory!(ROOT, ['.ts', '.js'], EXCLUSIONS, []).reduce(
+  (acc: string[], filePath: string) => {
+    if (!filePath.endsWith('.spec.ts') && !filePath.endsWith('.spec.js')) {
+      acc.push(getRelativePathToRoot(filePath));
     }
     return acc;
   },
   []
 );
 
-const htmlFiles = host.readDirectory!(ROOT, ['.html'], EXCLUSIONS, []).reduce(
-  (acc: string[], file: string) => {
-    acc.push(getRelativePathToRoot(file));
+const htmlFiles = tsHost.readDirectory!(ROOT, ['.html'], EXCLUSIONS, []).reduce(
+  (acc: string[], filePath: string) => {
+    acc.push(getRelativePathToRoot(filePath));
     return acc;
   },
   []
 );
 
-let preSweepFilesInformations: Record<string, PreSweepFileInformation[]> = {};
-for (const file of javascriptAndTypescriptFiles) {
-  const sourceFile = host.getSourceFile(file, ts.ScriptTarget.ES2020);
+for (const filePath of javascriptAndTypescriptFiles) {
+  const sourceFile = tsHost.getSourceFile(filePath, ts.ScriptTarget.ES2020);
   if (!sourceFile) continue;
 
-  preSweepFilesInformations[file] = [];
+  fileAngularInformationsMapping[filePath] = [];
   sourceFile.forEachChild(node => {
     if (!ts.isClassDeclaration(node)) {
       return;
@@ -225,7 +240,7 @@ for (const file of javascriptAndTypescriptFiles) {
           decorator.expression.arguments[0],
           'entryComponents'
         );
-        preSweepFilesInformations[file].push({
+        fileAngularInformationsMapping[filePath].push({
           type: 'module',
           entryComponents: entryComponentsText
             ? entryComponentsText
@@ -245,7 +260,7 @@ for (const file of javascriptAndTypescriptFiles) {
           decorator.expression.arguments[0],
           'templateUrl'
         );
-        preSweepFilesInformations[file].push({
+        fileAngularInformationsMapping[filePath].push({
           type: decoratorText.toLowerCase() as AngularCommonInformation['type'],
           selector: selectorText ? selectorText.slice(1, -1) : '',
           class: className,
@@ -256,7 +271,7 @@ for (const file of javascriptAndTypescriptFiles) {
           decorator.expression.arguments[0],
           'name'
         );
-        preSweepFilesInformations[file].push({
+        fileAngularInformationsMapping[filePath].push({
           type: 'pipe',
           selector: selectorText ? selectorText.slice(1, -1) : '',
           class: className,
@@ -265,33 +280,28 @@ for (const file of javascriptAndTypescriptFiles) {
     }
   });
 
-  if (!preSweepFilesInformations[file].length) {
-    preSweepFilesInformations[file].push({type: 'other'});
+  // If the file doesn't have any Angular information, we add a 'none' type.
+  if (!fileAngularInformationsMapping[filePath].length) {
+    fileAngularInformationsMapping[filePath].push({type: 'none'});
   }
 }
 
-let filesDepedencies: Record<string, string[]> = {};
-for (const file of Object.keys(preSweepFilesInformations)) {
-  const sourceFile = host.getSourceFile(file, ts.ScriptTarget.ES2020);
+
+let fileDepedenciesMapping: Record<string, string[]> = {};
+for (const filePath of Object.keys(fileAngularInformationsMapping)) {
+  const sourceFile = tsHost.getSourceFile(filePath, ts.ScriptTarget.ES2020);
   if (!sourceFile) continue;
 
   const fileDepedencies: string[] = [];
-  const preSweepFileInformations = preSweepFilesInformations[file];
+  const fileAngularInformation = fileAngularInformationsMapping[filePath];
 
   // If the file is a module, we need to add the components that are entryComponents as depedencies
   // and ignore the rest of the imports.
-  if (preSweepFileInformations[0].type === 'module') {
-    for (const file of Object.keys(preSweepFilesInformations)) {
-      const searchPreSweepFileInformations = preSweepFilesInformations[file];
-      for (const searchPreSweepFileInformation of searchPreSweepFileInformations) {
-        if (
-          searchPreSweepFileInformation.type === 'component' &&
-          preSweepFileInformations[0].entryComponents.includes(
-            searchPreSweepFileInformation.class
-          )
-        ) {
-          fileDepedencies.push(file);
-        }
+  if (fileAngularInformation[0].type === 'module') {
+    for (const entryComponent of fileAngularInformation[0].entryComponents) {
+      const entryComponentFilePath = getFileByClassName(entryComponent);
+      if (entryComponentFilePath) {
+        fileDepedencies.push(entryComponentFilePath);
       }
     }
   }
@@ -302,9 +312,9 @@ for (const file of Object.keys(preSweepFilesInformations)) {
           .getText(sourceFile)
           .slice(1, -1);
 
-        const resolvedImportPath = resolveImportPathToRoot(
+        const resolvedImportPath = resolveGenericImportPathToRoot(
           moduleSpecifier,
-          file
+          filePath
         );
         if (resolvedImportPath) {
           fileDepedencies.push(resolvedImportPath);
@@ -315,13 +325,13 @@ for (const file of Object.keys(preSweepFilesInformations)) {
 
 
   // If the file is a component or directive and has a templateUrl, we need to add it as a depedency.
-  for (const preSweepFileInformation of preSweepFileInformations) {
-    if ((preSweepFileInformation.type === 'component' || preSweepFileInformation.type === 'directive') &&
-        preSweepFileInformation.templateUrl
+  for (const angularInformation of fileAngularInformation) {
+    if ((angularInformation.type === 'component' || angularInformation.type === 'directive') &&
+        angularInformation.templateUrl
     ) {
-      const resolvedTemplateUrl = resolveImportPathToRoot(
-        preSweepFileInformation.templateUrl,
-        file
+      const resolvedTemplateUrl = resolveGenericImportPathToRoot(
+        angularInformation.templateUrl,
+        filePath
       );
       if (resolvedTemplateUrl) {
         fileDepedencies.push(resolvedTemplateUrl);
@@ -329,12 +339,13 @@ for (const file of Object.keys(preSweepFilesInformations)) {
     }
   }
 
-  filesDepedencies[file] = fileDepedencies;
+  fileDepedenciesMapping[filePath] = fileDepedencies;
 }
 
-for (const file of htmlFiles) {
+for (const filePath of htmlFiles) {
   const fileDepedencies: string[] = [];
-  const fileContent = fs.readFileSync(file, 'utf8');
+
+  const fileContent = fs.readFileSync(filePath, 'utf8');
   const htmlParser = new HtmlParser({
     onopentag(name: string, attributes: Record<string, string>) {
       const selectorDepedency = findSelectorDepedency(name);
@@ -362,9 +373,9 @@ for (const file of htmlFiles) {
         for (const loadFunction of loadFunctions) {
           const args = loadFunction.substring(loadFunction.indexOf('(') + 1, loadFunction.indexOf(')'));
           const loadPath = args.split(',')[0].slice(1, -1);
-          const resolvedImportPath = resolveImportPathToRoot(
+          const resolvedImportPath = resolveGenericImportPathToRoot(
             loadPath,
-            file
+            filePath
           );
           if (resolvedImportPath) {
             fileDepedencies.push(resolvedImportPath);
@@ -376,41 +387,5 @@ for (const file of htmlFiles) {
 
   htmlParser.write(fileContent);
   htmlParser.end();
-  filesDepedencies[file] = fileDepedencies;
+  fileDepedencies[filePath] = fileDepedencies;
 }
-
-const getFilesDepedencyIsReferencedIn = (file: string): string[] => {
-  return Object.keys(filesDepedencies).filter((key) => filesDepedencies[key].includes(file));
-}
-
-const getRootModulesOfFile = (file: string, visited: Set<string> = new Set()): string[] => {
-  if (visited.has(file)) {
-    return [];
-  }
-  visited.add(file);
-
-  const references = getFilesDepedencyIsReferencedIn(file);
-
-  if (references.length === 0) {
-    return [file];
-  }
-
-  const rootFiles: string[] = [];
-  
-  for (const reference of references) {
-    rootFiles.push(...getRootModulesOfFile(reference, visited));
-  }
-
-  return rootFiles.filter((rootFile) => rootFile.endsWith('.module.ts'));
-}
-
-const depedencyGraph: Record<string, string[]> = {};
-
-for (const file of Object.keys(filesDepedencies)) {
-  depedencyGraph[file] = getRootModulesOfFile(file);
-}
-
-fs.writeFileSync(
-  path.resolve(ROOT, 'depedency-graph.json'),
-  JSON.stringify(depedencyGraph, null, 2)
-);
