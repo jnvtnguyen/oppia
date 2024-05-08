@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import path from 'path';
+import path, { resolve } from 'path';
 import fs from 'fs';
 import { Parser as HtmlParser } from 'htmlparser2';
 
@@ -37,8 +37,11 @@ const EXCLUSIONS = [
   'scripts',
   '.direnv'
 ];
+
 const ROOT = path.resolve(__dirname, '../../');
-let fileAngularInformationsMapping: Record<string, AngularInformation[]> = {};
+
+const fileAngularInformationsMapping: Record<string, AngularInformation[]> = {};
+const fileDepedenciesMapping: Record<string, string[]> = {};
 
 /*
  * Reads the tsconfig file and returns the parsed JSON.
@@ -85,17 +88,20 @@ const getFileWithExtensionByPathWithoutExtension = (path: string): string => {
 /*
  * Resolves any import path to the root directory.
  */
-const resolveGenericImportPathToRoot = (importPath: string, relativeFile?: string): string | undefined => {
-  if (importPath.startsWith('.') && relativeFile) {
-    return getFileWithExtensionByPathWithoutExtension(
-      getRelativePathToRoot(path.resolve(path.dirname(relativeFile), importPath))
-    );
-  } else {
-    const pathByAlias = getPathByAlias(importPath);
-    if (pathByAlias) {
-      return getFileWithExtensionByPathWithoutExtension(pathByAlias);
-    }
+const resolveGenericImportPathToRoot = (importPath: string, relativeFile: string): string | undefined => {
+  if (fs.existsSync(
+    path.resolve(
+      ROOT, 'node_modules', 
+      importPath.substring(0, importPath.indexOf('/')
+    )
+  ))) return;
+  const pathByAlias = getPathByAlias(importPath);
+  if (pathByAlias) {
+    return getFileWithExtensionByPathWithoutExtension(pathByAlias);
   }
+  return getFileWithExtensionByPathWithoutExtension(
+    path.join(path.dirname(relativeFile), importPath)
+  );
 };
 
 /**
@@ -169,6 +175,22 @@ const getFileByClassName = (className: string): string | undefined => {
   }
 }
 
+/**
+ * Resolves a expression into a raw string.
+ */
+const resolveExpressionIntoString = (expression: string): string => {
+  if (expression.includes('+')) {
+    const parts = expression.split('+');
+    return parts.map((part) => {
+      return part.trim().slice(1, -1);
+    }).join('');
+  }
+  if (expression.startsWith("'") && expression.endsWith("'")) {
+    return expression.slice(1, -1);
+  }
+  return expression;
+}
+
 const tsConfig = readTSConfig(path.join(ROOT, 'tsconfig.json'));
 let tsHost = ts.createCompilerHost(tsConfig);
 const javascriptAndTypescriptFiles = tsHost.readDirectory!(ROOT, ['.ts', '.js'], EXCLUSIONS, []).reduce(
@@ -189,6 +211,7 @@ const htmlFiles = tsHost.readDirectory!(ROOT, ['.html'], EXCLUSIONS, []).reduce(
   []
 );
 
+// Here we scrape all of the Angular information from the Typescript/JavaScript files.
 for (const filePath of javascriptAndTypescriptFiles) {
   const sourceFile = tsHost.getSourceFile(filePath, ts.ScriptTarget.ES2020);
   if (!sourceFile) continue;
@@ -255,25 +278,25 @@ for (const filePath of javascriptAndTypescriptFiles) {
         const selectorText = getPropertyInArgumentByText(
           decorator.expression.arguments[0],
           'selector'
-        );
+        ) || '';
         const templateUrlText = getPropertyInArgumentByText(
           decorator.expression.arguments[0],
           'templateUrl'
-        );
+        ) || '';
         fileAngularInformationsMapping[filePath].push({
           type: decoratorText.toLowerCase() as AngularCommonInformation['type'],
-          selector: selectorText ? selectorText.slice(1, -1) : '',
+          selector: resolveExpressionIntoString(selectorText),
           class: className,
-          templateUrl: templateUrlText ? templateUrlText.slice(1, -1) : '',
+          templateUrl: resolveExpressionIntoString(templateUrlText),
         });
       } else if (decoratorText === 'Pipe') {
         const selectorText = getPropertyInArgumentByText(
           decorator.expression.arguments[0],
           'name'
-        );
+        ) || '';
         fileAngularInformationsMapping[filePath].push({
           type: 'pipe',
-          selector: selectorText ? selectorText.slice(1, -1) : '',
+          selector: resolveExpressionIntoString(selectorText),
           class: className,
         });
       }
@@ -286,8 +309,7 @@ for (const filePath of javascriptAndTypescriptFiles) {
   }
 }
 
-
-let fileDepedenciesMapping: Record<string, string[]> = {};
+// Here we scrape all of the dependencies from the Typescript/JavaScript files.
 for (const filePath of Object.keys(fileAngularInformationsMapping)) {
   const sourceFile = tsHost.getSourceFile(filePath, ts.ScriptTarget.ES2020);
   if (!sourceFile) continue;
@@ -308,12 +330,22 @@ for (const filePath of Object.keys(fileAngularInformationsMapping)) {
   else {
     sourceFile.forEachChild(node => {
       if (ts.isImportDeclaration(node)) {
-        const moduleSpecifier = node.moduleSpecifier
-          .getText(sourceFile)
-          .slice(1, -1);
+        const moduleSpecifier = node.moduleSpecifier.getText(sourceFile);
 
         const resolvedImportPath = resolveGenericImportPathToRoot(
-          moduleSpecifier,
+          resolveExpressionIntoString(moduleSpecifier),
+          filePath
+        );
+        if (resolvedImportPath) {
+          fileDepedencies.push(resolvedImportPath);
+        }
+      }
+      if (ts.isExpressionStatement(node)) {
+        if (!ts.isCallExpression(node.expression)) return;
+        if (node.expression.expression.getText(sourceFile) !== 'require') return;
+        const importArgument = node.expression.arguments[0].getText(sourceFile);
+        const resolvedImportPath = resolveGenericImportPathToRoot(
+          resolveExpressionIntoString(importArgument),
           filePath
         );
         if (resolvedImportPath) {
@@ -323,18 +355,17 @@ for (const filePath of Object.keys(fileAngularInformationsMapping)) {
     });
   }
 
-
   // If the file is a component or directive and has a templateUrl, we need to add it as a depedency.
   for (const angularInformation of fileAngularInformation) {
     if ((angularInformation.type === 'component' || angularInformation.type === 'directive') &&
         angularInformation.templateUrl
     ) {
-      const resolvedTemplateUrl = resolveGenericImportPathToRoot(
+      const resolvedTemplateUrlFilePath = resolveGenericImportPathToRoot(
         angularInformation.templateUrl,
         filePath
       );
-      if (resolvedTemplateUrl) {
-        fileDepedencies.push(resolvedTemplateUrl);
+      if (resolvedTemplateUrlFilePath) {
+        fileDepedencies.push(resolvedTemplateUrlFilePath);
       }
     }
   }
@@ -342,6 +373,7 @@ for (const filePath of Object.keys(fileAngularInformationsMapping)) {
   fileDepedenciesMapping[filePath] = fileDepedencies;
 }
 
+// Here we scrape all of the dependencies from the HTML files.
 for (const filePath of htmlFiles) {
   const fileDepedencies: string[] = [];
 
@@ -372,13 +404,13 @@ for (const filePath of htmlFiles) {
         const loadFunctions = text.split('\n').filter((line) => line.includes('@load'));
         for (const loadFunction of loadFunctions) {
           const args = loadFunction.substring(loadFunction.indexOf('(') + 1, loadFunction.indexOf(')'));
-          const loadPath = args.split(',')[0].slice(1, -1);
-          const resolvedImportPath = resolveGenericImportPathToRoot(
+          const loadPath = resolveExpressionIntoString(args.split(',')[0]);
+          const resolvedLoadPath = resolveGenericImportPathToRoot(
             loadPath,
             filePath
           );
-          if (resolvedImportPath) {
-            fileDepedencies.push(resolvedImportPath);
+          if (resolvedLoadPath) {
+            fileDepedencies.push(resolvedLoadPath);
           }
         }
       }
@@ -389,3 +421,8 @@ for (const filePath of htmlFiles) {
   htmlParser.end();
   fileDepedencies[filePath] = fileDepedencies;
 }
+
+fs.writeFileSync(
+  path.join(ROOT, 'dependency-graph.json'),
+  JSON.stringify(fileDepedenciesMapping, null, 2)
+);

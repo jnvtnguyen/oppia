@@ -22,6 +22,8 @@ var EXCLUSIONS = [
     '.direnv'
 ];
 var ROOT = path_1["default"].resolve(__dirname, '../../');
+var fileAngularInformationsMapping = {};
+var fileDepedenciesMapping = {};
 /*
  * Reads the tsconfig file and returns the parsed JSON.
  */
@@ -39,7 +41,7 @@ var getRelativePathToRoot = function (filePath) {
     return path_1["default"].relative(ROOT, filePath);
 };
 /*
- * Returns the path by alias using the tsconfig file.
+ * Returns the path by alias using the tsconfig file, if it exists.
  */
 var getPathByAlias = function (path) {
     for (var _i = 0, _a = Object.keys(tsConfig.compilerOptions.paths); _i < _a.length; _i++) {
@@ -56,7 +58,7 @@ var getPathByAlias = function (path) {
  * Provided a file path without an extension, it returns the file path with the
  * extension '.ts' or '.js' if it exists.
  */
-var getFileWithExtensionByPath = function (path) {
+var getFileWithExtensionByPathWithoutExtension = function (path) {
     if (fs_1["default"].existsSync(path + '.ts'))
         return path + '.ts';
     if (fs_1["default"].existsSync(path + '.js'))
@@ -66,29 +68,28 @@ var getFileWithExtensionByPath = function (path) {
 /*
  * Resolves any import path to the root directory.
  */
-var resolveImportPathToRoot = function (importPath, relativeFile) {
-    if (importPath.startsWith('.') && relativeFile) {
-        return getFileWithExtensionByPath(getRelativePathToRoot(path_1["default"].resolve(path_1["default"].dirname(relativeFile), importPath)));
+var resolveGenericImportPathToRoot = function (importPath, relativeFile) {
+    if (fs_1["default"].existsSync(path_1["default"].resolve(ROOT, 'node_modules', importPath.substring(0, importPath.indexOf('/')))))
+        return;
+    var pathByAlias = getPathByAlias(importPath);
+    if (pathByAlias) {
+        return getFileWithExtensionByPathWithoutExtension(pathByAlias);
     }
-    else {
-        var pathByAlias = getPathByAlias(importPath);
-        if (pathByAlias) {
-            return getFileWithExtensionByPath(pathByAlias);
-        }
-    }
+    return getFileWithExtensionByPathWithoutExtension(path_1["default"].join(path_1["default"].dirname(relativeFile), importPath));
 };
 /**
  * Finds the file depedency that corresponds to the given selector.
  */
 var findSelectorDepedency = function (selector) {
-    for (var _i = 0, _a = Object.keys(preSweepFilesInformations); _i < _a.length; _i++) {
-        var file = _a[_i];
-        var preSweepFileInformations = preSweepFilesInformations[file];
-        for (var _b = 0, preSweepFileInformations_1 = preSweepFileInformations; _b < preSweepFileInformations_1.length; _b++) {
-            var preSweepFileInformation = preSweepFileInformations_1[_b];
-            if (preSweepFileInformation.type === 'component' &&
-                preSweepFileInformation.selector === selector) {
-                return file;
+    for (var _i = 0, _a = Object.keys(fileAngularInformationsMapping); _i < _a.length; _i++) {
+        var filePath = _a[_i];
+        var fileAngularInformation = fileAngularInformationsMapping[filePath];
+        for (var _b = 0, fileAngularInformation_1 = fileAngularInformation; _b < fileAngularInformation_1.length; _b++) {
+            var angularInformation = fileAngularInformation_1[_b];
+            if ((angularInformation.type === 'component' ||
+                angularInformation.type === 'directive') &&
+                angularInformation.selector === selector) {
+                return filePath;
             }
         }
     }
@@ -117,37 +118,65 @@ var findPipeDepedency = function (expression) {
     if (!expression.includes('|'))
         return;
     var pipeFunction = expression.split('|')[1].split(':')[0].trim();
-    for (var _i = 0, _a = Object.keys(preSweepFilesInformations); _i < _a.length; _i++) {
-        var file = _a[_i];
-        var preSweepFileInformations = preSweepFilesInformations[file];
-        for (var _b = 0, preSweepFileInformations_2 = preSweepFileInformations; _b < preSweepFileInformations_2.length; _b++) {
-            var preSweepFileInformation = preSweepFileInformations_2[_b];
-            if (preSweepFileInformation.type === 'pipe' &&
-                preSweepFileInformation.selector === pipeFunction) {
-                return file;
+    for (var _i = 0, _a = Object.keys(fileAngularInformationsMapping); _i < _a.length; _i++) {
+        var filePath = _a[_i];
+        var fileAngularInformation = fileAngularInformationsMapping[filePath];
+        for (var _b = 0, fileAngularInformation_2 = fileAngularInformation; _b < fileAngularInformation_2.length; _b++) {
+            var angularInformation = fileAngularInformation_2[_b];
+            if (angularInformation.type === 'pipe' &&
+                angularInformation.selector === pipeFunction) {
+                return filePath;
             }
         }
     }
 };
-var tsConfigPath = path_1["default"].join(ROOT, 'tsconfig.json');
-var tsConfig = readTSConfig(tsConfigPath);
-var host = typescript_1["default"].createCompilerHost(tsConfig);
-var javascriptAndTypescriptFiles = host.readDirectory(ROOT, ['.ts', '.js'], EXCLUSIONS, []).reduce(function (acc, file) {
-    if (!file.endsWith('.spec.ts') && !file.endsWith('.spec.js')) {
-        acc.push(getRelativePathToRoot(file));
+/**
+ * Gets the file path by the class name if it exists.
+ */
+var getFileByClassName = function (className) {
+    for (var _i = 0, _a = Object.keys(fileAngularInformationsMapping); _i < _a.length; _i++) {
+        var filePath = _a[_i];
+        for (var _b = 0, _c = fileAngularInformationsMapping[filePath]; _b < _c.length; _b++) {
+            var angularInformation = _c[_b];
+            if (angularInformation.type != 'none' &&
+                angularInformation["class"] === className) {
+                return filePath;
+            }
+        }
+    }
+};
+/**
+ * Resolves a expression into a raw string.
+ */
+var resolveExpressionIntoString = function (expression) {
+    if (expression.includes('+')) {
+        var parts = expression.split('+');
+        return parts.map(function (part) {
+            return part.trim().slice(1, -1);
+        }).join('');
+    }
+    if (expression.startsWith("'") && expression.endsWith("'")) {
+        return expression.slice(1, -1);
+    }
+    return expression;
+};
+var tsConfig = readTSConfig(path_1["default"].join(ROOT, 'tsconfig.json'));
+var tsHost = typescript_1["default"].createCompilerHost(tsConfig);
+var javascriptAndTypescriptFiles = tsHost.readDirectory(ROOT, ['.ts', '.js'], EXCLUSIONS, []).reduce(function (acc, filePath) {
+    if (!filePath.endsWith('.spec.ts') && !filePath.endsWith('.spec.js')) {
+        acc.push(getRelativePathToRoot(filePath));
     }
     return acc;
 }, []);
-var htmlFiles = host.readDirectory(ROOT, ['.html'], EXCLUSIONS, []).reduce(function (acc, file) {
-    acc.push(getRelativePathToRoot(file));
+var htmlFiles = tsHost.readDirectory(ROOT, ['.html'], EXCLUSIONS, []).reduce(function (acc, filePath) {
+    acc.push(getRelativePathToRoot(filePath));
     return acc;
 }, []);
-var preSweepFilesInformations = {};
-var _loop_1 = function (file) {
-    var sourceFile = host.getSourceFile(file, typescript_1["default"].ScriptTarget.ES2020);
+var _loop_1 = function (filePath) {
+    var sourceFile = tsHost.getSourceFile(filePath, typescript_1["default"].ScriptTarget.ES2020);
     if (!sourceFile)
         return "continue";
-    preSweepFilesInformations[file] = [];
+    fileAngularInformationsMapping[filePath] = [];
     sourceFile.forEachChild(function (node) {
         var _a;
         if (!typescript_1["default"].isClassDeclaration(node)) {
@@ -182,7 +211,7 @@ var _loop_1 = function (file) {
             var className = ((_a = node.name) === null || _a === void 0 ? void 0 : _a.getText(sourceFile)) || '';
             if (decoratorText === 'NgModule') {
                 var entryComponentsText = getPropertyInArgumentByText(decorator.expression.arguments[0], 'entryComponents');
-                preSweepFilesInformations[file].push({
+                fileAngularInformationsMapping[filePath].push({
                     type: 'module',
                     entryComponents: entryComponentsText
                         ? entryComponentsText
@@ -195,62 +224,72 @@ var _loop_1 = function (file) {
                 });
             }
             else if (decoratorText === 'Component' || decoratorText === 'Directive') {
-                var selectorText = getPropertyInArgumentByText(decorator.expression.arguments[0], 'selector');
-                var templateUrlText = getPropertyInArgumentByText(decorator.expression.arguments[0], 'templateUrl');
-                preSweepFilesInformations[file].push({
+                var selectorText = getPropertyInArgumentByText(decorator.expression.arguments[0], 'selector') || '';
+                var templateUrlText = getPropertyInArgumentByText(decorator.expression.arguments[0], 'templateUrl') || '';
+                fileAngularInformationsMapping[filePath].push({
                     type: decoratorText.toLowerCase(),
-                    selector: selectorText ? selectorText.slice(1, -1) : '',
+                    selector: resolveExpressionIntoString(selectorText),
                     "class": className,
-                    templateUrl: templateUrlText ? templateUrlText.slice(1, -1) : ''
+                    templateUrl: resolveExpressionIntoString(templateUrlText)
                 });
             }
             else if (decoratorText === 'Pipe') {
-                var selectorText = getPropertyInArgumentByText(decorator.expression.arguments[0], 'name');
-                preSweepFilesInformations[file].push({
+                var selectorText = getPropertyInArgumentByText(decorator.expression.arguments[0], 'name') || '';
+                fileAngularInformationsMapping[filePath].push({
                     type: 'pipe',
-                    selector: selectorText ? selectorText.slice(1, -1) : '',
+                    selector: resolveExpressionIntoString(selectorText),
                     "class": className
                 });
             }
         }
     });
-    if (!preSweepFilesInformations[file].length) {
-        preSweepFilesInformations[file].push({ type: 'other' });
+    // If the file doesn't have any Angular information, we add a 'none' type.
+    if (!fileAngularInformationsMapping[filePath].length) {
+        fileAngularInformationsMapping[filePath].push({ type: 'none' });
     }
 };
+// Here we scrape all of the Angular information from the Typescript/JavaScript files.
 for (var _i = 0, javascriptAndTypescriptFiles_1 = javascriptAndTypescriptFiles; _i < javascriptAndTypescriptFiles_1.length; _i++) {
-    var file = javascriptAndTypescriptFiles_1[_i];
-    _loop_1(file);
+    var filePath = javascriptAndTypescriptFiles_1[_i];
+    _loop_1(filePath);
 }
-var filesDepedencies = {};
-var _loop_2 = function (file) {
-    var sourceFile = host.getSourceFile(file, typescript_1["default"].ScriptTarget.ES2020);
+var _loop_2 = function (filePath) {
+    var sourceFile = tsHost.getSourceFile(filePath, typescript_1["default"].ScriptTarget.ES2020);
     if (!sourceFile)
         return "continue";
     var fileDepedencies = [];
-    var preSweepFileInformations = preSweepFilesInformations[file];
+    var fileAngularInformation = fileAngularInformationsMapping[filePath];
     // If the file is a module, we need to add the components that are entryComponents as depedencies
     // and ignore the rest of the imports.
-    if (preSweepFileInformations[0].type === 'module') {
-        for (var _i = 0, _a = Object.keys(preSweepFilesInformations); _i < _a.length; _i++) {
-            var file_1 = _a[_i];
-            var searchPreSweepFileInformations = preSweepFilesInformations[file_1];
-            for (var _b = 0, searchPreSweepFileInformations_1 = searchPreSweepFileInformations; _b < searchPreSweepFileInformations_1.length; _b++) {
-                var searchPreSweepFileInformation = searchPreSweepFileInformations_1[_b];
-                if (searchPreSweepFileInformation.type === 'component' &&
-                    preSweepFileInformations[0].entryComponents.includes(searchPreSweepFileInformation["class"])) {
-                    fileDepedencies.push(file_1);
-                }
+    if (fileAngularInformation[0].type === 'module') {
+        for (var _i = 0, _a = fileAngularInformation[0].entryComponents; _i < _a.length; _i++) {
+            var entryComponent = _a[_i];
+            var entryComponentFilePath = getFileByClassName(entryComponent);
+            if (entryComponentFilePath) {
+                fileDepedencies.push(entryComponentFilePath);
             }
         }
     }
     else {
         sourceFile.forEachChild(function (node) {
             if (typescript_1["default"].isImportDeclaration(node)) {
-                var moduleSpecifier = node.moduleSpecifier
-                    .getText(sourceFile)
-                    .slice(1, -1);
-                var resolvedImportPath = resolveImportPathToRoot(moduleSpecifier, file);
+                var moduleSpecifier = node.moduleSpecifier.getText(sourceFile);
+                var resolvedImportPath = resolveGenericImportPathToRoot(resolveExpressionIntoString(moduleSpecifier), filePath);
+                if (resolvedImportPath) {
+                    fileDepedencies.push(resolvedImportPath);
+                }
+            }
+            if (typescript_1["default"].isExpressionStatement(node)) {
+                if (!typescript_1["default"].isCallExpression(node.expression))
+                    return;
+                if (node.expression.expression.getText(sourceFile) !== 'require')
+                    return;
+                var importArgument = node.expression.arguments[0].getText(sourceFile);
+                var resolvedImportPath = resolveGenericImportPathToRoot(resolveExpressionIntoString(importArgument), filePath);
+                if (filePath === 'core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.import.ts') {
+                    console.log(importArgument);
+                    console.log(resolveExpressionIntoString(importArgument));
+                }
                 if (resolvedImportPath) {
                     fileDepedencies.push(resolvedImportPath);
                 }
@@ -258,25 +297,26 @@ var _loop_2 = function (file) {
         });
     }
     // If the file is a component or directive and has a templateUrl, we need to add it as a depedency.
-    for (var _c = 0, preSweepFileInformations_3 = preSweepFileInformations; _c < preSweepFileInformations_3.length; _c++) {
-        var preSweepFileInformation = preSweepFileInformations_3[_c];
-        if ((preSweepFileInformation.type === 'component' || preSweepFileInformation.type === 'directive') &&
-            preSweepFileInformation.templateUrl) {
-            var resolvedTemplateUrl = resolveImportPathToRoot(preSweepFileInformation.templateUrl, file);
-            if (resolvedTemplateUrl) {
-                fileDepedencies.push(resolvedTemplateUrl);
+    for (var _b = 0, fileAngularInformation_3 = fileAngularInformation; _b < fileAngularInformation_3.length; _b++) {
+        var angularInformation = fileAngularInformation_3[_b];
+        if ((angularInformation.type === 'component' || angularInformation.type === 'directive') &&
+            angularInformation.templateUrl) {
+            var resolvedTemplateUrlFilePath = resolveGenericImportPathToRoot(angularInformation.templateUrl, filePath);
+            if (resolvedTemplateUrlFilePath) {
+                fileDepedencies.push(resolvedTemplateUrlFilePath);
             }
         }
     }
-    filesDepedencies[file] = fileDepedencies;
+    fileDepedenciesMapping[filePath] = fileDepedencies;
 };
-for (var _a = 0, _b = Object.keys(preSweepFilesInformations); _a < _b.length; _a++) {
-    var file = _b[_a];
-    _loop_2(file);
+// Here we scrape all of the dependencies from the Typescript/JavaScript files.
+for (var _a = 0, _b = Object.keys(fileAngularInformationsMapping); _a < _b.length; _a++) {
+    var filePath = _b[_a];
+    _loop_2(filePath);
 }
-var _loop_3 = function (file) {
+var _loop_3 = function (filePath) {
     var fileDepedencies = [];
-    var fileContent = fs_1["default"].readFileSync(file, 'utf8');
+    var fileContent = fs_1["default"].readFileSync(filePath, 'utf8');
     var htmlParser = new htmlparser2_1.Parser({
         onopentag: function (name, attributes) {
             var selectorDepedency = findSelectorDepedency(name);
@@ -305,10 +345,10 @@ var _loop_3 = function (file) {
                 for (var _i = 0, loadFunctions_1 = loadFunctions; _i < loadFunctions_1.length; _i++) {
                     var loadFunction = loadFunctions_1[_i];
                     var args = loadFunction.substring(loadFunction.indexOf('(') + 1, loadFunction.indexOf(')'));
-                    var loadPath = args.split(',')[0].slice(1, -1);
-                    var resolvedImportPath = resolveImportPathToRoot(loadPath, file);
-                    if (resolvedImportPath) {
-                        fileDepedencies.push(resolvedImportPath);
+                    var loadPath = resolveExpressionIntoString(args.split(',')[0]);
+                    var resolvedLoadPath = resolveGenericImportPathToRoot(loadPath, filePath);
+                    if (resolvedLoadPath) {
+                        fileDepedencies.push(resolvedLoadPath);
                     }
                 }
             }
@@ -316,40 +356,11 @@ var _loop_3 = function (file) {
     });
     htmlParser.write(fileContent);
     htmlParser.end();
-    filesDepedencies[file] = fileDepedencies;
+    fileDepedencies[filePath] = fileDepedencies;
 };
+// Here we scrape all of the dependencies from the HTML files.
 for (var _c = 0, htmlFiles_1 = htmlFiles; _c < htmlFiles_1.length; _c++) {
-    var file = htmlFiles_1[_c];
-    _loop_3(file);
+    var filePath = htmlFiles_1[_c];
+    _loop_3(filePath);
 }
-var depedencyGraph = {};
-var getFilesDepedencyIsReferencedIn = function (file) {
-    return Object.keys(filesDepedencies).filter(function (key) { return filesDepedencies[key].includes(file); });
-};
-var getRootModulesOfFile = function (file, visited) {
-    if (visited === void 0) { visited = new Set(); }
-    if (visited.has(file)) {
-        return [];
-    }
-    visited.add(file);
-    var references = getFilesDepedencyIsReferencedIn(file);
-    if (references.length === 0) {
-        return [file];
-    }
-    var rootFiles = [];
-    for (var _i = 0, references_1 = references; _i < references_1.length; _i++) {
-        var reference = references_1[_i];
-        if (depedencyGraph[reference]) {
-            rootFiles.push.apply(rootFiles, depedencyGraph[reference]);
-        }
-        else {
-            rootFiles.push.apply(rootFiles, getRootModulesOfFile(reference, visited));
-        }
-    }
-    return rootFiles.filter(function (rootFile) { return rootFile.endsWith('.module.ts'); });
-};
-for (var _d = 0, _e = Object.keys(filesDepedencies); _d < _e.length; _d++) {
-    var file = _e[_d];
-    depedencyGraph[file] = getRootModulesOfFile(file);
-}
-fs_1["default"].writeFileSync(path_1["default"].resolve(ROOT, 'depedency-graph.json'), JSON.stringify(depedencyGraph, null, 2));
+fs_1["default"].writeFileSync(path_1["default"].join(ROOT, 'dependency-graph.json'), JSON.stringify(fileDepedenciesMapping, null, 2));
