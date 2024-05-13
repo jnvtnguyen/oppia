@@ -62,16 +62,21 @@ var resolveExpressionIntoString = function (expression) {
 };
 var DepedencyExtractor = /** @class */ (function () {
     function DepedencyExtractor(typescriptHost, typescriptConfig, fileAngularInformationsMapping) {
+        /*
+         * Provided a file path without an extension, it returns the file path with the
+         * extension '.ts' or '.js' if it exists.
+         */
+        this.getFilePathWithExtension = function (path) {
+            if (fs_1["default"].existsSync(path + '.ts'))
+                return path + '.ts';
+            if (fs_1["default"].existsSync(path + '.js'))
+                return path + '.js';
+            return path;
+        };
         this.typescriptHost = typescriptHost;
         this.typescriptConfig = typescriptConfig;
         this.fileAngularInformationsMapping = fileAngularInformationsMapping;
     }
-    /**
-     * Escapes the given text.
-     */
-    DepedencyExtractor.prototype.escapeText = function (text) {
-        return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-    };
     /**
      * Checks if a file is a lib or not.
      */
@@ -91,10 +96,10 @@ var DepedencyExtractor = /** @class */ (function () {
     DepedencyExtractor.prototype.resolvePathByAlias = function (filePath) {
         for (var _i = 0, _a = Object.keys(this.typescriptConfig.compilerOptions.paths); _i < _a.length; _i++) {
             var alias = _a[_i];
-            var escapedAlias = this.escapeText(alias);
-            if (escapedAlias.match(filePath)) {
-                var aliasPath = this.typescriptConfig.compilerOptions.paths[alias][0];
-                return aliasPath.replace(alias, filePath);
+            var formattedAlias = alias.replace('/*', '');
+            if (filePath.startsWith(formattedAlias)) {
+                var fullAliasPath = this.typescriptConfig.compilerOptions.paths[alias][0].replace('/*', '');
+                return filePath.replace(formattedAlias, fullAliasPath);
             }
         }
     };
@@ -105,9 +110,21 @@ var DepedencyExtractor = /** @class */ (function () {
         if (!this.isFilePathRelative(modulePath) && this.isFilePathALib(modulePath))
             return;
         var pathByAlias = this.resolvePathByAlias(modulePath);
-        if (pathByAlias)
-            return pathByAlias;
-        return path_1["default"].join(path_1["default"].dirname(relativeFilePath), modulePath);
+        if (pathByAlias) {
+            return this.getFilePathWithExtension(pathByAlias);
+        }
+        if (this.isFilePathRelative(modulePath)) {
+            return this.getFilePathWithExtension(path_1["default"].join(path_1["default"].dirname(relativeFilePath), modulePath));
+        }
+    };
+    /**
+     * Checks if the given file has a module declaration.
+     */
+    DepedencyExtractor.prototype.doesFileHaveModuleDeclaration = function (filePath) {
+        var fileAngularInformations = this.fileAngularInformationsMapping[filePath];
+        if (!fileAngularInformations)
+            return false;
+        return fileAngularInformations.some(function (info) { return info.type === 'module'; });
     };
     /**
      * Extracts the depedencies from the given TypeScript or Javascript file.
@@ -120,30 +137,32 @@ var DepedencyExtractor = /** @class */ (function () {
         }
         var fileAngularInformations = this.fileAngularInformationsMapping[filePath];
         var fileDepedencies = [];
-        if (!fileAngularInformations.some(function (info) { return info.type === 'module'; })) {
-            sourceFile.forEachChild(function (node) {
-                if (typescript_1["default"].isImportDeclaration(node)) {
-                    var modulePath = resolveExpressionIntoString(node.moduleSpecifier.getText(sourceFile));
-                    var resolvedModulePath = _this.resolveModulePathToFilePath(modulePath, filePath);
-                    if (resolvedModulePath) {
-                        fileDepedencies.push(resolvedModulePath);
-                    }
-                }
-                if (typescript_1["default"].isExpressionStatement(node) && typescript_1["default"].isCallExpression(node.expression)) {
-                    if (node.expression.expression.getText(sourceFile) !== 'require')
-                        return;
-                    var modulePath = resolveExpressionIntoString(node.expression.arguments[0].getText(sourceFile));
-                    var resolvedModulePath = _this.resolveModulePathToFilePath(modulePath, filePath);
-                    if (resolvedModulePath) {
-                        fileDepedencies.push(resolvedModulePath);
-                    }
-                }
-            });
-            for (var _i = 0, fileAngularInformations_1 = fileAngularInformations; _i < fileAngularInformations_1.length; _i++) {
-                var fileAngularInformation = fileAngularInformations_1[_i];
-                if (fileAngularInformation.type === 'component') {
-                    fileDepedencies.push(fileAngularInformation.templateUrl);
-                }
+        sourceFile.forEachChild(function (node) {
+            var modulePath;
+            if (typescript_1["default"].isImportDeclaration(node)) {
+                modulePath =
+                    resolveExpressionIntoString(node.moduleSpecifier.getText(sourceFile));
+            }
+            if (typescript_1["default"].isExpressionStatement(node) && typescript_1["default"].isCallExpression(node.expression)) {
+                if (node.expression.expression.getText(sourceFile) !== 'require')
+                    return;
+                modulePath =
+                    resolveExpressionIntoString(node.expression.arguments[0].getText(sourceFile));
+            }
+            if (!modulePath)
+                return;
+            var resolvedModulePath = _this.resolveModulePathToFilePath(modulePath, filePath);
+            if (!resolvedModulePath)
+                return;
+            if (_this.doesFileHaveModuleDeclaration(filePath) &&
+                !_this.doesFileHaveModuleDeclaration(resolvedModulePath))
+                return;
+            fileDepedencies.push(resolvedModulePath);
+        });
+        for (var _i = 0, fileAngularInformations_1 = fileAngularInformations; _i < fileAngularInformations_1.length; _i++) {
+            var fileAngularInformation = fileAngularInformations_1[_i];
+            if (fileAngularInformation.type === 'component') {
+                fileDepedencies.push(fileAngularInformation.templateUrl);
             }
         }
         return Array.from(new Set(fileDepedencies));
@@ -171,9 +190,9 @@ var DepedencyExtractor = /** @class */ (function () {
                 var fileAngularInformation = fileAngularInformations_2[_c];
                 if (fileAngularInformation.type === 'component' || fileAngularInformation.type === 'directive') {
                     var elementIsPresent = document(fileAngularInformation.selector).length > 0;
-                    if (elementIsPresent) {
-                        fileDepedencies.push(searchingFilePath);
-                    }
+                    if (!elementIsPresent)
+                        continue;
+                    fileDepedencies.push(searchingFilePath);
                 }
             }
         }
@@ -317,4 +336,4 @@ var DepedencyGraphGenerator = /** @class */ (function () {
 ;
 var depedencyGraphGenerator = new DepedencyGraphGenerator(path_1["default"].resolve(ROOT_DIRECTORY, 'tsconfig.json'));
 var depedencyGraph = depedencyGraphGenerator.generateDepedencyGraph();
-fs_1["default"].writeFileSync(path_1["default"].resolve(ROOT_DIRECTORY, 'depedency-graph.json'), JSON.stringify(depedencyGraph, null, 2));
+fs_1["default"].writeFileSync(path_1["default"].resolve(ROOT_DIRECTORY, 'dependency-graph.json'), JSON.stringify(depedencyGraph, null, 2));
