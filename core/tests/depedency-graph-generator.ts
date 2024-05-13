@@ -1,28 +1,33 @@
 import ts from 'typescript';
 import path from 'path';
 import fs from 'fs';
-import {Parser as HtmlParser} from 'htmlparser2';
-import jsdom from 'jsdom';
+import  * as cheerio from 'cheerio';
 
-// This type is specific to Angular module files.
-type AngularModuleInformation = {
-  type: 'module';
-  entryComponents: string[];
-  class: string;
+type BaseAngularInformation = {
+  className: string;
 };
 
-// This type is specific to Angular common files (components, directives, pipes).
-type AngularCommonInformation = {
-  type: 'component' | 'directive' | 'pipe';
-  selector?: string;
-  class: string;
-  templateUrl?: string;
+type AngularModuleInformation = BaseAngularInformation & {
+  type: 'module';
+};
+
+// This type is specific to Angular component files.
+type AngularComponentInformation = BaseAngularInformation & {
+  type: 'component';
+  selector: string;
+  templateUrl: string;
+};
+
+// This type is specific to Angular directive or pipe files.
+type AngularDirectiveOrPipeInformation = BaseAngularInformation & {
+  type: 'directive' | 'pipe';
+  selector: string;
 };
 
 type AngularInformation =
   | AngularModuleInformation
-  | AngularCommonInformation
-  | {type: 'none'};
+  | AngularComponentInformation
+  | AngularDirectiveOrPipeInformation;
 
 // List of directories to exclude from the search.
 const EXCLUSIONS = [
@@ -33,73 +38,54 @@ const EXCLUSIONS = [
   'typings',
   'local_compiled_js_for_test',
   'third_party',
-  'core/tests',
   'webpack_bundles',
   'scripts',
   '.direnv',
+  'backend_prod_files',
+  'core/tests/build_sources',
+  'core/tests/data',
+  'core/tests/load_tests',
+  'core/tests/release_sources',
+  'core/tests/services_source',
+  'core/tests/webdriverio',
+  'core/tests/webdriverio_desktop',
+  'core/tests/webdriverio_utils'
 ];
 
-const ROOT = path.resolve(__dirname, '../../');
+const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
 
-/**
- * Resolves a expression into a raw string.
- */
 const resolveExpressionIntoString = (expression: string): string => {
   if (expression.includes('+')) {
     const parts = expression.split('+');
     return parts
-      .map(part => {
+      .map((part) => {
         return part.trim().slice(1, -1);
       })
       .join('');
   }
-  if (expression.startsWith("'") && expression.endsWith("'")) {
-    return expression.slice(1, -1);
-  }
-  return expression;
+  return expression.slice(1, -1);
 };
 
 class DepedencyExtractor {
-  filePath: string;
-  fileType: 'ts' | 'js' | 'html';
-  angularInformationMapping: Record<string, AngularInformation[]>;
-  tsHost: ts.CompilerHost;
-  tsConfig: any;
+  typescriptHost: ts.CompilerHost;
+  typescriptConfig: any;
+  fileAngularInformationsMapping: Record<string, AngularInformation[]>;
 
   constructor(
-    filePath: string,
-    angularInformationMapping: Record<string, AngularInformation[]>,
-    tsHost: ts.CompilerHost,
-    tsConfig: any
+    typescriptHost: ts.CompilerHost,
+    typescriptConfig: any,
+    fileAngularInformationsMapping: Record<string, AngularInformation[]>
   ) {
-    this.filePath = filePath;
-    this.fileType = this.filePath.split('.').pop() as 'ts' | 'js' | 'html';
-    this.angularInformationMapping = angularInformationMapping;
-    this.tsHost = tsHost;
-    this.tsConfig = tsConfig;
+    this.typescriptHost = typescriptHost;
+    this.typescriptConfig = typescriptConfig;
+    this.fileAngularInformationsMapping = fileAngularInformationsMapping;
   }
-
-  /*
-   * Returns the path by alias using the tsconfig file, if it exists.
-   */
-  private getPathByAlias = (path: string): string | undefined => {
-    for (const alias of Object.keys(this.tsConfig.compilerOptions.paths)) {
-      const formattedAlias = alias.replace('/*', '');
-      if (path.startsWith(formattedAlias)) {
-        const fullAliasPath = this.tsConfig.compilerOptions.paths[
-          alias
-        ][0].replace('/*', '');
-        return path.replace(formattedAlias, fullAliasPath);
-      }
-    }
-    return undefined;
-  };
 
   /*
    * Provided a file path without an extension, it returns the file path with the
    * extension '.ts' or '.js' if it exists.
    */
-  private getFileWithExtensionByPathWithoutExtension = (
+  private getFilePathWithExtensionByPathWithoutExtension = (
     path: string
   ): string => {
     if (fs.existsSync(path + '.ts')) return path + '.ts';
@@ -108,435 +94,310 @@ class DepedencyExtractor {
   };
 
   /**
-   * Resolves any import path to the root directory.
+   * Escapes the given text.
    */
-  private resolveGenericImportPathToRoot(
-    importPath: string,
-    relativeFile: string
-  ): string | undefined {
-    if (
-      !importPath.startsWith('.') &&
-      fs.existsSync(
-        path.resolve(
-          ROOT,
-          'node_modules',
-          importPath.substring(0, importPath.indexOf('/'))
-        )
-      )
-    )
-      return;
-    const pathByAlias = this.getPathByAlias(importPath);
-    if (pathByAlias) {
-      return this.getFileWithExtensionByPathWithoutExtension(pathByAlias);
+  private escapeText(text: string): string {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+  }
+
+  /**
+   * Checks if a file is a lib or not.
+   */
+  private isFilePathALib(filePath: string): boolean {
+    const rootFilePath = filePath.substring(0, filePath.indexOf('/'));
+    return fs.existsSync(path.resolve(ROOT_DIRECTORY, 'node_modules', rootFilePath));
+  }
+
+  /**
+   * Checks if a file path is relative or not.
+   */
+  private isFilePathRelative(filePath: string): boolean {
+    return filePath.startsWith('.');
+  }
+
+  /**
+   * Returns the path by alias using the TypeScript config, if it exists.
+   */
+  private resolvePathByAlias(filePath: string): string | undefined {
+    for (const alias of Object.keys(this.typescriptConfig.compilerOptions.paths)) {
+      const escapedAlias = this.escapeText(alias);
+      if (escapedAlias.match(filePath)) {
+        const aliasPath = 
+          this.typescriptConfig.compilerOptions.paths[alias][0];
+        return aliasPath.replace(alias, filePath);
+      }
     }
-    return this.getFileWithExtensionByPathWithoutExtension(
-      path.join(path.dirname(relativeFile), importPath)
+  }
+
+  /**
+   * Resolves a module path to a file path relative to the root directory.
+   */
+  private resolveModulePathToFilePath(modulePath: string, relativeFilePath: string): string | undefined {
+    if (!this.isFilePathRelative(modulePath) && this.isFilePathALib(modulePath)) return;
+    const pathByAlias = this.resolvePathByAlias(modulePath);
+    if (pathByAlias) return pathByAlias;
+    return path.join(path.dirname(relativeFilePath), modulePath);
+  }
+
+  /**
+   * Extracts the depedencies from the given TypeScript or Javascript file.
+   */
+  private extractDepedenciesFromTypescriptOrJavascriptFile(
+    filePath: string
+  ): string[] {
+    const sourceFile = this.typescriptHost.getSourceFile(
+      filePath, 
+      ts.ScriptTarget.ES2020
     );
-  }
-
-  /**
-   * Finds the file depedency by the given selector.
-   */
-  private findSelectorDepedency(selector: string): string | undefined {
-    for (const filePath of Object.keys(this.angularInformationMapping)) {
-      const fileAngularInformation = this.angularInformationMapping[filePath];
-      for (const angularInformation of fileAngularInformation) {
-        if (
-          (angularInformation.type === 'component' ||
-            angularInformation.type === 'directive') &&
-          angularInformation.selector === selector
-        ) {
-          return filePath;
-        }
-      }
+    if (!sourceFile) {
+      throw new Error(`Failed to read source file: ${filePath}.`);
     }
-  }
-
-  /**
-   * Finds the file depedencies that corresponds to the given attributes.
-   */
-  private findAttributesDepedencies(
-    attributes: Record<string, string>
-  ): string[] | undefined {
-    const depedencies: string[] = [];
-    for (const attribute of Object.keys(attributes)) {
-      const selectorDepedency = this.findSelectorDepedency(attribute);
-      if (selectorDepedency) {
-        depedencies.push(selectorDepedency);
-      }
-    }
-
-    return depedencies;
-  }
-
-  /**
-   * Finds the pipe depedency that corresponds to the given expression.
-   */
-  private findPipeDepedency(expression: string): string | undefined {
-    if (!expression.includes('|')) return;
-    const pipeFunction = expression.split('|')[1].split(':')[0].trim();
-    for (const filePath of Object.keys(this.angularInformationMapping)) {
-      const fileAngularInformation = this.angularInformationMapping[filePath];
-      for (const angularInformation of fileAngularInformation) {
-        if (
-          angularInformation.type === 'pipe' &&
-          angularInformation.selector === pipeFunction
-        ) {
-          return filePath;
-        }
-      }
-    }
-  }
-
-  /**
-   * Gets the file path by its class name if it exists.
-   */
-  private getFileByClassName(className: string): string | undefined {
-    for (const filePath of Object.keys(this.angularInformationMapping)) {
-      for (const angularInformation of this.angularInformationMapping[
-        filePath
-      ]) {
-        if (
-          angularInformation.type != 'none' &&
-          angularInformation.class === className
-        ) {
-          return filePath;
-        }
-      }
-    }
-  }
-
-  /**
-   * Extracts the depedencies from the file.
-   */
-  public extractDepedencies(): string[] {
+    
+    const fileAngularInformations =
+      this.fileAngularInformationsMapping[filePath];
     const fileDepedencies: string[] = [];
-    if (this.fileType === 'ts' || this.fileType === 'js') {
-      const sourceFile = this.tsHost.getSourceFile(
-        this.filePath,
-        ts.ScriptTarget.ES2020
-      );
-      if (!sourceFile) return [];
 
-      const angularInformations =
-        this.angularInformationMapping[this.filePath];
-
-      // If the file is a module, we need to add the components that are entryComponents as depedencies
-      // and ignore the rest of the imports.
-      if (angularInformations[0].type === 'module') {
-        for (const entryComponent of angularInformations[0]
-          .entryComponents) {
-          const entryComponentFilePath =
-            this.getFileByClassName(entryComponent);
-          if (entryComponentFilePath) {
-            fileDepedencies.push(entryComponentFilePath);
+    if (!fileAngularInformations.some((info) => info.type === 'module')) {
+      sourceFile.forEachChild((node) => {
+        if (ts.isImportDeclaration(node)) {
+          const modulePath = 
+            resolveExpressionIntoString(node.moduleSpecifier.getText(sourceFile));
+          const resolvedModulePath = this.resolveModulePathToFilePath(
+            modulePath, filePath);
+          if (resolvedModulePath) {
+            fileDepedencies.push(resolvedModulePath);
           }
         }
-      } else {
-        sourceFile.forEachChild(node => {
-          if (ts.isImportDeclaration(node)) {
-            const moduleSpecifier = node.moduleSpecifier.getText(sourceFile);
-
-            const resolvedImportPath = this.resolveGenericImportPathToRoot(
-              resolveExpressionIntoString(moduleSpecifier),
-              this.filePath
-            );
-            if (resolvedImportPath) {
-              fileDepedencies.push(resolvedImportPath);
-            }
-          }
-          if (ts.isExpressionStatement(node)) {
-            if (!ts.isCallExpression(node.expression)) return;
-            if (node.expression.expression.getText(sourceFile) !== 'require')
-              return;
-            const importArgument =
-              node.expression.arguments[0].getText(sourceFile);
-            const resolvedImportPath = this.resolveGenericImportPathToRoot(
-              resolveExpressionIntoString(importArgument),
-              this.filePath
-            );
-            if (resolvedImportPath) {
-              fileDepedencies.push(resolvedImportPath);
-            }
-          }
-        });
-      }
-
-      // If the file is a component or directive and has a templateUrl, we need to add it as a depedency.
-      for (const angularInformation of angularInformations) {
-        if (
-          (angularInformation.type === 'component' ||
-            angularInformation.type === 'directive') &&
-          angularInformation.templateUrl
-        ) {
-          const resolvedTemplateUrlFilePath =
-            this.resolveGenericImportPathToRoot(
-              angularInformation.templateUrl,
-              this.filePath
-            );
-          if (resolvedTemplateUrlFilePath) {
-            fileDepedencies.push(resolvedTemplateUrlFilePath);
+        if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression)) {
+          if (node.expression.expression.getText(sourceFile) !== 'require') return;
+          const modulePath = 
+            resolveExpressionIntoString(node.expression.arguments[0].getText(sourceFile));
+          const resolvedModulePath = this.resolveModulePathToFilePath(
+            modulePath, filePath);
+          if (resolvedModulePath) {
+            fileDepedencies.push(resolvedModulePath);
           }
         }
-      }
-
-      return fileDepedencies;
-    } else if (this.fileType === 'html') {
-      const fileContent = fs.readFileSync(this.filePath, 'utf8');
-      const that = this;
-      const htmlParser = new HtmlParser({
-        onopentag(name: string, attributes: Record<string, string>) {
-          const selectorDepedency = that.findSelectorDepedency(name);
-          if (selectorDepedency) {
-            fileDepedencies.push(selectorDepedency);
-          }
-          const attributesDepedencies =
-            that.findAttributesDepedencies(attributes);
-          if (attributesDepedencies) {
-            fileDepedencies.push(...attributesDepedencies);
-          }
-          for (const attributeValue of Object.values(attributes)) {
-            const pipeDepedency = that.findPipeDepedency(attributeValue);
-            if (pipeDepedency) {
-              fileDepedencies.push(pipeDepedency);
-            }
-          }
-        },
-        ontext(text: string) {
-          const pipeDepedency = that.findPipeDepedency(text);
-          if (pipeDepedency) {
-            fileDepedencies.push(pipeDepedency);
-          }
-          if (text.includes('@load')) {
-            const loadFunctions = text
-              .split('\n')
-              .filter(line => line.includes('@load'));
-            for (const loadFunction of loadFunctions) {
-              const args = loadFunction.substring(
-                loadFunction.indexOf('(') + 1,
-                loadFunction.indexOf(')')
-              );
-              const loadPath = resolveExpressionIntoString(args.split(',')[0]);
-              const resolvedLoadPath = that.resolveGenericImportPathToRoot(
-                loadPath,
-                this.filePath
-              );
-              if (resolvedLoadPath) {
-                fileDepedencies.push(resolvedLoadPath);
-              }
-            }
-          }
-        },
       });
 
-      htmlParser.write(fileContent);
-      htmlParser.end();
+      for (const fileAngularInformation of fileAngularInformations) {
+        if (
+          fileAngularInformation.type === 'component'
+        ) {
+          fileDepedencies.push(fileAngularInformation.templateUrl);
+        }
+      }
     }
+
     return Array.from(new Set(fileDepedencies));
   }
-}
+
+  /**
+   * Extracts the depedencies from the given HTML file.
+   */
+  private extractDepedenciesFromHTMLFile(filePath: string): string[] {
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    const document = cheerio.load(fileContent);
+    document('*').children().each((_, element) => {
+      for (const [attributeName, attributeValue] of Object.entries(element.attribs)) {
+        if (
+          (attributeName.startsWith('[') && attributeName.endsWith(']')) ||
+          (attributeName.startsWith('(') && attributeName.endsWith(')'))
+        ) {
+          document(element).removeAttr(attributeName);
+          document(element).attr(attributeName.slice(1, -1), attributeValue);
+        }
+      }
+    });
+
+    const fileDepedencies: string[] = [];
+    for (
+      const [searchingFilePath, fileAngularInformations] of 
+      Object.entries(this.fileAngularInformationsMapping)
+    ) {
+      for (const fileAngularInformation of fileAngularInformations) {
+        if (fileAngularInformation.type === 'component' || fileAngularInformation.type === 'directive') {
+          const elementIsPresent = 
+            document(fileAngularInformation.selector).length > 0;
+          if (elementIsPresent) {
+            fileDepedencies.push(searchingFilePath);
+          }
+        }
+      }
+    }
+
+    return Array.from(new Set(fileDepedencies));
+  }
+
+  /**
+   * Gets the property value by its name from the given expression.
+   */
+  private getPropertyValueByNameFromExpression(
+    expression: ts.Expression,
+    propertyName: string,
+    sourceFile: ts.SourceFile
+  ): string | undefined {
+    if (!ts.isObjectLiteralExpression(expression)) return;
+    for (const property of expression.properties) {
+      if (!ts.isPropertyAssignment(property)) continue;
+      if (ts.isIdentifier(property.name) && property.name.getText(sourceFile) === propertyName) {
+        return resolveExpressionIntoString(property.initializer.getText(sourceFile));
+      }
+    }
+  }
+
+  /**
+   * Extracts the dependencies from the given file path.
+   */
+  public extractDepedenciesFromFile(filePath: string): string[] {
+    const fileExtension = path.extname(filePath);
+    if (fileExtension === '.ts' || fileExtension === '.js') {
+      return this.extractDepedenciesFromTypescriptOrJavascriptFile(filePath);
+    } else if (fileExtension === '.html') {
+      return this.extractDepedenciesFromHTMLFile(filePath);
+    } else {
+      throw new Error(`Unsupported file extension: ${fileExtension}.`);
+    }
+  }
+
+  /**
+   * Extracts the Angular informations from the given file path.
+   */
+  public extractAngularInformationsFromFile(filePath: string): AngularInformation[] {
+    const sourceFile = this.typescriptHost.getSourceFile(
+      filePath,
+      ts.ScriptTarget.ES2020
+    );
+    if (!sourceFile) {
+      throw new Error(`Failed to read source file: ${filePath}.`);
+    }
+
+    const fileAngularInformations: AngularInformation[] = [];
+    sourceFile.forEachChild((node) => {
+      if (!ts.isClassDeclaration(node) || !node.decorators || !node.name) return;
+      for (const decorator of node.decorators) {
+        if (!ts.isCallExpression(decorator.expression)) continue;
+        const decoratorText =
+          decorator.expression.expression.getText(sourceFile);
+        const className = node.name.getText(sourceFile);
+        if (decoratorText === 'NgModule') {
+          fileAngularInformations.push({
+            type: 'module',
+            className
+          });
+        } else if (decoratorText === 'Component') {
+          const selectorText = this.getPropertyValueByNameFromExpression(
+            decorator.expression.arguments[0], 'selector', sourceFile
+          );
+          const templateUrlText = this.getPropertyValueByNameFromExpression(
+            decorator.expression.arguments[0], 'templateUrl', sourceFile
+          );
+          if (!selectorText || !templateUrlText) continue;
+          const resolvedTemplateUrl = this.resolveModulePathToFilePath(
+            templateUrlText, filePath
+          );
+          if (!resolvedTemplateUrl) continue;
+          fileAngularInformations.push({
+            type: 'component',
+            selector: selectorText,
+            templateUrl: resolvedTemplateUrl,
+            className
+          });
+        } else if (decoratorText === 'Directive' || decoratorText === 'Pipe') {
+          const selectorText = this.getPropertyValueByNameFromExpression(
+            decorator.expression.arguments[0], 'selector', sourceFile
+          );
+          if (!selectorText) continue;
+          fileAngularInformations.push({
+            type: decoratorText === 'Directive' ? 'directive' : 'pipe',
+            selector: selectorText,
+            className
+          });
+        }
+      }
+    });
+
+    return fileAngularInformations;
+  }
+};
 
 class DepedencyGraphGenerator {
-  tsHost: ts.CompilerHost;
-  tsConfig: any;
-  javascriptAndTypescriptFiles: string[];
-  htmlFiles: string[];
+  typescriptHost: ts.CompilerHost;
+  typescriptConfig: any;
+  files: string[];
 
-  constructor(tsConfigPath: string) {
-    this.tsConfig = this.readTSConfig(tsConfigPath);
-    this.tsHost = ts.createCompilerHost(this.tsConfig);
+  constructor(typescriptConfigPath: string) {
+    this.typescriptConfig = this.readTypescriptConfig(typescriptConfigPath);
+    this.typescriptHost = ts.createCompilerHost(this.typescriptConfig);
 
-    this.javascriptAndTypescriptFiles = this.tsHost.readDirectory!(
-      ROOT,
-      ['.ts', '.js'],
+    this.files = this.typescriptHost.readDirectory!(
+      ROOT_DIRECTORY,
+      ['.ts', '.js', '.html'],
       EXCLUSIONS,
       []
     ).reduce((acc: string[], filePath: string) => {
       if (!filePath.endsWith('.spec.ts') && !filePath.endsWith('.spec.js')) {
-        acc.push(this.getRelativePathToRoot(filePath));
+        acc.push(path.relative(ROOT_DIRECTORY, filePath));
       }
-      return acc;
-    }, []);
-
-    this.htmlFiles = this.tsHost.readDirectory!(
-      ROOT,
-      ['.html'],
-      EXCLUSIONS,
-      []
-    ).reduce((acc: string[], filePath: string) => {
-      acc.push(this.getRelativePathToRoot(filePath));
       return acc;
     }, []);
   }
 
   /**
-   * Reads the tsconfig file and returns the parsed JSON.
+   * Reads the tsconfig file and returns the parsed configuration.
    */
-  private readTSConfig = (tsConfigPath: string): any => {
-    const tsConfig = ts.readConfigFile(tsConfigPath, ts.sys.readFile);
-    if (tsConfig.error) {
-      throw tsConfig.error;
-    }
-    return tsConfig.config;
-  };
-
-  /*
-   * Returns the relative path to the root directory.
-   */
-  private getRelativePathToRoot = (filePath: string) => {
-    return path.relative(ROOT, filePath);
-  };
-
-  /**
-   * Gets the angular information of the files.
-   */
-  private getAngularInformationMapping(): Record<string, AngularInformation[]> {
-    const angularInformationMapping: Record<string, AngularInformation[]> = {};
-    for (const filePath of this.javascriptAndTypescriptFiles) {
-      const sourceFile = this.tsHost.getSourceFile(
-        filePath,
-        ts.ScriptTarget.ES2020
+  private readTypescriptConfig(typescriptConfigPath: string): any {
+    const typescriptConfig = ts.readConfigFile(typescriptConfigPath, ts.sys.readFile);
+    if (typescriptConfig.error) {
+      throw new Error(
+        `Failed to read TypeScript configuration: ${typescriptConfigPath}.`
       );
-      if (!sourceFile) continue;
-
-      angularInformationMapping[filePath] = [];
-      sourceFile.forEachChild(node => {
-        if (!ts.isClassDeclaration(node)) {
-          return;
-        }
-        if (!node.decorators) {
-          return;
-        }
-        for (const decorator of node.decorators) {
-          if (!ts.isCallExpression(decorator.expression)) {
-            return;
-          }
-          const decoratorText =
-            decorator.expression.expression.getText(sourceFile);
-          if (
-            !(
-              decoratorText === 'Component' ||
-              decoratorText === 'Directive' ||
-              decoratorText === 'NgModule' ||
-              decoratorText === 'Pipe'
-            )
-          ) {
-            return;
-          }
-
-          const getPropertyInArgumentByText = (
-            arg: ts.Expression,
-            prop: string
-          ): string | undefined => {
-            if (ts.isObjectLiteralExpression(arg)) {
-              for (const property of arg.properties) {
-                if (
-                  ts.isPropertyAssignment(property) &&
-                  property.name.getText(sourceFile) === prop
-                ) {
-                  return property.initializer.getText(sourceFile);
-                }
-              }
-            }
-          };
-
-          const className = node.name?.getText(sourceFile) || '';
-          if (decoratorText === 'NgModule') {
-            const entryComponentsText = getPropertyInArgumentByText(
-              decorator.expression.arguments[0],
-              'entryComponents'
-            );
-            angularInformationMapping[filePath].push({
-              type: 'module',
-              entryComponents: entryComponentsText
-                ? entryComponentsText
-                    .slice(1, -1)
-                    .split(',')
-                    .map((entryComponent: string) => entryComponent.trim())
-                    .filter((entryComponent: string) => entryComponent !== '')
-                : [],
-              class: className,
-            });
-          } else if (
-            decoratorText === 'Component' ||
-            decoratorText === 'Directive'
-          ) {
-            const selectorText =
-              getPropertyInArgumentByText(
-                decorator.expression.arguments[0],
-                'selector'
-              );
-            const templateUrlText =
-              getPropertyInArgumentByText(
-                decorator.expression.arguments[0],
-                'templateUrl'
-              );
-            angularInformationMapping[filePath].push({
-              type: decoratorText.toLowerCase() as AngularCommonInformation['type'],
-              selector: selectorText && resolveExpressionIntoString(selectorText),
-              class: className,
-              templateUrl: templateUrlText && resolveExpressionIntoString(templateUrlText),
-            });
-          } else if (decoratorText === 'Pipe') {
-            const selectorText =
-              getPropertyInArgumentByText(
-                decorator.expression.arguments[0],
-                'name'
-              );
-            angularInformationMapping[filePath].push({
-              type: 'pipe',
-              selector: selectorText && resolveExpressionIntoString(selectorText),
-              class: className,
-            });
-          }
-        }
-      });
-
-      // If the file doesn't have any Angular information, we add a 'none' type.
-      if (!angularInformationMapping[filePath].length) {
-        angularInformationMapping[filePath].push({type: 'none'});
-      }
     }
-    return angularInformationMapping;
+    return typescriptConfig.config;
   }
 
   /**
-   * Generates the file depedencies mapping.
+   * Gets the angular informations of the files.
    */
-  private generateFileDepedenciesMapping(
-    angularInformationMapping: Record<string, AngularInformation[]>
-  ): Record<string, string[]> {
-    const allFiles = [...this.javascriptAndTypescriptFiles, ...this.htmlFiles];
-    const fileDepedenciesMapping: Record<string, string[]> = {};
-    for (const filePath of allFiles) {
+  private getFileAngularInformationsMapping(): Record<string, AngularInformation[]> {
+    const fileAngularInformationsMapping: Record<string, AngularInformation[]> = {};
+    for (const filePath of this.files) {
       const depedencyExtractor = new DepedencyExtractor(
-        filePath,
-        angularInformationMapping,
-        this.tsHost,
-        this.tsConfig
+        this.typescriptHost,
+        this.typescriptConfig,
+        fileAngularInformationsMapping
       );
-      fileDepedenciesMapping[filePath] =
-        depedencyExtractor.extractDepedencies();
+      fileAngularInformationsMapping[filePath] = depedencyExtractor.extractAngularInformationsFromFile(filePath); 
     }
-    return fileDepedenciesMapping;
+    
+    return fileAngularInformationsMapping;
   }
 
   /**
    * Generates the depedency graph.
    */
-  public generateDepedencyGraph(
-    generateFile: boolean = true
-  ): Record<string, string[]> {
-    const angularInformationMapping = this.getAngularInformationMapping();
-    const fileDepedenciesMapping = this.generateFileDepedenciesMapping(
-      angularInformationMapping
+  public generateDepedencyGraph(): Record<string, string[]> {
+    const fileAngularInformationsMapping = this.getFileAngularInformationsMapping();
+    const depedencyExtractor = new DepedencyExtractor(
+      this.typescriptHost,
+      this.typescriptConfig,
+      fileAngularInformationsMapping
     );
-    fs.writeFileSync(
-      path.join(ROOT, 'dependency-graph.json'),
-      JSON.stringify(fileDepedenciesMapping, null, 2)
-    );
-    return {};
-  }
-}
 
-new DepedencyGraphGenerator(path.resolve(ROOT, 'tsconfig.json')).generateDepedencyGraph();
+    const depedencyGraph: Record<string, string[]> = {};
+    for (const filePath of this.files) {
+      depedencyGraph[filePath] = depedencyExtractor.extractDepedenciesFromFile(filePath);
+    }
+    return depedencyGraph;
+  }
+};
+
+const depedencyGraphGenerator = new DepedencyGraphGenerator(
+  path.resolve(ROOT_DIRECTORY, 'tsconfig.json')
+);
+
+const depedencyGraph = depedencyGraphGenerator.generateDepedencyGraph();
+fs.writeFileSync(
+  path.resolve(ROOT_DIRECTORY, 'depedency-graph.json'),
+  JSON.stringify(depedencyGraph, null, 2)
+);
