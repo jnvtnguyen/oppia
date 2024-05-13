@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -43,10 +54,24 @@ var EXCLUSIONS = [
     'core/tests/data',
     'core/tests/load_tests',
     'core/tests/release_sources',
-    'core/tests/services_source',
+    'core/tests/services_sources',
     'core/tests/webdriverio',
     'core/tests/webdriverio_desktop',
-    'core/tests/webdriverio_utils'
+    'core/tests/webdriverio_utils',
+    'core/tests/depedency-graph-generator.ts'
+];
+var WEBPACK_DEFINED_ALIASES = {
+    'assets/constants': ['assets/constants.ts'],
+    'assets/rich_text_component_definitions': ['assets/rich_text_components_definitions.ts'],
+    'assets': ['assets'],
+    'core/templates': ['core/templates'],
+    'extensions': ['extensions'],
+    'third_party': ['third_party']
+};
+var BUILT_IN_NODE_MODULES = [
+    'fs',
+    'path',
+    'console'
 ];
 var ROOT_DIRECTORY = path_1["default"].resolve(__dirname, '../../');
 var resolveExpressionIntoString = function (expression) {
@@ -81,7 +106,14 @@ var DepedencyExtractor = /** @class */ (function () {
      * Checks if a file is a lib or not.
      */
     DepedencyExtractor.prototype.isFilePathALib = function (filePath) {
-        var rootFilePath = filePath.substring(0, filePath.indexOf('/'));
+        var rootFilePath = filePath;
+        if (filePath.includes('/')) {
+            rootFilePath = filePath.substring(0, filePath.indexOf('/'));
+        }
+        if (BUILT_IN_NODE_MODULES.includes(rootFilePath)) {
+            return true;
+        }
+        ;
         return fs_1["default"].existsSync(path_1["default"].resolve(ROOT_DIRECTORY, 'node_modules', rootFilePath));
     };
     /**
@@ -94,12 +126,13 @@ var DepedencyExtractor = /** @class */ (function () {
      * Returns the path by alias using the TypeScript config, if it exists.
      */
     DepedencyExtractor.prototype.resolvePathByAlias = function (filePath) {
-        for (var _i = 0, _a = Object.keys(this.typescriptConfig.compilerOptions.paths); _i < _a.length; _i++) {
-            var alias = _a[_i];
-            var formattedAlias = alias.replace('/*', '');
-            if (filePath.startsWith(formattedAlias)) {
-                var fullAliasPath = this.typescriptConfig.compilerOptions.paths[alias][0].replace('/*', '');
-                return filePath.replace(formattedAlias, fullAliasPath);
+        var aliases = __assign(__assign({}, this.typescriptConfig.compilerOptions.paths), WEBPACK_DEFINED_ALIASES);
+        for (var _i = 0, _a = Object.keys(aliases); _i < _a.length; _i++) {
+            var aliasPath = _a[_i];
+            var formattedAliasPath = aliasPath.replace('/*', '');
+            if (filePath.startsWith(formattedAliasPath)) {
+                var fullAliasPath = aliases[aliasPath][0].replace('/*', '');
+                return filePath.replace(formattedAliasPath, fullAliasPath);
             }
         }
     };
@@ -107,14 +140,19 @@ var DepedencyExtractor = /** @class */ (function () {
      * Resolves a module path to a file path relative to the root directory.
      */
     DepedencyExtractor.prototype.resolveModulePathToFilePath = function (modulePath, relativeFilePath) {
-        if (!this.isFilePathRelative(modulePath) && this.isFilePathALib(modulePath))
+        if (!this.isFilePathRelative(modulePath) && this.isFilePathALib(modulePath)) {
             return;
+        }
         var pathByAlias = this.resolvePathByAlias(modulePath);
         if (pathByAlias) {
             return this.getFilePathWithExtension(pathByAlias);
         }
         if (this.isFilePathRelative(modulePath)) {
             return this.getFilePathWithExtension(path_1["default"].join(path_1["default"].dirname(relativeFilePath), modulePath));
+        }
+        else {
+            return this.getFilePathWithExtension(path_1["default"].resolve(ROOT_DIRECTORY, 'core/templates', modulePath)
+                .replace(ROOT_DIRECTORY + "/", ''));
         }
     };
     /**
@@ -140,23 +178,27 @@ var DepedencyExtractor = /** @class */ (function () {
         sourceFile.forEachChild(function (node) {
             var modulePath;
             if (typescript_1["default"].isImportDeclaration(node)) {
-                modulePath =
-                    resolveExpressionIntoString(node.moduleSpecifier.getText(sourceFile));
+                modulePath = resolveExpressionIntoString(node.moduleSpecifier.getText(sourceFile));
             }
-            if (typescript_1["default"].isExpressionStatement(node) && typescript_1["default"].isCallExpression(node.expression)) {
-                if (node.expression.expression.getText(sourceFile) !== 'require')
+            if (typescript_1["default"].isExpressionStatement(node) &&
+                typescript_1["default"].isCallExpression(node.expression)) {
+                if (node.expression.expression.getText(sourceFile) !== 'require') {
                     return;
-                modulePath =
-                    resolveExpressionIntoString(node.expression.arguments[0].getText(sourceFile));
+                }
+                modulePath = resolveExpressionIntoString(node.expression.arguments[0].getText(sourceFile));
             }
             if (!modulePath)
                 return;
             var resolvedModulePath = _this.resolveModulePathToFilePath(modulePath, filePath);
             if (!resolvedModulePath)
                 return;
+            if (!fs_1["default"].existsSync(path_1["default"].join(ROOT_DIRECTORY, resolvedModulePath))) {
+                throw new Error("The module with path: " + resolvedModulePath + ", does not exist, occured at " + filePath + ".");
+            }
             if (_this.doesFileHaveModuleDeclaration(filePath) &&
-                !_this.doesFileHaveModuleDeclaration(resolvedModulePath))
+                !_this.doesFileHaveModuleDeclaration(resolvedModulePath)) {
                 return;
+            }
             fileDepedencies.push(resolvedModulePath);
         });
         for (var _i = 0, fileAngularInformations_1 = fileAngularInformations; _i < fileAngularInformations_1.length; _i++) {
@@ -173,7 +215,9 @@ var DepedencyExtractor = /** @class */ (function () {
     DepedencyExtractor.prototype.extractDepedenciesFromHTMLFile = function (filePath) {
         var fileContent = fs_1["default"].readFileSync(filePath, 'utf8');
         var document = cheerio.load(fileContent);
-        document('*').children().each(function (_, element) {
+        document('*')
+            .children()
+            .each(function (_, element) {
             for (var _i = 0, _a = Object.entries(element.attribs); _i < _a.length; _i++) {
                 var _b = _a[_i], attributeName = _b[0], attributeValue = _b[1];
                 if ((attributeName.startsWith('[') && attributeName.endsWith(']')) ||
@@ -188,7 +232,8 @@ var DepedencyExtractor = /** @class */ (function () {
             var _b = _a[_i], searchingFilePath = _b[0], fileAngularInformations = _b[1];
             for (var _c = 0, fileAngularInformations_2 = fileAngularInformations; _c < fileAngularInformations_2.length; _c++) {
                 var fileAngularInformation = fileAngularInformations_2[_c];
-                if (fileAngularInformation.type === 'component' || fileAngularInformation.type === 'directive') {
+                if (fileAngularInformation.type === 'component' ||
+                    fileAngularInformation.type === 'directive') {
                     var elementIsPresent = document(fileAngularInformation.selector).length > 0;
                     if (!elementIsPresent)
                         continue;
@@ -208,7 +253,8 @@ var DepedencyExtractor = /** @class */ (function () {
             var property = _a[_i];
             if (!typescript_1["default"].isPropertyAssignment(property))
                 continue;
-            if (typescript_1["default"].isIdentifier(property.name) && property.name.getText(sourceFile) === propertyName) {
+            if (typescript_1["default"].isIdentifier(property.name) &&
+                property.name.getText(sourceFile) === propertyName) {
                 return resolveExpressionIntoString(property.initializer.getText(sourceFile));
             }
         }
@@ -225,7 +271,7 @@ var DepedencyExtractor = /** @class */ (function () {
             return this.extractDepedenciesFromHTMLFile(filePath);
         }
         else {
-            throw new Error("Unsupported file extension: " + fileExtension + ".");
+            return [];
         }
     };
     /**
@@ -284,15 +330,12 @@ var DepedencyExtractor = /** @class */ (function () {
     };
     return DepedencyExtractor;
 }());
-;
 var DepedencyGraphGenerator = /** @class */ (function () {
     function DepedencyGraphGenerator(typescriptConfigPath) {
         this.typescriptConfig = this.readTypescriptConfig(typescriptConfigPath);
         this.typescriptHost = typescript_1["default"].createCompilerHost(this.typescriptConfig);
-        this.files = this.typescriptHost.readDirectory(ROOT_DIRECTORY, ['.ts', '.js', '.html'], EXCLUSIONS, []).reduce(function (acc, filePath) {
-            if (!filePath.endsWith('.spec.ts') && !filePath.endsWith('.spec.js')) {
-                acc.push(path_1["default"].relative(ROOT_DIRECTORY, filePath));
-            }
+        this.files = this.typescriptHost.readDirectory(ROOT_DIRECTORY, ['.ts', '.js', '.html', '.md'], EXCLUSIONS, []).reduce(function (acc, filePath) {
+            acc.push(path_1["default"].relative(ROOT_DIRECTORY, filePath));
             return acc;
         }, []);
     }
@@ -314,7 +357,8 @@ var DepedencyGraphGenerator = /** @class */ (function () {
         for (var _i = 0, _a = this.files; _i < _a.length; _i++) {
             var filePath = _a[_i];
             var depedencyExtractor = new DepedencyExtractor(this.typescriptHost, this.typescriptConfig, fileAngularInformationsMapping);
-            fileAngularInformationsMapping[filePath] = depedencyExtractor.extractAngularInformationsFromFile(filePath);
+            fileAngularInformationsMapping[filePath] =
+                depedencyExtractor.extractAngularInformationsFromFile(filePath);
         }
         return fileAngularInformationsMapping;
     };
@@ -327,13 +371,13 @@ var DepedencyGraphGenerator = /** @class */ (function () {
         var depedencyGraph = {};
         for (var _i = 0, _a = this.files; _i < _a.length; _i++) {
             var filePath = _a[_i];
-            depedencyGraph[filePath] = depedencyExtractor.extractDepedenciesFromFile(filePath);
+            depedencyGraph[filePath] =
+                depedencyExtractor.extractDepedenciesFromFile(filePath);
         }
         return depedencyGraph;
     };
     return DepedencyGraphGenerator;
 }());
-;
 var depedencyGraphGenerator = new DepedencyGraphGenerator(path_1["default"].resolve(ROOT_DIRECTORY, 'tsconfig.json'));
 var depedencyGraph = depedencyGraphGenerator.generateDepedencyGraph();
 fs_1["default"].writeFileSync(path_1["default"].resolve(ROOT_DIRECTORY, 'dependency-graph.json'), JSON.stringify(depedencyGraph, null, 2));

@@ -46,25 +46,30 @@ const EXCLUSIONS = [
   'core/tests/data',
   'core/tests/load_tests',
   'core/tests/release_sources',
-  'core/tests/services_source',
+  'core/tests/services_sources',
   'core/tests/webdriverio',
   'core/tests/webdriverio_desktop',
   'core/tests/webdriverio_utils',
+  'core/tests/depedency-graph-generator.ts'
 ];
 
-const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
-
-const resolveExpressionIntoString = (expression: string): string => {
-  if (expression.includes('+')) {
-    const parts = expression.split('+');
-    return parts
-      .map(part => {
-        return part.trim().slice(1, -1);
-      })
-      .join('');
-  }
-  return expression.slice(1, -1);
+// List of Webpack Definied Aliases defined in webpack.config.ts.
+const WEBPACK_DEFINED_ALIASES = {
+  'assets/constants': ['assets/constants.ts'],
+  'assets/rich_text_component_definitions': ['assets/rich_text_components_definitions.ts'],
+  'assets': ['assets'],
+  'core/templates': ['core/templates'],
+  'extensions': ['extensions'],
+  'third_party': ['third_party']
 };
+
+// List of built in node modules.
+const BUILT_IN_NODE_MODULES = [
+  'fs',
+  'path',
+  'console'
+];
+const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
 
 class DepedencyExtractor {
   typescriptHost: ts.CompilerHost;
@@ -81,6 +86,23 @@ class DepedencyExtractor {
     this.fileAngularInformationsMapping = fileAngularInformationsMapping;
   }
 
+  /**
+   * Resolves a TypeScript/JavaScript expression into a regular string.
+   */
+  private resolveExpressionIntoString = (expression: string): string => {
+    // If the expression contains a + then add the two strings together.
+    if (expression.includes('+')) {
+      const parts = expression.split('+');
+      return parts
+        .map(part => {
+          return part.trim().slice(1, -1);
+        })
+        .join('');
+    }
+    // Since the expression is a string, remove the quotes around it.
+    return expression.slice(1, -1);
+  };
+
   /*
    * Provided a file path without an extension, it returns the file path with the
    * extension '.ts' or '.js' if it exists.
@@ -95,7 +117,13 @@ class DepedencyExtractor {
    * Checks if a file is a lib or not.
    */
   private isFilePathALib(filePath: string): boolean {
-    const rootFilePath = filePath.substring(0, filePath.indexOf('/'));
+    let rootFilePath = filePath;
+    if (filePath.includes('/')) {
+      rootFilePath = filePath.substring(0, filePath.indexOf('/'));
+    }
+    if (BUILT_IN_NODE_MODULES.includes(rootFilePath)) {
+      return true;
+    };
     return fs.existsSync(
       path.resolve(ROOT_DIRECTORY, 'node_modules', rootFilePath)
     );
@@ -112,15 +140,13 @@ class DepedencyExtractor {
    * Returns the path by alias using the TypeScript config, if it exists.
    */
   private resolvePathByAlias(filePath: string): string | undefined {
-    for (const alias of Object.keys(
-      this.typescriptConfig.compilerOptions.paths
-    )) {
-      const formattedAlias = alias.replace('/*', '');
-      if (filePath.startsWith(formattedAlias)) {
-        const fullAliasPath = this.typescriptConfig.compilerOptions.paths[
-          alias
-        ][0].replace('/*', '');
-        return filePath.replace(formattedAlias, fullAliasPath);
+    const aliases = {...this.typescriptConfig.compilerOptions.paths, ...WEBPACK_DEFINED_ALIASES}
+
+    for (const aliasPath of Object.keys(aliases)) {
+      const formattedAliasPath = aliasPath.replace('/*', '');
+      if (filePath.startsWith(formattedAliasPath)) {
+        const fullAliasPath = aliases[aliasPath][0].replace('/*', '');
+        return filePath.replace(formattedAliasPath, fullAliasPath);
       }
     }
   }
@@ -132,8 +158,9 @@ class DepedencyExtractor {
     modulePath: string,
     relativeFilePath: string
   ): string | undefined {
-    if (!this.isFilePathRelative(modulePath) && this.isFilePathALib(modulePath))
+    if (!this.isFilePathRelative(modulePath) && this.isFilePathALib(modulePath)) {
       return;
+    }
     const pathByAlias = this.resolvePathByAlias(modulePath);
     if (pathByAlias) {
       return this.getFilePathWithExtension(pathByAlias);
@@ -141,6 +168,11 @@ class DepedencyExtractor {
     if (this.isFilePathRelative(modulePath)) {
       return this.getFilePathWithExtension(
         path.join(path.dirname(relativeFilePath), modulePath)
+      );
+    } else {
+      return this.getFilePathWithExtension(
+        path.resolve(ROOT_DIRECTORY, 'core/templates', modulePath)
+          .replace(`${ROOT_DIRECTORY}/`, '')
       );
     }
   }
@@ -176,7 +208,7 @@ class DepedencyExtractor {
     sourceFile.forEachChild(node => {
       let modulePath: string | undefined;
       if (ts.isImportDeclaration(node)) {
-        modulePath = resolveExpressionIntoString(
+        modulePath = this.resolveExpressionIntoString(
           node.moduleSpecifier.getText(sourceFile)
         );
       }
@@ -184,9 +216,10 @@ class DepedencyExtractor {
         ts.isExpressionStatement(node) &&
         ts.isCallExpression(node.expression)
       ) {
-        if (node.expression.expression.getText(sourceFile) !== 'require')
+        if (node.expression.expression.getText(sourceFile) !== 'require') {
           return;
-        modulePath = resolveExpressionIntoString(
+        }
+        modulePath = this.resolveExpressionIntoString(
           node.expression.arguments[0].getText(sourceFile)
         );
       }
@@ -196,11 +229,16 @@ class DepedencyExtractor {
         filePath
       );
       if (!resolvedModulePath) return;
+      if (!fs.existsSync(path.join(ROOT_DIRECTORY, resolvedModulePath))) {
+        throw new Error(
+          `The module with path: ${resolvedModulePath}, does not exist, occured at ${filePath}.`)
+      }
       if (
         this.doesFileHaveModuleDeclaration(filePath) &&
         !this.doesFileHaveModuleDeclaration(resolvedModulePath)
-      )
+      ) {
         return;
+      }
       fileDepedencies.push(resolvedModulePath);
     });
 
@@ -270,7 +308,7 @@ class DepedencyExtractor {
         ts.isIdentifier(property.name) &&
         property.name.getText(sourceFile) === propertyName
       ) {
-        return resolveExpressionIntoString(
+        return this.resolveExpressionIntoString(
           property.initializer.getText(sourceFile)
         );
       }
@@ -287,7 +325,7 @@ class DepedencyExtractor {
     } else if (fileExtension === '.html') {
       return this.extractDepedenciesFromHTMLFile(filePath);
     } else {
-      throw new Error(`Unsupported file extension: ${fileExtension}.`);
+      return [];
     }
   }
 
@@ -373,13 +411,11 @@ class DepedencyGraphGenerator {
 
     this.files = this.typescriptHost.readDirectory!(
       ROOT_DIRECTORY,
-      ['.ts', '.js', '.html'],
+      ['.ts', '.js', '.html', '.md'],
       EXCLUSIONS,
       []
     ).reduce((acc: string[], filePath: string) => {
-      if (!filePath.endsWith('.spec.ts') && !filePath.endsWith('.spec.js')) {
-        acc.push(path.relative(ROOT_DIRECTORY, filePath));
-      }
+      acc.push(path.relative(ROOT_DIRECTORY, filePath));
       return acc;
     }, []);
   }
