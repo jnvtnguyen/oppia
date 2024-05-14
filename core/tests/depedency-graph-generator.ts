@@ -278,7 +278,25 @@ class DepedencyExtractor {
       this.fileAngularInformationsMapping
     )) {
       for (const fileAngularInformation of fileAngularInformations) {
-        if (
+        if (fileAngularInformation.type === 'pipe') {
+          let elementIsPresent = false;
+          document('*')
+            .children()
+            .each((_, element) => {
+              if (document(element).text().includes(fileAngularInformation.selector)) {
+                elementIsPresent = true;
+                return false;
+              }
+              for (const attributeValue of Object.values(element.attribs)) {
+                if (attributeValue.includes(fileAngularInformation.selector)) {
+                  elementIsPresent = true;
+                  return false;
+                }
+              }
+            });
+          if (!elementIsPresent) continue;
+          fileDepedencies.push(searchingFilePath);
+        } else if (
           fileAngularInformation.type === 'component' ||
           fileAngularInformation.type === 'directive'
         ) {
@@ -404,6 +422,8 @@ class DepedencyGraphGenerator {
   typescriptHost: ts.CompilerHost;
   typescriptConfig: any;
   files: string[];
+  dependenciesMapping: Record<string, string[]> = {};
+  dependencyGraph: Record<string, string[]> = {};
 
   constructor(typescriptConfigPath: string) {
     this.typescriptConfig = this.readTypescriptConfig(typescriptConfigPath);
@@ -415,7 +435,12 @@ class DepedencyGraphGenerator {
       EXCLUSIONS,
       []
     ).reduce((acc: string[], filePath: string) => {
-      acc.push(path.relative(ROOT_DIRECTORY, filePath));
+      if (
+        filePath.includes('puppeteer-acceptance-tests') ||
+        (!filePath.endsWith('.spec.ts') && !filePath.endsWith('.spec.js'))
+      ) {
+        acc.push(path.relative(ROOT_DIRECTORY, filePath));
+      }
       return acc;
     }, []);
   }
@@ -459,6 +484,39 @@ class DepedencyGraphGenerator {
   }
 
   /**
+   * Finds the files with the given depedency.
+   */
+  private getFilesWithDepedency(depedencyFilePath: string): string[] {
+    return Object.keys(this.dependenciesMapping).filter(
+      (key) => this.dependenciesMapping[key].includes(depedencyFilePath))
+  }
+
+  /**
+   * Finds the root depedencies for the given file.
+   */
+  private getRootDepedenciesForFile(
+    filePath: string,
+    visited: Set<string> = new Set<string>()
+  ): string[] {
+    if (visited.has(filePath)) {
+      return [];
+    }
+    visited.add(filePath);
+
+    const depedencies = this.getFilesWithDepedency(filePath);
+    if (depedencies.length === 0) {
+      return [filePath];
+    }
+
+    const rootFiles: string[] = [];
+    for (const depedency of depedencies) {
+      rootFiles.push(...this.getRootDepedenciesForFile(depedency, visited));
+    }
+
+    return rootFiles;
+  }
+
+  /**
    * Generates the depedency graph.
    */
   public generateDepedencyGraph(): Record<string, string[]> {
@@ -470,12 +528,17 @@ class DepedencyGraphGenerator {
       fileAngularInformationsMapping
     );
 
-    const depedencyGraph: Record<string, string[]> = {};
     for (const filePath of this.files) {
-      depedencyGraph[filePath] =
+      this.dependenciesMapping[filePath] =
         depedencyExtractor.extractDepedenciesFromFile(filePath);
     }
-    return depedencyGraph;
+
+    for (const filePath of this.files) {
+       this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(
+        filePath);
+    }
+
+    return this.dependencyGraph;
   }
 }
 
