@@ -50,25 +50,23 @@ const EXCLUSIONS = [
   'core/tests/webdriverio',
   'core/tests/webdriverio_desktop',
   'core/tests/webdriverio_utils',
-  'core/tests/depedency-graph-generator.ts'
+  'core/tests/depedency-graph-generator.ts',
 ];
 
 // List of Webpack Definied Aliases defined in webpack.config.ts.
 const WEBPACK_DEFINED_ALIASES = {
   'assets/constants': ['assets/constants.ts'],
-  'assets/rich_text_component_definitions': ['assets/rich_text_components_definitions.ts'],
-  'assets': ['assets'],
+  'assets/rich_text_component_definitions': [
+    'assets/rich_text_components_definitions.ts',
+  ],
+  assets: ['assets'],
   'core/templates': ['core/templates'],
-  'extensions': ['extensions'],
-  'third_party': ['third_party']
+  extensions: ['extensions'],
+  third_party: ['third_party'],
 };
 
 // List of built in node modules.
-const BUILT_IN_NODE_MODULES = [
-  'fs',
-  'path',
-  'console'
-];
+const BUILT_IN_NODE_MODULES = ['fs', 'path', 'console'];
 const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
 
 class DepedencyExtractor {
@@ -123,7 +121,7 @@ class DepedencyExtractor {
     }
     if (BUILT_IN_NODE_MODULES.includes(rootFilePath)) {
       return true;
-    };
+    }
     return fs.existsSync(
       path.resolve(ROOT_DIRECTORY, 'node_modules', rootFilePath)
     );
@@ -140,7 +138,10 @@ class DepedencyExtractor {
    * Returns the path by alias using the TypeScript config, if it exists.
    */
   private resolvePathByAlias(filePath: string): string | undefined {
-    const aliases = {...this.typescriptConfig.compilerOptions.paths, ...WEBPACK_DEFINED_ALIASES}
+    const aliases = {
+      ...this.typescriptConfig.compilerOptions.paths,
+      ...WEBPACK_DEFINED_ALIASES,
+    };
 
     for (const aliasPath of Object.keys(aliases)) {
       const formattedAliasPath = aliasPath.replace('/*', '');
@@ -158,7 +159,10 @@ class DepedencyExtractor {
     modulePath: string,
     relativeFilePath: string
   ): string | undefined {
-    if (!this.isFilePathRelative(modulePath) && this.isFilePathALib(modulePath)) {
+    if (
+      !this.isFilePathRelative(modulePath) &&
+      this.isFilePathALib(modulePath)
+    ) {
       return;
     }
     const pathByAlias = this.resolvePathByAlias(modulePath);
@@ -171,7 +175,8 @@ class DepedencyExtractor {
       );
     } else {
       return this.getFilePathWithExtension(
-        path.resolve(ROOT_DIRECTORY, 'core/templates', modulePath)
+        path
+          .resolve(ROOT_DIRECTORY, 'core/templates', modulePath)
           .replace(`${ROOT_DIRECTORY}/`, '')
       );
     }
@@ -231,7 +236,8 @@ class DepedencyExtractor {
       if (!resolvedModulePath) return;
       if (!fs.existsSync(path.join(ROOT_DIRECTORY, resolvedModulePath))) {
         throw new Error(
-          `The module with path: ${resolvedModulePath}, does not exist, occured at ${filePath}.`)
+          `The module with path: ${resolvedModulePath}, does not exist, occured at ${filePath}.`
+        );
       }
       if (
         this.doesFileHaveModuleDeclaration(filePath) &&
@@ -283,12 +289,19 @@ class DepedencyExtractor {
           document('*')
             .children()
             .each((_, element) => {
-              if (document(element).text().includes(fileAngularInformation.selector)) {
+              const elementText = document(element).text();
+              if (
+                elementText.includes('|') &&
+                elementText.includes(fileAngularInformation.selector)
+              ) {
                 elementIsPresent = true;
                 return false;
               }
               for (const attributeValue of Object.values(element.attribs)) {
-                if (attributeValue.includes(fileAngularInformation.selector)) {
+                if (
+                  attributeValue.includes('|') &&
+                  attributeValue.includes(fileAngularInformation.selector)
+                ) {
                   elementIsPresent = true;
                   return false;
                 }
@@ -487,8 +500,9 @@ class DepedencyGraphGenerator {
    * Finds the files with the given depedency.
    */
   private getFilesWithDepedency(depedencyFilePath: string): string[] {
-    return Object.keys(this.dependenciesMapping).filter(
-      (key) => this.dependenciesMapping[key].includes(depedencyFilePath))
+    return Object.keys(this.dependenciesMapping).filter(key =>
+      this.dependenciesMapping[key].includes(depedencyFilePath)
+    );
   }
 
   /**
@@ -534,8 +548,7 @@ class DepedencyGraphGenerator {
     }
 
     for (const filePath of this.files) {
-       this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(
-        filePath);
+      this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(filePath);
     }
 
     return this.dependencyGraph;
