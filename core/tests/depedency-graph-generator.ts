@@ -67,6 +67,7 @@ const WEBPACK_DEFINED_ALIASES = {
 
 // List of built in node modules.
 const BUILT_IN_NODE_MODULES = ['fs', 'path', 'console'];
+
 const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
 
 class DepedencyExtractor {
@@ -229,6 +230,7 @@ class DepedencyExtractor {
         );
       }
       if (!modulePath) return;
+
       const resolvedModulePath = this.resolveModulePathToFilePath(
         modulePath,
         filePath
@@ -263,6 +265,8 @@ class DepedencyExtractor {
   private extractDepedenciesFromHTMLFile(filePath: string): string[] {
     const fileContent = fs.readFileSync(filePath, 'utf8');
     const document = cheerio.load(fileContent);
+    // Here we replace any Angular binding attributes with regular attributes
+    // since we cannot select them when there are brackets or parentheses.
     document('*')
       .children()
       .each((_, element) => {
@@ -284,8 +288,8 @@ class DepedencyExtractor {
       this.fileAngularInformationsMapping
     )) {
       for (const fileAngularInformation of fileAngularInformations) {
+        let depedencyIsPresent = false;
         if (fileAngularInformation.type === 'pipe') {
-          let elementIsPresent = false;
           document('*')
             .children()
             .each((_, element) => {
@@ -294,7 +298,7 @@ class DepedencyExtractor {
                 elementText.includes('|') &&
                 elementText.includes(fileAngularInformation.selector)
               ) {
-                elementIsPresent = true;
+                depedencyIsPresent = true;
                 return false;
               }
               for (const attributeValue of Object.values(element.attribs)) {
@@ -302,20 +306,19 @@ class DepedencyExtractor {
                   attributeValue.includes('|') &&
                   attributeValue.includes(fileAngularInformation.selector)
                 ) {
-                  elementIsPresent = true;
+                  depedencyIsPresent = true;
                   return false;
                 }
               }
             });
-          if (!elementIsPresent) continue;
-          fileDepedencies.push(searchingFilePath);
         } else if (
           fileAngularInformation.type === 'component' ||
           fileAngularInformation.type === 'directive'
         ) {
-          const elementIsPresent =
+          depedencyIsPresent =
             document(fileAngularInformation.selector).length > 0;
-          if (!elementIsPresent) continue;
+        }
+        if (depedencyIsPresent) {
           fileDepedencies.push(searchingFilePath);
         }
       }
