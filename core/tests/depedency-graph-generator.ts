@@ -1,7 +1,29 @@
+// Copyright 2024 The Oppia Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Script to generate the dependency graph of the Oppia codebase.
+ */
+
 import ts from 'typescript';
 import path from 'path';
 import fs from 'fs';
 import * as cheerio from 'cheerio';
+import {
+  TypescriptExtractorUtilities,
+  readTypescriptConfig,
+} from './typescript-extractor-utilities';
 
 type BaseAngularInformation = {
   className: string;
@@ -30,7 +52,7 @@ type AngularInformation =
   | AngularDirectiveOrPipeInformation;
 
 // List of directories to exclude from the search.
-const EXCLUSIONS = [
+const SEARCH_EXCLUSIONS = [
   'node_modules',
   'dist',
   'build',
@@ -50,30 +72,35 @@ const EXCLUSIONS = [
   'core/tests/webdriverio',
   'core/tests/webdriverio_desktop',
   'core/tests/webdriverio_utils',
+  'core/tests/puppeteer-acceptance-tests/build',
   'core/tests/depedency-graph-generator.ts',
+  'core/tests/test-url-to-angular-module-matcher.ts',
+  'webpack.common.config.ts',
+  'webpack.common.macros.ts',
+  'webpack.dev.config.ts',
+  'webpack.dev.sourcemap.config.ts',
+  'webpack.prod.config.ts',
+  'webpack.prod.sourcemap.config.ts',
+  'angular-template-style-url-replacer.webpack-loader.js',
 ];
 
-// List of Webpack Definied Aliases defined in webpack.config.ts.
-const WEBPACK_DEFINED_ALIASES = {
-  'assets/constants': ['assets/constants.ts'],
-  'assets/rich_text_component_definitions': [
-    'assets/rich_text_components_definitions.ts',
-  ],
-  assets: ['assets'],
-  'core/templates': ['core/templates'],
-  extensions: ['extensions'],
-  third_party: ['third_party'],
-};
-
-// List of built in node modules.
-const BUILT_IN_NODE_MODULES = ['fs', 'path', 'console'];
+// List of file extensions to to include in the search.
+const SEARCH_FILE_EXTENSIONS = [
+  '.ts',
+  '.js',
+  '.html',
+  '.md',
+  '.css',
+  'CODEOWNERS',
+];
 
 const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
 
-class DepedencyExtractor {
+export class DependencyExtractor {
   typescriptHost: ts.CompilerHost;
   typescriptConfig: any;
   fileAngularInformationsMapping: Record<string, AngularInformation[]>;
+  typescriptExtractorUtilities: TypescriptExtractorUtilities;
 
   constructor(
     typescriptHost: ts.CompilerHost,
@@ -83,104 +110,9 @@ class DepedencyExtractor {
     this.typescriptHost = typescriptHost;
     this.typescriptConfig = typescriptConfig;
     this.fileAngularInformationsMapping = fileAngularInformationsMapping;
-  }
-
-  /**
-   * Resolves a TypeScript/JavaScript expression into a regular string.
-   */
-  private resolveExpressionIntoString = (expression: string): string => {
-    // If the expression contains a + then add the two strings together.
-    if (expression.includes('+')) {
-      const parts = expression.split('+');
-      return parts
-        .map(part => {
-          return part.trim().slice(1, -1);
-        })
-        .join('');
-    }
-    // Since the expression is a string, remove the quotes around it.
-    return expression.slice(1, -1);
-  };
-
-  /*
-   * Provided a file path without an extension, it returns the file path with the
-   * extension '.ts' or '.js' if it exists.
-   */
-  private getFilePathWithExtension = (path: string): string => {
-    if (fs.existsSync(path + '.ts')) return path + '.ts';
-    if (fs.existsSync(path + '.js')) return path + '.js';
-    return path;
-  };
-
-  /**
-   * Checks if a file is a lib or not.
-   */
-  private isFilePathALib(filePath: string): boolean {
-    let rootFilePath = filePath;
-    if (filePath.includes('/')) {
-      rootFilePath = filePath.substring(0, filePath.indexOf('/'));
-    }
-    if (BUILT_IN_NODE_MODULES.includes(rootFilePath)) {
-      return true;
-    }
-    return fs.existsSync(
-      path.resolve(ROOT_DIRECTORY, 'node_modules', rootFilePath)
+    this.typescriptExtractorUtilities = new TypescriptExtractorUtilities(
+      typescriptConfig
     );
-  }
-
-  /**
-   * Checks if a file path is relative or not.
-   */
-  private isFilePathRelative(filePath: string): boolean {
-    return filePath.startsWith('.');
-  }
-
-  /**
-   * Returns the path by alias using the TypeScript config, if it exists.
-   */
-  private resolvePathByAlias(filePath: string): string | undefined {
-    const aliases = {
-      ...this.typescriptConfig.compilerOptions.paths,
-      ...WEBPACK_DEFINED_ALIASES,
-    };
-
-    for (const aliasPath of Object.keys(aliases)) {
-      const formattedAliasPath = aliasPath.replace('/*', '');
-      if (filePath.startsWith(formattedAliasPath)) {
-        const fullAliasPath = aliases[aliasPath][0].replace('/*', '');
-        return filePath.replace(formattedAliasPath, fullAliasPath);
-      }
-    }
-  }
-
-  /**
-   * Resolves a module path to a file path relative to the root directory.
-   */
-  private resolveModulePathToFilePath(
-    modulePath: string,
-    relativeFilePath: string
-  ): string | undefined {
-    if (
-      !this.isFilePathRelative(modulePath) &&
-      this.isFilePathALib(modulePath)
-    ) {
-      return;
-    }
-    const pathByAlias = this.resolvePathByAlias(modulePath);
-    if (pathByAlias) {
-      return this.getFilePathWithExtension(pathByAlias);
-    }
-    if (this.isFilePathRelative(modulePath)) {
-      return this.getFilePathWithExtension(
-        path.join(path.dirname(relativeFilePath), modulePath)
-      );
-    } else {
-      return this.getFilePathWithExtension(
-        path
-          .resolve(ROOT_DIRECTORY, 'core/templates', modulePath)
-          .replace(`${ROOT_DIRECTORY}/`, '')
-      );
-    }
   }
 
   /**
@@ -214,9 +146,10 @@ class DepedencyExtractor {
     sourceFile.forEachChild(node => {
       let modulePath: string | undefined;
       if (ts.isImportDeclaration(node)) {
-        modulePath = this.resolveExpressionIntoString(
-          node.moduleSpecifier.getText(sourceFile)
-        );
+        modulePath =
+          this.typescriptExtractorUtilities.resolveExpressionIntoString(
+            node.moduleSpecifier.getText(sourceFile)
+          );
       }
       if (
         ts.isExpressionStatement(node) &&
@@ -225,16 +158,18 @@ class DepedencyExtractor {
         if (node.expression.expression.getText(sourceFile) !== 'require') {
           return;
         }
-        modulePath = this.resolveExpressionIntoString(
-          node.expression.arguments[0].getText(sourceFile)
-        );
+        modulePath =
+          this.typescriptExtractorUtilities.resolveExpressionIntoString(
+            node.expression.arguments[0].getText(sourceFile)
+          );
       }
       if (!modulePath) return;
 
-      const resolvedModulePath = this.resolveModulePathToFilePath(
-        modulePath,
-        filePath
-      );
+      const resolvedModulePath =
+        this.typescriptExtractorUtilities.resolveModulePathToFilePath(
+          modulePath,
+          filePath
+        );
       if (!resolvedModulePath) return;
       if (!fs.existsSync(path.join(ROOT_DIRECTORY, resolvedModulePath))) {
         throw new Error(
@@ -265,11 +200,12 @@ class DepedencyExtractor {
   private extractDepedenciesFromHTMLFile(filePath: string): string[] {
     const fileContent = fs.readFileSync(filePath, 'utf8');
     const document = cheerio.load(fileContent);
-    // Here we replace any Angular binding attributes with regular attributes
-    // since we cannot select them when there are brackets or parentheses.
+    const fileDepedencies: string[] = [];
     document('*')
       .children()
       .each((_, element) => {
+        // Here we replace any Angular binding attributes with regular attributes
+        // since we cannot select them when there are brackets or parentheses.
         for (const [attributeName, attributeValue] of Object.entries(
           element.attribs
         )) {
@@ -281,9 +217,32 @@ class DepedencyExtractor {
             document(element).attr(attributeName.slice(1, -1), attributeValue);
           }
         }
+        const elementText = document(element).text();
+        if (elementText.includes('@load')) {
+          const loadFunctions = elementText
+            .split('\n')
+            .filter(line => line.includes('@load'));
+          for (const loadFunction of loadFunctions) {
+            const args = loadFunction.substring(
+              loadFunction.indexOf('(') + 1,
+              loadFunction.indexOf(')')
+            );
+            const loadFilePath =
+              this.typescriptExtractorUtilities.resolveExpressionIntoString(
+                args.split(',')[0]
+              );
+            const resolvedLoadFilePath =
+              this.typescriptExtractorUtilities.resolveModulePathToFilePath(
+                loadFilePath,
+                filePath
+              );
+            if (resolvedLoadFilePath) {
+              fileDepedencies.push(resolvedLoadFilePath);
+            }
+          }
+        }
       });
 
-    const fileDepedencies: string[] = [];
     for (const [searchingFilePath, fileAngularInformations] of Object.entries(
       this.fileAngularInformationsMapping
     )) {
@@ -342,7 +301,7 @@ class DepedencyExtractor {
         ts.isIdentifier(property.name) &&
         property.name.getText(sourceFile) === propertyName
       ) {
-        return this.resolveExpressionIntoString(
+        return this.typescriptExtractorUtilities.resolveExpressionIntoString(
           property.initializer.getText(sourceFile)
         );
       }
@@ -403,10 +362,11 @@ class DepedencyExtractor {
             sourceFile
           );
           if (!selectorText || !templateUrlText) continue;
-          const resolvedTemplateUrl = this.resolveModulePathToFilePath(
-            templateUrlText,
-            filePath
-          );
+          const resolvedTemplateUrl =
+            this.typescriptExtractorUtilities.resolveModulePathToFilePath(
+              templateUrlText,
+              filePath
+            );
           if (!resolvedTemplateUrl) continue;
           fileAngularInformations.push({
             type: 'component',
@@ -434,21 +394,22 @@ class DepedencyExtractor {
   }
 }
 
-class DepedencyGraphGenerator {
+export class DepedencyGraphGenerator {
   typescriptHost: ts.CompilerHost;
   typescriptConfig: any;
   files: string[];
   dependenciesMapping: Record<string, string[]> = {};
   dependencyGraph: Record<string, string[]> = {};
 
-  constructor(typescriptConfigPath: string) {
-    this.typescriptConfig = this.readTypescriptConfig(typescriptConfigPath);
+  constructor() {
+    const typescriptConfigPath = path.resolve(ROOT_DIRECTORY, 'tsconfig.json');
+    this.typescriptConfig = readTypescriptConfig(typescriptConfigPath);
     this.typescriptHost = ts.createCompilerHost(this.typescriptConfig);
 
     this.files = this.typescriptHost.readDirectory!(
       ROOT_DIRECTORY,
-      ['.ts', '.js', '.html', '.md'],
-      EXCLUSIONS,
+      SEARCH_FILE_EXTENSIONS,
+      SEARCH_EXCLUSIONS,
       []
     ).reduce((acc: string[], filePath: string) => {
       if (
@@ -462,22 +423,6 @@ class DepedencyGraphGenerator {
   }
 
   /**
-   * Reads the tsconfig file and returns the parsed configuration.
-   */
-  private readTypescriptConfig(typescriptConfigPath: string): any {
-    const typescriptConfig = ts.readConfigFile(
-      typescriptConfigPath,
-      ts.sys.readFile
-    );
-    if (typescriptConfig.error) {
-      throw new Error(
-        `Failed to read TypeScript configuration: ${typescriptConfigPath}.`
-      );
-    }
-    return typescriptConfig.config;
-  }
-
-  /**
    * Gets the angular informations of the files.
    */
   private getFileAngularInformationsMapping(): Record<
@@ -487,7 +432,7 @@ class DepedencyGraphGenerator {
     const fileAngularInformationsMapping: Record<string, AngularInformation[]> =
       {};
     for (const filePath of this.files) {
-      const depedencyExtractor = new DepedencyExtractor(
+      const depedencyExtractor = new DependencyExtractor(
         this.typescriptHost,
         this.typescriptConfig,
         fileAngularInformationsMapping
@@ -513,7 +458,8 @@ class DepedencyGraphGenerator {
    */
   private getRootDepedenciesForFile(
     filePath: string,
-    visited: Set<string> = new Set<string>()
+    fileAngularInformationMapping: Record<string, AngularInformation[]>,
+    visited: Set<string> = new Set<string>(),
   ): string[] {
     if (visited.has(filePath)) {
       return [];
@@ -522,15 +468,25 @@ class DepedencyGraphGenerator {
 
     const depedencies = this.getFilesWithDepedency(filePath);
     if (depedencies.length === 0) {
+      if (filePath.endsWith('root.component.ts')) {
+        return [filePath.replace('root.component.ts', '.module.ts')];
+      }
+      if (filePath.endsWith('.import.ts')) {
+        return [filePath.replace('.import.ts', '.module.ts')];
+      }
+      if (filePath.endsWith('.mainpage.html')) {
+        return [filePath.replace('.mainpage.html', '.module.ts')];
+      }
       return [filePath];
     }
 
     const rootFiles: string[] = [];
     for (const depedency of depedencies) {
-      rootFiles.push(...this.getRootDepedenciesForFile(depedency, visited));
+      rootFiles.push(...this.getRootDepedenciesForFile(
+        depedency, fileAngularInformationMapping, visited));
     }
 
-    return rootFiles;
+    return Array.from(new Set(rootFiles));
   }
 
   /**
@@ -539,7 +495,7 @@ class DepedencyGraphGenerator {
   public generateDepedencyGraph(): Record<string, string[]> {
     const fileAngularInformationsMapping =
       this.getFileAngularInformationsMapping();
-    const depedencyExtractor = new DepedencyExtractor(
+    const dependencyExtractor = new DependencyExtractor(
       this.typescriptHost,
       this.typescriptConfig,
       fileAngularInformationsMapping
@@ -547,21 +503,19 @@ class DepedencyGraphGenerator {
 
     for (const filePath of this.files) {
       this.dependenciesMapping[filePath] =
-        depedencyExtractor.extractDepedenciesFromFile(filePath);
+        dependencyExtractor.extractDepedenciesFromFile(filePath);
     }
 
     for (const filePath of this.files) {
-      this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(filePath);
+      this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(
+        filePath, fileAngularInformationsMapping);
     }
 
     return this.dependencyGraph;
   }
 }
 
-const depedencyGraphGenerator = new DepedencyGraphGenerator(
-  path.resolve(ROOT_DIRECTORY, 'tsconfig.json')
-);
-
+const depedencyGraphGenerator = new DepedencyGraphGenerator();
 const depedencyGraph = depedencyGraphGenerator.generateDepedencyGraph();
 fs.writeFileSync(
   path.resolve(ROOT_DIRECTORY, 'dependency-graph.json'),
