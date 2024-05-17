@@ -151,16 +151,25 @@ export class DependencyExtractor {
             node.moduleSpecifier.getText(sourceFile)
           );
       }
+      let callExpression: ts.Expression | undefined;
+      if (ts.isVariableStatement(node)) {
+        const declaration = node.declarationList.declarations[0];
+        if (ts.isVariableDeclaration(declaration)) {
+          callExpression = declaration.initializer;
+        }
+      } else if (ts.isExpressionStatement(node)) {
+        callExpression = node.expression;
+      }
       if (
-        ts.isExpressionStatement(node) &&
-        ts.isCallExpression(node.expression)
+        callExpression &&
+        ts.isCallExpression(callExpression)
       ) {
-        if (node.expression.expression.getText(sourceFile) !== 'require') {
+        if (callExpression.expression.getText(sourceFile) !== 'require') {
           return;
         }
         modulePath =
           this.typescriptExtractorUtilities.resolveExpressionIntoString(
-            node.expression.arguments[0].getText(sourceFile)
+            callExpression.arguments[0].getText(sourceFile)
           );
       }
       if (!modulePath) return;
@@ -413,8 +422,9 @@ export class DepedencyGraphGenerator {
       []
     ).reduce((acc: string[], filePath: string) => {
       if (
-        filePath.includes('puppeteer-acceptance-tests') ||
-        (!filePath.endsWith('.spec.ts') && !filePath.endsWith('.spec.js'))
+        (filePath.includes('puppeteer-acceptance-tests') ||
+        (!filePath.endsWith('.spec.ts') && !filePath.endsWith('.spec.js'))) &&
+        (!filePath.includes('extensions') && !filePath.includes('webdriverio.js'))
       ) {
         acc.push(path.relative(ROOT_DIRECTORY, filePath));
       }
@@ -468,8 +478,8 @@ export class DepedencyGraphGenerator {
 
     const depedencies = this.getFilesWithDepedency(filePath);
     if (depedencies.length === 0) {
-      if (filePath.endsWith('root.component.ts')) {
-        return [filePath.replace('root.component.ts', '.module.ts')];
+      if (filePath.endsWith('-root.component.ts')) {
+        return [filePath.replace('-root.component.ts', '.module.ts')];
       }
       if (filePath.endsWith('.import.ts')) {
         return [filePath.replace('.import.ts', '.module.ts')];
