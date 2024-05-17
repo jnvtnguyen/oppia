@@ -8862,10 +8862,44 @@
     "core/templates/css/README.md"
   ],
   "core/templates/css/oppia-material.css": [
-    "core/templates/css/oppia-material.css"
+    "core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.module.ts",
+    "core/templates/pages/creator-dashboard-page/creator-dashboard-page.module.ts",
+    "core/templates/pages/email-dashboard-pages/email-dashboard-result.module.ts",
+    "core/templates/pages/error-pages/error-page.module.ts",
+    "core/templates/pages/error-pages/error-iframed-page/error-iframed.module.ts",
+    "core/templates/pages/exploration-editor-page/exploration-editor-page.module.ts",
+    "core/templates/pages/lightweight-oppia-root/lightweight-oppia-root.module.ts",
+    "core/templates/pages/oppia-root/oppia-root.module.ts",
+    "core/templates/pages/practice-session-page/practice-session-page.module.ts",
+    "core/templates/pages/review-test-page/review-test-page.module.ts",
+    "core/templates/pages/skill-editor-page/skill-editor-page.module.ts",
+    "core/templates/pages/story-editor-page/story-editor-page.module.ts",
+    "core/templates/pages/subtopic-viewer-page/subtopic-viewer-page.module.ts",
+    "core/templates/pages/topic-editor-page/topic-editor-page.module.ts",
+    "core/templates/pages/topic-viewer-page/topic-viewer-page.module.ts",
+    "core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.module.ts",
+    "core/templates/tests/console_errors.html",
+    "core/templates/pages/maintenance-page/maintenance-page.module.ts"
   ],
   "core/templates/css/oppia.css": [
-    "core/templates/css/oppia.css"
+    "core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.module.ts",
+    "core/templates/pages/creator-dashboard-page/creator-dashboard-page.module.ts",
+    "core/templates/pages/email-dashboard-pages/email-dashboard-result.module.ts",
+    "core/templates/pages/error-pages/error-page.module.ts",
+    "core/templates/pages/error-pages/error-iframed-page/error-iframed.module.ts",
+    "core/templates/pages/exploration-editor-page/exploration-editor-page.module.ts",
+    "core/templates/pages/lightweight-oppia-root/lightweight-oppia-root.module.ts",
+    "core/templates/pages/oppia-root/oppia-root.module.ts",
+    "core/templates/pages/practice-session-page/practice-session-page.module.ts",
+    "core/templates/pages/review-test-page/review-test-page.module.ts",
+    "core/templates/pages/skill-editor-page/skill-editor-page.module.ts",
+    "core/templates/pages/story-editor-page/story-editor-page.module.ts",
+    "core/templates/pages/subtopic-viewer-page/subtopic-viewer-page.module.ts",
+    "core/templates/pages/topic-editor-page/topic-editor-page.module.ts",
+    "core/templates/pages/topic-viewer-page/topic-viewer-page.module.ts",
+    "core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.module.ts",
+    "core/templates/tests/console_errors.html",
+    "core/templates/pages/maintenance-page/maintenance-page.module.ts"
   ],
   "core/templates/directives/angular-html-bind.directive.ts": [
     "core/templates/directives/angular-html-bind.directive.ts"

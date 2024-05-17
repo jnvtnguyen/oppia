@@ -226,6 +226,7 @@ export class DependencyExtractor {
             document(element).attr(attributeName.slice(1, -1), attributeValue);
           }
         }
+        // Here we check if the element has a load function.
         const elementText = document(element).text();
         if (elementText.includes('@load')) {
           const loadFunctions = elementText
@@ -249,6 +250,23 @@ export class DependencyExtractor {
               fileDepedencies.push(resolvedLoadFilePath);
             }
           }
+        }
+        const elementTag = element.tagName;
+        if (elementTag === 'link' || elementTag === 'preload') {
+          const elementHref = element.attribs.href;
+          if (!elementHref.endsWith('.css')) {
+            return;
+          }
+          if (!elementHref.startsWith('/templates/css')) {
+            return;
+          }
+          const fullPath = 'core' + elementHref;
+          if (!fs.existsSync(path.join(ROOT_DIRECTORY, fullPath))) {
+            throw new Error(
+              `The CSS file with path: ${fullPath}, does not exist, occured at ${filePath}.`
+            );
+          }
+          fileDepedencies.push(fullPath);
         }
       });
 
