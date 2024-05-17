@@ -116,16 +116,6 @@ export class DependencyExtractor {
   }
 
   /**
-   * Checks if the given file has a module declaration.
-   */
-  private doesFileHaveModuleDeclaration(filePath: string): boolean {
-    const fileAngularInformations =
-      this.fileAngularInformationsMapping[filePath];
-    if (!fileAngularInformations) return false;
-    return fileAngularInformations.some(info => info.type === 'module');
-  }
-
-  /**
    * Extracts the depedencies from the given TypeScript or Javascript file.
    */
   private extractDepedenciesFromTypescriptOrJavascriptFile(
@@ -160,10 +150,7 @@ export class DependencyExtractor {
       } else if (ts.isExpressionStatement(node)) {
         callExpression = node.expression;
       }
-      if (
-        callExpression &&
-        ts.isCallExpression(callExpression)
-      ) {
+      if (callExpression && ts.isCallExpression(callExpression)) {
         if (callExpression.expression.getText(sourceFile) !== 'require') {
           return;
         }
@@ -185,14 +172,17 @@ export class DependencyExtractor {
           `The module with path: ${resolvedModulePath}, does not exist, occured at ${filePath}.`
         );
       }
-      if (
-        this.doesFileHaveModuleDeclaration(filePath) &&
-        !this.doesFileHaveModuleDeclaration(resolvedModulePath)
-      ) {
-        return;
-      }
+      // We need to add the mainpage file as a depedency if the file is an import file since
+      // it is loaded by webpack.
       fileDepedencies.push(resolvedModulePath);
     });
+
+    if (filePath.endsWith('.import.ts')) {
+      const mainpageFilePath = filePath.replace('.import.ts', '.mainpage.html');
+      if (fs.existsSync(path.join(ROOT_DIRECTORY, mainpageFilePath))) {
+        fileDepedencies.push(mainpageFilePath);
+      }
+    }
 
     for (const fileAngularInformation of fileAngularInformations) {
       if (fileAngularInformation.type === 'component') {
@@ -421,12 +411,13 @@ export class DependencyExtractor {
   }
 }
 
-export class DepedencyGraphGenerator {
+export class DependencyGraphGenerator {
   typescriptHost: ts.CompilerHost;
   typescriptConfig: any;
   files: string[];
   dependenciesMapping: Record<string, string[]> = {};
   dependencyGraph: Record<string, string[]> = {};
+  fileAngularInformationsMapping: Record<string, AngularInformation[]>;
 
   constructor() {
     const typescriptConfigPath = path.resolve(ROOT_DIRECTORY, 'tsconfig.json');
@@ -441,13 +432,16 @@ export class DepedencyGraphGenerator {
     ).reduce((acc: string[], filePath: string) => {
       if (
         (filePath.includes('puppeteer-acceptance-tests') ||
-        (!filePath.endsWith('.spec.ts') && !filePath.endsWith('.spec.js'))) &&
+          (!filePath.endsWith('.spec.ts') && !filePath.endsWith('.spec.js'))) &&
         !filePath.includes('webdriverio.js')
       ) {
         acc.push(path.relative(ROOT_DIRECTORY, filePath));
       }
       return acc;
     }, []);
+
+    this.fileAngularInformationsMapping =
+      this.getFileAngularInformationsMapping();
   }
 
   /**
@@ -475,9 +469,17 @@ export class DepedencyGraphGenerator {
   /**
    * Finds the files with the given depedency.
    */
-  private getFilesWithDepedency(depedencyFilePath: string): string[] {
-    return Object.keys(this.dependenciesMapping).filter(key =>
-      this.dependenciesMapping[key].includes(depedencyFilePath)
+  private getFilesWithDepedency(
+    depedencyFilePath: string,
+    ignoreModules: boolean = true
+  ): string[] {
+    return Object.keys(this.dependenciesMapping).filter(
+      key =>
+        this.dependenciesMapping[key].includes(depedencyFilePath) &&
+        (!ignoreModules ||
+          !this.fileAngularInformationsMapping[key].some(
+            information => information.type === 'module'
+          ))
     );
   }
 
@@ -486,47 +488,42 @@ export class DepedencyGraphGenerator {
    */
   private getRootDepedenciesForFile(
     filePath: string,
-    fileAngularInformationMapping: Record<string, AngularInformation[]>,
-    visited: Set<string> = new Set<string>(),
+    ignoreModules: boolean = true,
+    visited: Set<string> = new Set()
   ): string[] {
     if (visited.has(filePath)) {
       return [];
     }
     visited.add(filePath);
 
-    const depedencies = this.getFilesWithDepedency(filePath);
-    if (depedencies.length === 0) {
-      if (filePath.endsWith('-root.component.ts')) {
-        return [filePath.replace('-root.component.ts', '.module.ts')];
-      }
-      if (filePath.endsWith('.import.ts')) {
-        return [filePath.replace('.import.ts', '.module.ts')];
-      }
-      if (filePath.endsWith('.mainpage.html')) {
-        return [filePath.replace('.mainpage.html', '.module.ts')];
-      }
+    let references = this.getFilesWithDepedency(filePath, ignoreModules);
+    if (references.length === 0 && ignoreModules) {
+      ignoreModules = false;
+      references = this.getFilesWithDepedency(filePath, ignoreModules);
+    }
+
+    if (references.length === 0) {
       return [filePath];
     }
 
-    const rootFiles: string[] = [];
-    for (const depedency of depedencies) {
-      rootFiles.push(...this.getRootDepedenciesForFile(
-        depedency, fileAngularInformationMapping, visited));
+    const rootReferences: string[] = [];
+    for (const reference of references) {
+      rootReferences.push(
+        ...this.getRootDepedenciesForFile(reference, ignoreModules, visited)
+      );
     }
 
-    return Array.from(new Set(rootFiles));
+    return Array.from(new Set(rootReferences));
   }
 
   /**
    * Generates the depedency graph.
    */
   public generateDepedencyGraph(): Record<string, string[]> {
-    const fileAngularInformationsMapping =
-      this.getFileAngularInformationsMapping();
     const dependencyExtractor = new DependencyExtractor(
       this.typescriptHost,
       this.typescriptConfig,
-      fileAngularInformationsMapping
+      this.fileAngularInformationsMapping
     );
 
     for (const filePath of this.files) {
@@ -534,18 +531,22 @@ export class DepedencyGraphGenerator {
         dependencyExtractor.extractDepedenciesFromFile(filePath);
     }
 
+    fs.writeFileSync(
+      path.resolve(ROOT_DIRECTORY, '_dependency-graph.json'),
+      JSON.stringify(this.dependenciesMapping, null, 2)
+    );
+
     for (const filePath of this.files) {
-      this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(
-        filePath, fileAngularInformationsMapping);
+      this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(filePath);
     }
 
     return this.dependencyGraph;
   }
 }
 
-const depedencyGraphGenerator = new DepedencyGraphGenerator();
-const depedencyGraph = depedencyGraphGenerator.generateDepedencyGraph();
+const dependencyGraphGenerator = new DependencyGraphGenerator();
+const dependencyGraph = dependencyGraphGenerator.generateDepedencyGraph();
 fs.writeFileSync(
   path.resolve(ROOT_DIRECTORY, 'dependency-graph.json'),
-  JSON.stringify(depedencyGraph, null, 2)
+  JSON.stringify(dependencyGraph, null, 2)
 );
