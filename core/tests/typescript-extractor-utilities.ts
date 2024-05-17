@@ -156,20 +156,4 @@ export class TypescriptExtractorUtilities {
       );
     }
   }
-
-  /**
-   * Reads the tsconfig file and returns the parsed configuration.
-   */
-  public readTypescriptConfig(typescriptConfigPath: string): any {
-    const typescriptConfig = ts.readConfigFile(
-      typescriptConfigPath,
-      ts.sys.readFile
-    );
-    if (typescriptConfig.error) {
-      throw new Error(
-        `Failed to read TypeScript configuration: ${typescriptConfigPath}.`
-      );
-    }
-    return typescriptConfig.config;
-  }
 }
