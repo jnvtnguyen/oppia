@@ -424,7 +424,7 @@ export class DepedencyGraphGenerator {
       if (
         (filePath.includes('puppeteer-acceptance-tests') ||
         (!filePath.endsWith('.spec.ts') && !filePath.endsWith('.spec.js'))) &&
-        (!filePath.includes('extensions') && !filePath.includes('webdriverio.js'))
+        !filePath.includes('webdriverio.js')
       ) {
         acc.push(path.relative(ROOT_DIRECTORY, filePath));
       }
