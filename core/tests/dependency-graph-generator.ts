@@ -75,7 +75,6 @@ const SEARCH_EXCLUSIONS = [
   'core/tests/webdriverio',
   'core/tests/webdriverio_desktop',
   'core/tests/webdriverio_utils',
-  'core/tests/puppeteer-acceptance-tests/build',
   'core/tests/depedency-graph-generator.ts',
   'core/tests/test-url-to-angular-module-matcher.ts',
   'core/templates/services/UpgradedServices.ts',
@@ -141,7 +140,7 @@ export class DependencyExtractor {
       ts.forEachChild(node, visitNode);
       let modulePath: string | undefined;
       // If the node is an import statement, we extract the module path.
-      if (ts.isImportDeclaration(node))  {
+      if (ts.isImportDeclaration(node)) {
         modulePath =
           this.typescriptExtractorUtilities.resolveExpressionIntoString(
             node.moduleSpecifier.getText(sourceFile)
@@ -176,7 +175,7 @@ export class DependencyExtractor {
       fileDepedencies.push(resolvedModulePath);
     };
 
-    sourceFile.forEachChild((node) => {
+    sourceFile.forEachChild(node => {
       visitNode(node);
     });
 
@@ -483,9 +482,9 @@ export class DependencyGraphGenerator {
         this.dependenciesMapping[key].includes(depedencyFilePath) &&
         (!ignoreModules ||
           !this.fileAngularInformationsMapping[key].some(
-            information => information.type === 'module')
-          )
-        );
+            information => information.type === 'module'
+          ))
+    );
   }
 
   /**
@@ -542,8 +541,7 @@ export class DependencyGraphGenerator {
     );
 
     for (const filePath of this.files) {
-      this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(
-        filePath);
+      this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(filePath);
     }
 
     return this.dependencyGraph;

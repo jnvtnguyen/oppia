@@ -22,7 +22,7 @@ core/templates/prod/*
 webpack_bundles/*
 core/tests/.browserstack.env
 core/tests/puppeteer-acceptance-tests/build
-core/tests/depedency-graph-generator.js
+core/tests/dependency-graph-generator.js
 core/tests/typescript-extractor-utilities.js
 core/tests/test-url-to-angular-module-matcher.js
 node_modules/*
