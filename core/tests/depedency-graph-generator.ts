@@ -136,35 +136,28 @@ export class DependencyExtractor {
     const visitNode = (node: ts.Node) => {
       ts.forEachChild(node, visitNode);
       let modulePath: string | undefined;
+      // If the node is an import statement, we extract the module path.
       if (ts.isImportDeclaration(node))  {
         modulePath =
           this.typescriptExtractorUtilities.resolveExpressionIntoString(
             node.moduleSpecifier.getText(sourceFile)
           );
       }
-      let callExpression: ts.Expression | undefined;
-      if (ts.isVariableStatement(node)) {
-        const declaration = node.declarationList.declarations[0];
-        if (ts.isVariableDeclaration(declaration)) {
-          callExpression = declaration.initializer;
-        }
-      } else if (ts.isExpressionStatement(node)) {
-        callExpression = node.expression;
-      }
-      if (callExpression && ts.isCallExpression(callExpression)) {
+      // If the node is a require or import function call, we extract the module path.
+      if (ts.isCallExpression(node)) {
         if (
-          callExpression.expression.getText(sourceFile) !== 'require' ||
-          callExpression.expression.getText(sourceFile) !== 'import'
+          node.expression.kind !== ts.SyntaxKind.RequireKeyword &&
+          node.expression.kind !== ts.SyntaxKind.ImportKeyword &&
+          node.expression.getText(sourceFile) !== 'require'
         ) {
           return;
         }
         modulePath =
           this.typescriptExtractorUtilities.resolveExpressionIntoString(
-            callExpression.arguments[0].getText(sourceFile)
+            node.arguments[0].getText(sourceFile)
           );
       }
       if (!modulePath) return;
-
       const resolvedModulePath =
         this.typescriptExtractorUtilities.resolveModulePathToFilePath(
           modulePath,
