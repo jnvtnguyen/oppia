@@ -11,9 +11,12 @@ const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
 const APP_ROUTING_MODULE_PATH =
   'core/templates/pages/oppia-root/routing/app.routing.module.ts';
 
-class UrlToAngularModuleMapper {
+const ANGULAR_JS_URL_TO_MODULE_MAPPING = {};
+
+class TestUrlToAngularModuleMatcher {
   typescriptHost: ts.CompilerHost;
   typescriptExtractorUtilities: TypescriptExtractorUtilities;
+  urlToModuleMapping: Record<string, string> = {};
 
   constructor() {
     const typescriptConfigPath = path.resolve(ROOT_DIRECTORY, 'tsconfig.json');
@@ -22,9 +25,13 @@ class UrlToAngularModuleMapper {
     this.typescriptExtractorUtilities = new TypescriptExtractorUtilities(
       typescriptConfig
     );
+    this.urlToModuleMapping = {
+      ...ANGULAR_JS_URL_TO_MODULE_MAPPING,
+      ...this.getAngularUrlToModuleMapping()
+    };
   }
 
-  public getUrlToAngularModuleMapping(): Record<string, string> {
+  public getAngularUrlToModuleMapping(): Record<string, string> {
     const urlToAngularModuleMapping: Record<string, string> = {};
     const appRoutingModuleSourceFile = this.typescriptHost.getSourceFile(
       path.resolve(ROOT_DIRECTORY, APP_ROUTING_MODULE_PATH),
@@ -96,3 +103,5 @@ class UrlToAngularModuleMapper {
     return urlToAngularModuleMapping;
   }
 }
+
+new TestUrlToAngularModuleMatcher();

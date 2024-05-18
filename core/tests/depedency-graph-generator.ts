@@ -133,9 +133,10 @@ export class DependencyExtractor {
       this.fileAngularInformationsMapping[filePath];
     const fileDepedencies: string[] = [];
 
-    sourceFile.forEachChild(node => {
+    const visitNode = (node: ts.Node) => {
+      ts.forEachChild(node, visitNode);
       let modulePath: string | undefined;
-      if (ts.isImportDeclaration(node)) {
+      if (ts.isImportDeclaration(node))  {
         modulePath =
           this.typescriptExtractorUtilities.resolveExpressionIntoString(
             node.moduleSpecifier.getText(sourceFile)
@@ -151,7 +152,10 @@ export class DependencyExtractor {
         callExpression = node.expression;
       }
       if (callExpression && ts.isCallExpression(callExpression)) {
-        if (callExpression.expression.getText(sourceFile) !== 'require') {
+        if (
+          callExpression.expression.getText(sourceFile) !== 'require' ||
+          callExpression.expression.getText(sourceFile) !== 'import'
+        ) {
           return;
         }
         modulePath =
@@ -173,6 +177,10 @@ export class DependencyExtractor {
         );
       }
       fileDepedencies.push(resolvedModulePath);
+    };
+
+    sourceFile.forEachChild((node) => {
+      visitNode(node);
     });
 
     // We need to add the mainpage file as a depedency if the file is an import file since
@@ -537,7 +545,14 @@ export class DependencyGraphGenerator {
     );
 
     for (const filePath of this.files) {
-      this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(filePath);
+      let ignoreModules = true;
+      if (this.fileAngularInformationsMapping[filePath].some(
+        (information) => information.type === 'module')
+      ) {
+        ignoreModules = false;
+      }
+      this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(
+        filePath, ignoreModules);
     }
 
     return this.dependencyGraph;

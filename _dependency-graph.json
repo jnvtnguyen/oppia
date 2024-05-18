@@ -1,16 +1,8 @@
 {
-  ".lighthouserc-1.js": [
-    ".lighthouserc-base.js"
-  ],
-  ".lighthouserc-2.js": [
-    ".lighthouserc-base.js"
-  ],
-  ".lighthouserc-accessibility-1.js": [
-    ".lighthouserc-base.js"
-  ],
-  ".lighthouserc-accessibility-2.js": [
-    ".lighthouserc-base.js"
-  ],
+  ".lighthouserc-1.js": [],
+  ".lighthouserc-2.js": [],
+  ".lighthouserc-accessibility-1.js": [],
+  ".lighthouserc-accessibility-2.js": [],
   ".lighthouserc-base.js": [],
   "puppeteer-login-script.js": [],
   ".github/CODEOWNERS": [],
@@ -46,33 +38,6 @@
   "core/templates/App.ts": [
     "core/templates/components/oppia-angular-root.component.ts",
     "core/templates/services/context.service.ts",
-    "core/templates/app.constants.ajs.ts",
-    "core/templates/components/button-directives/create-activity-button.component.ts",
-    "core/templates/components/button-directives/social-buttons.component.ts",
-    "core/templates/components/common-layout-directives/common-elements/alert-message.component.ts",
-    "core/templates/components/common-layout-directives/common-elements/promo-bar.component.ts",
-    "core/templates/components/common-layout-directives/navigation-bars/side-navigation-bar.component.ts",
-    "core/templates/components/common-layout-directives/navigation-bars/top-navigation-bar.component.ts",
-    "core/templates/components/forms/custom-forms-directives/object-editor.directive.ts",
-    "core/templates/directives/focus-on.directive.ts",
-    "core/templates/domain/utilities/url-interpolation.service.ts",
-    "core/templates/pages/Base.ts",
-    "core/templates/services/bottom-navbar-status.service.ts",
-    "core/templates/services/construct-translation-ids.service.ts",
-    "core/templates/services/contextual/device-info.service.ts",
-    "core/templates/services/contextual/url.service.ts",
-    "core/templates/services/csrf-token.service.ts",
-    "core/templates/services/date-time-format.service.ts",
-    "core/templates/services/html-escaper.service.ts",
-    "core/templates/services/id-generation.service.ts",
-    "core/templates/services/interaction-rules-registry.service.ts",
-    "core/templates/services/navigation.service.ts",
-    "core/templates/services/rte-helper.service.ts",
-    "core/templates/services/site-analytics.service.ts",
-    "core/templates/services/state-interaction-stats.service.ts",
-    "core/templates/services/stateful/focus-manager.service.ts",
-    "core/templates/services/translation-file-hash-loader-backend-api.service.ts",
-    "core/templates/services/user.service.ts",
     "core/templates/services/UpgradedServices.ts"
   ],
   "core/templates/AppSpec.ts": [
@@ -1199,9 +1164,7 @@
     "core/templates/services/user.service.ts",
     "core/templates/components/skill-selector/skill-selector.component.html"
   ],
-  "core/templates/components/skills-mastery-list/skills-mastery-list-concept-card-modal.controller.ts": [
-    "core/templates/components/common-layout-directives/common-elements/confirm-or-cancel-modal.controller.ts"
-  ],
+  "core/templates/components/skills-mastery-list/skills-mastery-list-concept-card-modal.controller.ts": [],
   "core/templates/components/skills-mastery-list/skills-mastery-list.constants.ajs.ts": [
     "core/templates/components/skills-mastery-list/skills-mastery-list.constants.ts"
   ],
@@ -1760,9 +1723,7 @@
     "core/templates/services/stateful/focus-manager.service.ts"
   ],
   "core/templates/directives/headroom.directive.ts": [],
-  "core/templates/directives/mathjax-bind.directive.ts": [
-    "core/templates/mathjaxConfig.ts"
-  ],
+  "core/templates/directives/mathjax-bind.directive.ts": [],
   "core/templates/directives/mathjax.directive.ts": [],
   "core/templates/directives/ng-init.directive.ts": [],
   "core/templates/domain/admin/admin-backend-api.service.ts": [
@@ -2151,8 +2112,7 @@
   ],
   "core/templates/domain/exploration/rule.model.ts": [
     "extensions/interactions/rule-input-defs.ts",
-    "core/templates/domain/objects/BaseTranslatableObject.model.ts",
-    "extensions/interactions/interaction_specs.json"
+    "core/templates/domain/objects/BaseTranslatableObject.model.ts"
   ],
   "core/templates/domain/exploration/state-interaction-stats-backend-api.service.ts": [
     "core/templates/domain/exploration/visualization-info.model.ts",
@@ -2365,9 +2325,7 @@
     "core/templates/domain/exploration/WrittenTranslationObjectFactory.ts",
     "core/templates/domain/exploration/WrittenTranslationsObjectFactory.ts",
     "core/templates/services/UpgradedServices.ts",
-    "core/templates/tests/unit-test-utils.ajs.ts",
-    "core/templates/domain/question/QuestionObjectFactory.ts",
-    "core/templates/domain/state/StateObjectFactory.ts"
+    "core/templates/tests/unit-test-utils.ajs.ts"
   ],
   "core/templates/domain/question/diagnostic-test-questions.model.ts": [
     "core/templates/domain/question/QuestionObjectFactory.ts"
@@ -2911,17 +2869,7 @@
   "core/templates/i18n/translate-loader.factory.ts": [],
   "core/templates/modules/material.module.ts": [],
   "core/templates/modules/ng-boostrap.module.ts": [],
-  "core/templates/pages/Base.ts": [
-    "core/templates/services/sidebar-status.service.ts",
-    "core/templates/domain/utilities/url-interpolation.service.ts",
-    "core/templates/services/alerts.service.ts",
-    "core/templates/services/csrf-token.service.ts",
-    "core/templates/services/contextual/document-attribute-customization.service.ts",
-    "core/templates/services/contextual/meta-tag-customization.service.ts",
-    "core/templates/services/contextual/url.service.ts",
-    "core/templates/services/stateful/background-mask.service.ts",
-    "core/templates/app.constants.ajs.ts"
-  ],
+  "core/templates/pages/Base.ts": [],
   "core/templates/pages/base-root.component.ts": [
     "core/templates/services/page-head.service.ts"
   ],
@@ -3038,12 +2986,7 @@
     "core/templates/pages/admin-page/admin-page.constants.ts"
   ],
   "core/templates/pages/admin-page/admin-page.constants.ts": [],
-  "core/templates/pages/admin-page/admin-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/admin-page/admin-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts"
-  ],
+  "core/templates/pages/admin-page/admin-page.import.ts": [],
   "core/templates/pages/admin-page/admin-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/pages/admin-page/roles-tab/topic-manager-role-editor-modal.component.ts",
@@ -3206,12 +3149,7 @@
     "core/templates/domain/admin/admin-backend-api.service.ts",
     "core/templates/pages/blog-admin-page/blog-admin-page.component.html"
   ],
-  "core/templates/pages/blog-admin-page/blog-admin-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/blog-admin-page/blog-admin-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts"
-  ],
+  "core/templates/pages/blog-admin-page/blog-admin-page.import.ts": [],
   "core/templates/pages/blog-admin-page/blog-admin-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/pages/blog-admin-page/navbar/blog-admin-navbar.component.ts",
@@ -3311,15 +3249,7 @@
     "core/templates/pages/blog-dashboard-page/blog-dashboard-page.component.html"
   ],
   "core/templates/pages/blog-dashboard-page/blog-dashboard-page.constants.ts": [],
-  "core/templates/pages/blog-dashboard-page/blog-dashboard-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/blog-dashboard-page/blog-dashboard-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/pages/blog-dashboard-page/blog-dashboard-page.component.ts",
-    "core/templates/pages/blog-dashboard-page/navbar/navbar-breadcrumb/blog-dashboard-navbar-breadcrumb.component.ts",
-    "core/templates/pages/blog-dashboard-page/navbar/navbar-pre-logo-action/blog-post-editor-pre-logo-action.component.ts"
-  ],
+  "core/templates/pages/blog-dashboard-page/blog-dashboard-page.import.ts": [],
   "core/templates/pages/blog-dashboard-page/blog-dashboard-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/pages/blog-dashboard-page/blog-dashboard-page.component.ts",
@@ -3592,12 +3522,7 @@
     "core/templates/pages/classroom-admin-page/services/classroom-admin-data.service.ts",
     "core/templates/pages/classroom-admin-page/classroom-admin-page.component.html"
   ],
-  "core/templates/pages/classroom-admin-page/classroom-admin-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/classroom-admin-page/classroom-admin-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts"
-  ],
+  "core/templates/pages/classroom-admin-page/classroom-admin-page.import.ts": [],
   "core/templates/pages/classroom-admin-page/classroom-admin-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/pages/classroom-admin-page/navbar/classroom-admin-navbar.component.ts",
@@ -3745,16 +3670,7 @@
     "core/templates/pages/collection-editor-page/collection-editor-page.component.html"
   ],
   "core/templates/pages/collection-editor-page/collection-editor-page.constants.ts": [],
-  "core/templates/pages/collection-editor-page/collection-editor-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/collection-editor-page/collection-editor-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/base-components/base-content.component.ts",
-    "core/templates/pages/collection-editor-page/collection-editor-page.component.ts",
-    "core/templates/pages/collection-editor-page/navbar/collection-editor-navbar-breadcrumb.component.ts",
-    "core/templates/pages/collection-editor-page/navbar/collection-editor-navbar.component.ts"
-  ],
+  "core/templates/pages/collection-editor-page/collection-editor-page.import.ts": [],
   "core/templates/pages/collection-editor-page/collection-editor-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/pages/collection-editor-page/history-tab/collection-history-tab.component.ts",
@@ -3947,17 +3863,7 @@
     "core/templates/pages/collection-player-page/collection-player-page.component.css",
     "core/templates/pages/collection-player-page/collection-player-page.component.html"
   ],
-  "core/templates/pages/collection-player-page/collection-player-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/collection-player-page/collection-player-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/base-components/base-content.component.ts",
-    "core/templates/pages/collection-player-page/collection-footer/collection-footer.component.ts",
-    "core/templates/pages/collection-player-page/collection-local-nav/collection-local-nav.component.ts",
-    "core/templates/pages/collection-player-page/collection-navbar/collection-navbar.component.ts",
-    "core/templates/pages/collection-player-page/collection-player-page.component.ts"
-  ],
+  "core/templates/pages/collection-player-page/collection-player-page.import.ts": [],
   "core/templates/pages/collection-player-page/collection-player-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/pages/collection-player-page/collection-footer/collection-footer.component.ts",
@@ -4081,14 +3987,7 @@
     "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.constants.ts"
   ],
   "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.constants.ts": [],
-  "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.component.ts",
-    "core/templates/pages/contributor-dashboard-admin-page/contributor-admin-dashboard-page.component.ts"
-  ],
+  "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.import.ts": [],
   "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/pages/contributor-dashboard-admin-page/translation-role-editor-modal/cd-admin-translation-role-editor-modal.component.ts",
@@ -4197,10 +4096,6 @@
   "core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.constants.ts": [],
   "core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.import.ts": [
     "core/templates/third-party-imports/ui-tree.import.ts",
-    "core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.component.ts",
     "core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.mainpage.html"
   ],
   "core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.mainpage.html": [
@@ -4380,7 +4275,6 @@
     "core/templates/domain/exploration/WrittenTranslationObjectFactory.ts",
     "extensions/rich_text_components/rte-output-display.component.ts",
     "core/templates/services/contextual/window-dimensions.service.ts",
-    "extensions/interactions/interaction_specs.json",
     "core/templates/pages/contributor-dashboard-page/modal-templates/translation-modal.component.html"
   ],
   "core/templates/pages/contributor-dashboard-page/modal-templates/translation-suggestion-review-modal.component.html": [
@@ -4567,11 +4461,6 @@
   "core/templates/pages/creator-dashboard-page/creator-dashboard-page.constants.ts": [],
   "core/templates/pages/creator-dashboard-page/creator-dashboard-page.import.ts": [
     "core/templates/third-party-imports/ui-tree.import.ts",
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/creator-dashboard-page/creator-dashboard-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/pages/creator-dashboard-page/creator-dashboard-page.component.ts",
     "core/templates/pages/creator-dashboard-page/creator-dashboard-page.mainpage.html"
   ],
   "core/templates/pages/creator-dashboard-page/creator-dashboard-page.mainpage.html": [
@@ -4667,12 +4556,7 @@
     "core/templates/pages/base-root.component.ts",
     "core/templates/pages/diagnostic-test-player-page/diagnostic-test-player-page-root.component.html"
   ],
-  "core/templates/pages/diagnostic-test-player-page/diagnostic-test-player-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/diagnostic-test-player-page/diagnostic-test-player-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts"
-  ],
+  "core/templates/pages/diagnostic-test-player-page/diagnostic-test-player-page.import.ts": [],
   "core/templates/pages/diagnostic-test-player-page/diagnostic-test-player-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/pages/oppia-root/app.module.ts",
@@ -4764,13 +4648,7 @@
     "core/templates/pages/email-dashboard-pages/email-dashboard-data.service.ts",
     "core/templates/pages/email-dashboard-pages/email-dashboard-page.component.html"
   ],
-  "core/templates/pages/email-dashboard-pages/email-dashboard-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/email-dashboard-pages/email-dashboard-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/pages/email-dashboard-pages/email-dashboard-page.component.ts"
-  ],
+  "core/templates/pages/email-dashboard-pages/email-dashboard-page.import.ts": [],
   "core/templates/pages/email-dashboard-pages/email-dashboard-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/pages/email-dashboard-pages/email-dashboard-page.component.ts",
@@ -4993,15 +4871,6 @@
     "core/templates/third-party-imports/midi-js.import.ts",
     "core/templates/third-party-imports/skulpt.import.ts",
     "core/templates/third-party-imports/ui-tree.import.ts",
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/exploration-editor-page/exploration-editor-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/pages/exploration-editor-page/editor-navigation/editor-navbar-breadcrumb.component.ts",
-    "core/templates/pages/exploration-editor-page/editor-navigation/editor-navigation.component.ts",
-    "core/templates/pages/exploration-editor-page/exploration-save-and-publish-buttons/exploration-save-and-publish-buttons.component.ts",
-    "core/templates/pages/exploration-editor-page/exploration-editor-page.component.ts",
-    "core/templates/base-components/base-content.component.ts",
     "core/templates/pages/exploration-editor-page/exploration-editor-page.mainpage.html"
   ],
   "core/templates/pages/exploration-editor-page/exploration-editor-page.mainpage.html": [
@@ -6601,7 +6470,6 @@
     "core/templates/services/contextual/url.service.ts",
     "core/templates/services/keyboard-shortcut.service.ts",
     "core/templates/services/page-title.service.ts",
-    "extensions/interactions/interactionsRequires.ts",
     "core/templates/pages/exploration-player-page/exploration-player-page.component.html"
   ],
   "core/templates/pages/exploration-player-page/exploration-player-page.constants.ts": [],
@@ -7077,7 +6945,6 @@
     "core/templates/services/keyboard-shortcut.service.ts",
     "core/templates/services/page-title.service.ts",
     "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-page.component.css",
-    "extensions/interactions/interactionsRequires.ts",
     "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-page.component.html"
   ],
   "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-page.constants.ts": [],
@@ -7476,13 +7343,7 @@
     "core/templates/pages/facilitator-dashboard-page/facilitator-dashboard-page.component.css",
     "core/templates/pages/facilitator-dashboard-page/facilitator-dashboard-page.component.html"
   ],
-  "core/templates/pages/facilitator-dashboard-page/facilitator-dashboard-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/facilitator-dashboard-page/facilitator-dashboard-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/base-components/base-content.component.ts"
-  ],
+  "core/templates/pages/facilitator-dashboard-page/facilitator-dashboard-page.import.ts": [],
   "core/templates/pages/facilitator-dashboard-page/facilitator-dashboard-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/pages/facilitator-dashboard-page/facilitator-dashboard-page.component.ts",
@@ -7574,7 +7435,6 @@
   ],
   "core/templates/pages/landing-pages/topic-landing-page/topic-landing-page.component.html": [],
   "core/templates/pages/landing-pages/topic-landing-page/topic-landing-page.component.ts": [
-    "core/templates/base-components/base-content.component.ts",
     "core/templates/domain/utilities/url-interpolation.service.ts",
     "core/templates/pages/landing-pages/topic-landing-page/topic-landing-page.constants.ts",
     "core/templates/services/contextual/url.service.ts",
@@ -7707,14 +7567,7 @@
     "core/templates/pages/learner-dashboard-page/learner-dashboard-page.constants.ts"
   ],
   "core/templates/pages/learner-dashboard-page/learner-dashboard-page.constants.ts": [],
-  "core/templates/pages/learner-dashboard-page/learner-dashboard-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/learner-dashboard-page/learner-dashboard-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/base-components/base-content.component.ts",
-    "core/templates/pages/learner-dashboard-page/learner-dashboard-page.component.ts"
-  ],
+  "core/templates/pages/learner-dashboard-page/learner-dashboard-page.import.ts": [],
   "core/templates/pages/learner-dashboard-page/learner-dashboard-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/components/summary-tile/learner-story-summary-tile.component.ts",
@@ -7875,13 +7728,7 @@
     "core/templates/pages/learner-group-pages/create-group/create-learner-group-page.component.css",
     "core/templates/pages/learner-group-pages/create-group/create-learner-group-page.component.html"
   ],
-  "core/templates/pages/learner-group-pages/create-group/create-learner-group-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/learner-group-pages/create-group/create-learner-group-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/base-components/base-content.component.ts"
-  ],
+  "core/templates/pages/learner-group-pages/create-group/create-learner-group-page.import.ts": [],
   "core/templates/pages/learner-group-pages/create-group/create-learner-group-page.module.ts": [
     "core/templates/pages/oppia-root/app.module.ts",
     "core/templates/components/shared-component.module.ts",
@@ -7938,13 +7785,7 @@
     "core/templates/pages/learner-group-pages/edit-group/edit-learner-group-page.component.css",
     "core/templates/pages/learner-group-pages/edit-group/edit-learner-group-page.component.html"
   ],
-  "core/templates/pages/learner-group-pages/edit-group/edit-learner-group-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/learner-group-pages/edit-group/edit-learner-group-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/base-components/base-content.component.ts"
-  ],
+  "core/templates/pages/learner-group-pages/edit-group/edit-learner-group-page.import.ts": [],
   "core/templates/pages/learner-group-pages/edit-group/edit-learner-group-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/pages/oppia-root/app.module.ts",
@@ -8428,13 +8269,7 @@
     "core/templates/pages/moderator-page/services/moderator-page-backend-api.service.ts",
     "core/templates/pages/moderator-page/moderator-page.component.html"
   ],
-  "core/templates/pages/moderator-page/moderator-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/moderator-page/moderator-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/pages/moderator-page/moderator-page.component.ts"
-  ],
+  "core/templates/pages/moderator-page/moderator-page.import.ts": [],
   "core/templates/pages/moderator-page/moderator-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/pages/moderator-page/moderator-page.component.ts",
@@ -8597,11 +8432,6 @@
   "core/templates/pages/practice-session-page/practice-session-page.constants.ts": [],
   "core/templates/pages/practice-session-page/practice-session-page.import.ts": [
     "core/templates/third-party-imports/ui-tree.import.ts",
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/practice-session-page/practice-session-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/pages/practice-session-page/practice-session-page.component.ts",
     "core/templates/pages/practice-session-page/practice-session-page.mainpage.html"
   ],
   "core/templates/pages/practice-session-page/practice-session-page.mainpage.html": [
@@ -8923,12 +8753,6 @@
   "core/templates/pages/review-test-page/review-test-page.constants.ts": [],
   "core/templates/pages/review-test-page/review-test-page.import.ts": [
     "core/templates/third-party-imports/ui-tree.import.ts",
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/review-test-page/review-test-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/base-components/base-content.component.ts",
-    "core/templates/pages/review-test-page/review-test-page.component.ts",
     "core/templates/pages/review-test-page/review-test-page.mainpage.html"
   ],
   "core/templates/pages/review-test-page/review-test-page.mainpage.html": [
@@ -9033,12 +8857,6 @@
   "core/templates/pages/skill-editor-page/skill-editor-page.import.ts": [
     "core/templates/third-party-imports/ui-codemirror.import.ts",
     "core/templates/third-party-imports/ui-tree.import.ts",
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/skill-editor-page/skill-editor-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/pages/skill-editor-page/navbar/skill-editor-navbar.component.ts",
-    "core/templates/pages/skill-editor-page/skill-editor-page.component.ts",
     "core/templates/pages/skill-editor-page/skill-editor-page.mainpage.html"
   ],
   "core/templates/pages/skill-editor-page/skill-editor-page.mainpage.html": [
@@ -9375,16 +9193,6 @@
   "core/templates/pages/story-editor-page/story-editor-page.constants.ts": [],
   "core/templates/pages/story-editor-page/story-editor-page.import.ts": [
     "core/templates/third-party-imports/dnd-lists.import.ts",
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/story-editor-page/story-editor-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/base-components/base-content.component.ts",
-    "core/templates/pages/story-editor-page/chapter-editor/chapter-editor-tab.component.ts",
-    "core/templates/pages/story-editor-page/story-preview-tab/story-preview-tab.component.ts",
-    "core/templates/pages/story-editor-page/navbar/story-editor-navbar-breadcrumb.component.ts",
-    "core/templates/pages/story-editor-page/navbar/story-editor-navbar.component.ts",
-    "core/templates/pages/story-editor-page/story-editor-page.component.ts",
     "core/templates/pages/story-editor-page/story-editor-page.mainpage.html"
   ],
   "core/templates/pages/story-editor-page/story-editor-page.mainpage.html": [
@@ -9664,12 +9472,6 @@
     "core/templates/pages/subtopic-viewer-page/subtopic-viewer-page.component.html"
   ],
   "core/templates/pages/subtopic-viewer-page/subtopic-viewer-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/subtopic-viewer-page/subtopic-viewer-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/base-components/base-content.component.ts",
-    "core/templates/pages/subtopic-viewer-page/subtopic-viewer-page.component.ts",
     "core/templates/pages/subtopic-viewer-page/subtopic-viewer-page.mainpage.html"
   ],
   "core/templates/pages/subtopic-viewer-page/subtopic-viewer-page.mainpage.html": [
@@ -9822,13 +9624,6 @@
     "core/templates/third-party-imports/dnd-lists.import.ts",
     "core/templates/third-party-imports/ui-codemirror.import.ts",
     "core/templates/third-party-imports/ui-tree.import.ts",
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/topic-editor-page/topic-editor-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/pages/topic-editor-page/navbar/topic-editor-navbar-breadcrumb.component.ts",
-    "core/templates/pages/topic-editor-page/navbar/topic-editor-navbar.component.ts",
-    "core/templates/pages/topic-editor-page/topic-editor-page.component.ts",
     "core/templates/pages/topic-editor-page/topic-editor-page.mainpage.html"
   ],
   "core/templates/pages/topic-editor-page/topic-editor-page.mainpage.html": [
@@ -10172,13 +9967,6 @@
     "core/templates/pages/topic-viewer-page/topic-viewer-page.component.html"
   ],
   "core/templates/pages/topic-viewer-page/topic-viewer-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/topic-viewer-page/topic-viewer-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/base-content.component.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/pages/topic-viewer-page/navbar-breadcrumb/topic-viewer-navbar-breadcrumb.component.ts",
-    "core/templates/pages/topic-viewer-page/topic-viewer-page.component.ts",
     "core/templates/pages/topic-viewer-page/topic-viewer-page.mainpage.html"
   ],
   "core/templates/pages/topic-viewer-page/topic-viewer-page.mainpage.html": [
@@ -10286,12 +10074,6 @@
     "core/templates/app.constants.ts"
   ],
   "core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/pages/topics-and-skills-dashboard-page/navbar/topics-and-skills-dashboard-navbar-breadcrumb.component.ts",
-    "core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.component.ts",
     "core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.mainpage.html"
   ],
   "core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.mainpage.html": [
@@ -10449,12 +10231,7 @@
     "core/templates/pages/voiceover-admin-page/modals/add-accent-to-voiceover-language-modal.component.ts",
     "core/templates/pages/voiceover-admin-page/voiceover-admin-page.component.html"
   ],
-  "core/templates/pages/voiceover-admin-page/voiceover-admin-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/voiceover-admin-page/voiceover-admin-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts"
-  ],
+  "core/templates/pages/voiceover-admin-page/voiceover-admin-page.import.ts": [],
   "core/templates/pages/voiceover-admin-page/voiceover-admin-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/pages/oppia-root/app.module.ts",
@@ -11566,9 +11343,7 @@
   "core/templates/services/svg-sanitizer.service.ts": [
     "core/templates/app.constants.ts"
   ],
-  "core/templates/services/translation-file-hash-loader-backend-api.service.ts": [
-    "core/templates/domain/utilities/url-interpolation.service.ts"
-  ],
+  "core/templates/services/translation-file-hash-loader-backend-api.service.ts": [],
   "core/templates/services/user-backend-api.service.ts": [
     "core/templates/domain/user/user-info.model.ts"
   ],
@@ -11620,13 +11395,7 @@
     "core/templates/base-components/base-content.component.ts",
     "core/templates/pages/oppia-root/oppia-root.component.ts"
   ],
-  "core/templates/tests/console_errors.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/tests/console_errors.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/base-content.component.ts",
-    "core/templates/base-components/oppia-root.directive.ts"
-  ],
+  "core/templates/tests/console_errors.import.ts": [],
   "core/templates/tests/console_errors.module.ts": [
     "core/templates/services/request-interceptor.service.ts",
     "core/templates/components/shared-component.module.ts",
@@ -11641,27 +11410,16 @@
     "core/templates/services/angular-services.index.ts"
   ],
   "core/templates/tests/unit-test-utils.ts": [],
-  "core/templates/third-party-imports/ckeditor.import.ts": [
-    "third_party/static/ckeditor-4.12.1/ckeditor.js"
-  ],
-  "core/templates/third-party-imports/dnd-lists.import.ts": [
-    "third_party/static/angular-drag-and-drop-lists-2.1.0/angular-drag-and-drop-lists.min.js"
-  ],
+  "core/templates/third-party-imports/ckeditor.import.ts": [],
+  "core/templates/third-party-imports/dnd-lists.import.ts": [],
   "core/templates/third-party-imports/gif-frames.import.ts": [],
   "core/templates/third-party-imports/guppy.import.ts": [],
-  "core/templates/third-party-imports/leaflet.import.ts": [
-    "third_party/static/angular-ui-leaflet-1.0.3/ui-leaflet.min.no-header.js",
-    "third_party/static/angular-simple-logger-0.1.7/angular-simple-logger.min.js"
-  ],
+  "core/templates/third-party-imports/leaflet.import.ts": [],
   "core/templates/third-party-imports/midi-js.import.ts": [],
-  "core/templates/third-party-imports/select2.import.ts": [
-    "third_party/static/select2-4.0.3/dist/js/select2.min.js"
-  ],
+  "core/templates/third-party-imports/select2.import.ts": [],
   "core/templates/third-party-imports/skulpt.import.ts": [],
   "core/templates/third-party-imports/ui-codemirror.import.ts": [],
-  "core/templates/third-party-imports/ui-tree.import.ts": [
-    "third_party/static/ui-tree-2.22.6/dist/angular-ui-tree.min.js"
-  ],
+  "core/templates/third-party-imports/ui-tree.import.ts": [],
   "core/templates/utility/forms.ts": [],
   "core/templates/utility/hashes.ts": [
     "assets/hashes.json"
@@ -11670,13 +11428,7 @@
   "core/tests/karma.conf.ts": [],
   "core/tests/protractor-browserstack.conf.js": [],
   "core/tests/typescript-extractor-utilities.ts": [],
-  "core/tests/url-to-angular-module-mapper.ts": [
-    "assets/constants.ts",
-    "core/tests/typescript-extractor-utilities.ts"
-  ],
-  "core/tests/wdio.conf.js": [
-    "core/tests/webdriverio_utils/WebdriverioConstants.js"
-  ],
+  "core/tests/wdio.conf.js": [],
   "core/tests/puppeteer/lighthouse_setup.js": [],
   "core/tests/puppeteer-acceptance-tests/functions/is-element-clickable.ts": [],
   "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/console-reporter.ts": [],
@@ -11904,38 +11656,8 @@
     "extensions/interactions/RatioExpressionInput/ratio-expression-input-interactions.module.ts",
     "extensions/interactions/PencilCodeEditor/pencil-code-editor-interactions.module.ts"
   ],
-  "extensions/interactions/interactionsQuestionsRequires.ts": [
-    "extensions/interactions/DragAndDropSortInput/DragAndDropSortInput.ts",
-    "extensions/interactions/FractionInput/FractionInput.ts",
-    "extensions/interactions/ImageClickInput/ImageClickInput.ts",
-    "extensions/interactions/ItemSelectionInput/ItemSelectionInput.ts",
-    "extensions/interactions/MultipleChoiceInput/MultipleChoiceInput.ts",
-    "extensions/interactions/NumberWithUnits/NumberWithUnits.ts",
-    "extensions/interactions/NumericInput/NumericInput.ts",
-    "extensions/interactions/TextInput/TextInput.ts"
-  ],
-  "extensions/interactions/interactionsRequires.ts": [
-    "extensions/interactions/AlgebraicExpressionInput/AlgebraicExpressionInput.ts",
-    "extensions/interactions/CodeRepl/CodeRepl.ts",
-    "extensions/interactions/Continue/Continue.ts",
-    "extensions/interactions/DragAndDropSortInput/DragAndDropSortInput.ts",
-    "extensions/interactions/EndExploration/EndExploration.ts",
-    "extensions/interactions/FractionInput/FractionInput.ts",
-    "extensions/interactions/GraphInput/GraphInput.ts",
-    "extensions/interactions/ImageClickInput/ImageClickInput.ts",
-    "extensions/interactions/InteractiveMap/InteractiveMap.ts",
-    "extensions/interactions/ItemSelectionInput/ItemSelectionInput.ts",
-    "extensions/interactions/MathEquationInput/MathEquationInput.ts",
-    "extensions/interactions/MultipleChoiceInput/MultipleChoiceInput.ts",
-    "extensions/interactions/MusicNotesInput/MusicNotesInput.ts",
-    "extensions/interactions/NumberWithUnits/NumberWithUnits.ts",
-    "extensions/interactions/NumericExpressionInput/NumericExpressionInput.ts",
-    "extensions/interactions/NumericInput/NumericInput.ts",
-    "extensions/interactions/PencilCodeEditor/PencilCodeEditor.ts",
-    "extensions/interactions/RatioExpressionInput/RatioExpressionInput.ts",
-    "extensions/interactions/SetInput/SetInput.ts",
-    "extensions/interactions/TextInput/TextInput.ts"
-  ],
+  "extensions/interactions/interactionsQuestionsRequires.ts": [],
+  "extensions/interactions/interactionsRequires.ts": [],
   "extensions/interactions/pencilcode.html": [],
   "extensions/interactions/rule-input-defs.ts": [
     "extensions/interactions/answer-defs.ts"
@@ -12003,13 +11725,7 @@
   ],
   "extensions/interactions/thumbnails.html": [],
   "extensions/interactions/ui_leaflet.html": [],
-  "extensions/interactions/AlgebraicExpressionInput/AlgebraicExpressionInput.ts": [
-    "extensions/interactions/AlgebraicExpressionInput/directives/algebraic-expression-input-rules.service.ts",
-    "extensions/interactions/AlgebraicExpressionInput/directives/algebraic-expression-input-validation.service.ts",
-    "extensions/interactions/AlgebraicExpressionInput/directives/oppia-interactive-algebraic-expression-input.component.ts",
-    "extensions/interactions/AlgebraicExpressionInput/directives/oppia-response-algebraic-expression-input.component.ts",
-    "extensions/interactions/AlgebraicExpressionInput/directives/oppia-short-response-algebraic-expression-input.component.ts"
-  ],
+  "extensions/interactions/AlgebraicExpressionInput/AlgebraicExpressionInput.ts": [],
   "extensions/interactions/AlgebraicExpressionInput/algebraic-expression-input-interactions.module.ts": [
     "extensions/interactions/AlgebraicExpressionInput/directives/oppia-interactive-algebraic-expression-input.component.ts",
     "extensions/interactions/AlgebraicExpressionInput/directives/oppia-response-algebraic-expression-input.component.ts",
@@ -12053,14 +11769,7 @@
     "core/templates/services/html-escaper.service.ts",
     "extensions/interactions/AlgebraicExpressionInput/directives/algebraic-expression-input-response.component.html"
   ],
-  "extensions/interactions/CodeRepl/CodeRepl.ts": [
-    "extensions/interactions/CodeRepl/static/code_repl.css",
-    "extensions/interactions/CodeRepl/directives/code-repl-rules.service.ts",
-    "extensions/interactions/CodeRepl/directives/code-repl-validation.service.ts",
-    "extensions/interactions/CodeRepl/directives/oppia-interactive-code-repl.component.ts",
-    "extensions/interactions/CodeRepl/directives/oppia-response-code-repl.component.ts",
-    "extensions/interactions/CodeRepl/directives/oppia-short-response-code-repl.component.ts"
-  ],
+  "extensions/interactions/CodeRepl/CodeRepl.ts": [],
   "extensions/interactions/CodeRepl/code-repl-interactions.module.ts": [
     "extensions/interactions/CodeRepl/directives/oppia-interactive-code-repl.component.ts",
     "core/templates/directives/directives.module.ts",
@@ -12107,13 +11816,7 @@
     "extensions/interactions/CodeRepl/directives/code-repl-short-response.component.html"
   ],
   "extensions/interactions/CodeRepl/static/code_repl.css": [],
-  "extensions/interactions/Continue/Continue.ts": [
-    "extensions/interactions/Continue/directives/continue-rules.service.ts",
-    "extensions/interactions/Continue/directives/continue-validation.service.ts",
-    "extensions/interactions/Continue/directives/oppia-interactive-continue.component.ts",
-    "extensions/interactions/Continue/directives/oppia-response-continue.component.ts",
-    "extensions/interactions/Continue/directives/oppia-short-response-continue.component.ts"
-  ],
+  "extensions/interactions/Continue/Continue.ts": [],
   "extensions/interactions/Continue/continue-interactions.module.ts": [
     "extensions/interactions/Continue/directives/oppia-response-continue.component.ts",
     "extensions/interactions/Continue/directives/oppia-short-response-continue.component.ts",
@@ -12148,13 +11851,7 @@
     "core/templates/services/html-escaper.service.ts",
     "extensions/interactions/Continue/directives/continue-short-response.component.html"
   ],
-  "extensions/interactions/DragAndDropSortInput/DragAndDropSortInput.ts": [
-    "extensions/interactions/DragAndDropSortInput/directives/drag-and-drop-sort-input-rules.service.ts",
-    "extensions/interactions/DragAndDropSortInput/directives/drag-and-drop-sort-input-validation.service.ts",
-    "extensions/interactions/DragAndDropSortInput/directives/oppia-interactive-drag-and-drop-sort-input.component.ts",
-    "extensions/interactions/DragAndDropSortInput/directives/oppia-response-drag-and-drop-sort-input.component.ts",
-    "extensions/interactions/DragAndDropSortInput/directives/oppia-short-response-drag-and-drop-sort-input.component.ts"
-  ],
+  "extensions/interactions/DragAndDropSortInput/DragAndDropSortInput.ts": [],
   "extensions/interactions/DragAndDropSortInput/drag-and-drop-sort-input-interactions.module.ts": [
     "core/templates/components/interaction-display/dynamic-content.module.ts",
     "core/templates/modules/material.module.ts",
@@ -12203,13 +11900,7 @@
     "extensions/interactions/answer-defs.ts",
     "extensions/interactions/DragAndDropSortInput/directives/drag-and-drop-sort-input-short-response.component.html"
   ],
-  "extensions/interactions/EndExploration/EndExploration.ts": [
-    "extensions/interactions/EndExploration/directives/end-exploration-rules.service.ts",
-    "extensions/interactions/EndExploration/directives/end-exploration-validation.service.ts",
-    "extensions/interactions/EndExploration/directives/oppia-interactive-end-exploration.component.ts",
-    "extensions/interactions/EndExploration/directives/oppia-response-end-exploration.component.ts",
-    "extensions/interactions/EndExploration/directives/oppia-short-response-end-exploration.component.ts"
-  ],
+  "extensions/interactions/EndExploration/EndExploration.ts": [],
   "extensions/interactions/EndExploration/end-exploration-interactions.module.ts": [
     "extensions/interactions/EndExploration/directives/oppia-interactive-end-exploration.component.ts",
     "extensions/interactions/EndExploration/directives/oppia-response-end-exploration.component.ts",
@@ -12244,13 +11935,7 @@
   "extensions/interactions/EndExploration/directives/oppia-short-response-end-exploration.component.ts": [
     "extensions/interactions/EndExploration/directives/end-exploration-short-response.component.html"
   ],
-  "extensions/interactions/FractionInput/FractionInput.ts": [
-    "extensions/interactions/FractionInput/directives/fraction-input-rules.service.ts",
-    "extensions/interactions/FractionInput/directives/fraction-input-validation.service.ts",
-    "extensions/interactions/FractionInput/directives/oppia-interactive-fraction-input.component.ts",
-    "extensions/interactions/FractionInput/directives/oppia-response-fraction-input.component.ts",
-    "extensions/interactions/FractionInput/directives/oppia-short-response-fraction-input.component.ts"
-  ],
+  "extensions/interactions/FractionInput/FractionInput.ts": [],
   "extensions/interactions/FractionInput/fraction-input-interactions.module.ts": [
     "extensions/interactions/FractionInput/directives/oppia-interactive-fraction-input.component.ts",
     "extensions/interactions/FractionInput/directives/oppia-response-fraction-input.component.ts",
@@ -12302,13 +11987,7 @@
     "core/templates/services/html-escaper.service.ts",
     "extensions/interactions/FractionInput/directives/fraction-input-short-response.component.html"
   ],
-  "extensions/interactions/GraphInput/GraphInput.ts": [
-    "extensions/interactions/GraphInput/directives/graph-input-rules.service.ts",
-    "extensions/interactions/GraphInput/directives/graph-input-validation.service.ts",
-    "extensions/interactions/GraphInput/directives/oppia-interactive-graph-input.component.ts",
-    "extensions/interactions/GraphInput/directives/oppia-response-graph-input.component.ts",
-    "extensions/interactions/GraphInput/directives/oppia-short-response-graph-input.component.ts"
-  ],
+  "extensions/interactions/GraphInput/GraphInput.ts": [],
   "extensions/interactions/GraphInput/graph-input-interactions.module.ts": [
     "extensions/interactions/GraphInput/directives/graph-viz.component.ts",
     "extensions/interactions/GraphInput/directives/oppia-interactive-graph-input.component.ts",
@@ -12368,11 +12047,10 @@
     "extensions/interactions/GraphInput/directives/graph-input-interaction.component.html"
   ],
   "extensions/interactions/GraphInput/directives/oppia-response-graph-input.component.ts": [
-    "core/templates/domain/utilities/url-interpolation.service.ts",
-    "extensions/interactions/GraphInput/directives/graph-detail.service.ts",
-    "core/templates/services/html-escaper.service.ts",
     "extensions/interactions/interactions-extension.constants.ts",
     "extensions/interactions/answer-defs.ts",
+    "core/templates/services/html-escaper.service.ts",
+    "extensions/interactions/GraphInput/directives/graph-detail.service.ts",
     "extensions/interactions/GraphInput/directives/graph-input-response.component.html"
   ],
   "extensions/interactions/GraphInput/directives/oppia-short-response-graph-input.component.ts": [
@@ -12380,13 +12058,7 @@
     "core/templates/services/html-escaper.service.ts",
     "extensions/interactions/GraphInput/directives/graph-input-short-response.component.html"
   ],
-  "extensions/interactions/ImageClickInput/ImageClickInput.ts": [
-    "extensions/interactions/ImageClickInput/directives/image-click-input-rules.service.ts",
-    "extensions/interactions/ImageClickInput/directives/image-click-input-validation.service.ts",
-    "extensions/interactions/ImageClickInput/directives/oppia-interactive-image-click-input.component.ts",
-    "extensions/interactions/ImageClickInput/directives/oppia-response-image-click-input.component.ts",
-    "extensions/interactions/ImageClickInput/directives/oppia-short-response-image-click-input.component.ts"
-  ],
+  "extensions/interactions/ImageClickInput/ImageClickInput.ts": [],
   "extensions/interactions/ImageClickInput/image-click-input-interactions.module.ts": [
     "extensions/interactions/ImageClickInput/directives/oppia-interactive-image-click-input.component.ts",
     "extensions/interactions/ImageClickInput/directives/oppia-response-image-click-input.component.ts",
@@ -12431,13 +12103,7 @@
     "core/templates/services/html-escaper.service.ts",
     "extensions/interactions/ImageClickInput/directives/image-click-input-short-response.component.html"
   ],
-  "extensions/interactions/InteractiveMap/InteractiveMap.ts": [
-    "extensions/interactions/InteractiveMap/directives/interactive-map-rules.service.ts",
-    "extensions/interactions/InteractiveMap/directives/interactive-map-validation.service.ts",
-    "extensions/interactions/InteractiveMap/directives/oppia-interactive-interactive-map.component.ts",
-    "extensions/interactions/InteractiveMap/directives/oppia-response-interactive-map.component.ts",
-    "extensions/interactions/InteractiveMap/directives/oppia-short-response-interactive-map.component.ts"
-  ],
+  "extensions/interactions/InteractiveMap/InteractiveMap.ts": [],
   "extensions/interactions/InteractiveMap/interactive-map-interactions.module.ts": [
     "extensions/interactions/InteractiveMap/directives/oppia-interactive-interactive-map.component.ts",
     "extensions/interactions/InteractiveMap/directives/oppia-response-interactive-map.component.ts",
@@ -12477,13 +12143,7 @@
     "core/templates/services/html-escaper.service.ts",
     "extensions/interactions/InteractiveMap/directives/interactive-map-short-response.component.html"
   ],
-  "extensions/interactions/ItemSelectionInput/ItemSelectionInput.ts": [
-    "extensions/interactions/ItemSelectionInput/directives/item-selection-input-rules.service.ts",
-    "extensions/interactions/ItemSelectionInput/directives/item-selection-input-validation.service.ts",
-    "extensions/interactions/ItemSelectionInput/directives/oppia-interactive-item-selection-input.component.ts",
-    "extensions/interactions/ItemSelectionInput/directives/oppia-response-item-selection-input.component.ts",
-    "extensions/interactions/ItemSelectionInput/directives/oppia-short-response-item-selection-input.component.ts"
-  ],
+  "extensions/interactions/ItemSelectionInput/ItemSelectionInput.ts": [],
   "extensions/interactions/ItemSelectionInput/item-selection-input-interactions.module.ts": [
     "core/templates/components/interaction-display/dynamic-content.module.ts",
     "core/templates/modules/material.module.ts",
@@ -12538,13 +12198,7 @@
     "extensions/interactions/ItemSelectionInput/directives/item-selection-input-short-response.component.html"
   ],
   "extensions/interactions/ItemSelectionInput/static/item_selection_input.css": [],
-  "extensions/interactions/MathEquationInput/MathEquationInput.ts": [
-    "extensions/interactions/MathEquationInput/directives/math-equation-input-rules.service.ts",
-    "extensions/interactions/MathEquationInput/directives/math-equation-input-validation.service.ts",
-    "extensions/interactions/MathEquationInput/directives/oppia-interactive-math-equation-input.component.ts",
-    "extensions/interactions/MathEquationInput/directives/oppia-response-math-equation-input.component.ts",
-    "extensions/interactions/MathEquationInput/directives/oppia-short-response-math-equation-input.component.ts"
-  ],
+  "extensions/interactions/MathEquationInput/MathEquationInput.ts": [],
   "extensions/interactions/MathEquationInput/math-equation-input-interactions.module.ts": [
     "core/templates/modules/material.module.ts",
     "extensions/interactions/MathEquationInput/directives/oppia-interactive-math-equation-input.component.ts",
@@ -12590,13 +12244,7 @@
     "core/templates/services/html-escaper.service.ts",
     "extensions/interactions/MathEquationInput/directives/math-equation-input-short-response.component.html"
   ],
-  "extensions/interactions/MultipleChoiceInput/MultipleChoiceInput.ts": [
-    "extensions/interactions/MultipleChoiceInput/directives/multiple-choice-input-rules.service.ts",
-    "extensions/interactions/MultipleChoiceInput/directives/multiple-choice-input-validation.service.ts",
-    "extensions/interactions/MultipleChoiceInput/directives/oppia-interactive-multiple-choice-input.component.ts",
-    "extensions/interactions/MultipleChoiceInput/directives/oppia-response-multiple-choice-input.component.ts",
-    "extensions/interactions/MultipleChoiceInput/directives/oppia-short-response-multiple-choice-input.component.ts"
-  ],
+  "extensions/interactions/MultipleChoiceInput/MultipleChoiceInput.ts": [],
   "extensions/interactions/MultipleChoiceInput/multiple-choice-input-interactions.module.ts": [
     "core/templates/components/interaction-display/dynamic-content.module.ts",
     "extensions/interactions/MultipleChoiceInput/directives/oppia-interactive-multiple-choice-input.component.ts",
@@ -12652,14 +12300,7 @@
     "extensions/interactions/MultipleChoiceInput/directives/multiple-choice-input-short-response.component.html"
   ],
   "extensions/interactions/MultipleChoiceInput/static/multiple_choice_input.css": [],
-  "extensions/interactions/MusicNotesInput/MusicNotesInput.ts": [
-    "extensions/interactions/MusicNotesInput/static/music_notes_input.css",
-    "extensions/interactions/MusicNotesInput/directives/music-notes-input-rules.service.ts",
-    "extensions/interactions/MusicNotesInput/directives/music-notes-input-validation.service.ts",
-    "extensions/interactions/MusicNotesInput/directives/oppia-interactive-music-notes-input.component.ts",
-    "extensions/interactions/MusicNotesInput/directives/oppia-response-music-notes-input.component.ts",
-    "extensions/interactions/MusicNotesInput/directives/oppia-short-response-music-notes-input.component.ts"
-  ],
+  "extensions/interactions/MusicNotesInput/MusicNotesInput.ts": [],
   "extensions/interactions/MusicNotesInput/music-notes-input-interactions.module.ts": [
     "core/templates/modules/material.module.ts",
     "extensions/interactions/MusicNotesInput/directives/oppia-interactive-music-notes-input.component.ts",
@@ -12706,13 +12347,7 @@
     "extensions/interactions/MusicNotesInput/directives/music-notes-input-short-response.component.html"
   ],
   "extensions/interactions/MusicNotesInput/static/music_notes_input.css": [],
-  "extensions/interactions/NumberWithUnits/NumberWithUnits.ts": [
-    "extensions/interactions/NumberWithUnits/directives/number-with-units-rules.service.ts",
-    "extensions/interactions/NumberWithUnits/directives/number-with-units-validation.service.ts",
-    "extensions/interactions/NumberWithUnits/directives/oppia-interactive-number-with-units.component.ts",
-    "extensions/interactions/NumberWithUnits/directives/oppia-response-number-with-units.component.ts",
-    "extensions/interactions/NumberWithUnits/directives/oppia-short-response-number-with-units.component.ts"
-  ],
+  "extensions/interactions/NumberWithUnits/NumberWithUnits.ts": [],
   "extensions/interactions/NumberWithUnits/number-with-units-interactions.module.ts": [
     "extensions/interactions/NumberWithUnits/directives/oppia-help-modal-number-with-units.component.ts",
     "extensions/interactions/NumberWithUnits/directives/oppia-interactive-number-with-units.component.ts",
@@ -12767,13 +12402,7 @@
     "extensions/interactions/answer-defs.ts",
     "extensions/interactions/NumberWithUnits/directives/number-with-units-short-response.component.html"
   ],
-  "extensions/interactions/NumericExpressionInput/NumericExpressionInput.ts": [
-    "extensions/interactions/NumericExpressionInput/directives/numeric-expression-input-rules.service.ts",
-    "extensions/interactions/NumericExpressionInput/directives/numeric-expression-input-validation.service.ts",
-    "extensions/interactions/NumericExpressionInput/directives/oppia-interactive-numeric-expression-input.component.ts",
-    "extensions/interactions/NumericExpressionInput/directives/oppia-response-numeric-expression-input.component.ts",
-    "extensions/interactions/NumericExpressionInput/directives/oppia-short-response-numeric-expression-input.component.ts"
-  ],
+  "extensions/interactions/NumericExpressionInput/NumericExpressionInput.ts": [],
   "extensions/interactions/NumericExpressionInput/numeric-expression-input-interactions.module.ts": [
     "core/templates/modules/material.module.ts",
     "extensions/interactions/NumericExpressionInput/directives/oppia-short-response-numeric-expression-input.component.ts",
@@ -12816,13 +12445,7 @@
     "core/templates/services/html-escaper.service.ts",
     "extensions/interactions/NumericExpressionInput/directives/numeric-expression-input-short-response.component.html"
   ],
-  "extensions/interactions/NumericInput/NumericInput.ts": [
-    "extensions/interactions/NumericInput/directives/numeric-input-rules.service.ts",
-    "extensions/interactions/NumericInput/directives/numeric-input-validation.service.ts",
-    "extensions/interactions/NumericInput/directives/oppia-interactive-numeric-input.component.ts",
-    "extensions/interactions/NumericInput/directives/oppia-response-numeric-input.component.ts",
-    "extensions/interactions/NumericInput/directives/oppia-short-response-numeric-input.component.ts"
-  ],
+  "extensions/interactions/NumericInput/NumericInput.ts": [],
   "extensions/interactions/NumericInput/numeric-input-interactions.module.ts": [
     "core/templates/modules/material.module.ts",
     "core/templates/components/forms/shared-forms.module.ts",
@@ -12864,13 +12487,7 @@
     "core/templates/services/number-conversion.service.ts",
     "extensions/interactions/NumericInput/directives/numeric-input-short-response.component.html"
   ],
-  "extensions/interactions/PencilCodeEditor/PencilCodeEditor.ts": [
-    "extensions/interactions/PencilCodeEditor/directives/pencil-code-editor-rules.service.ts",
-    "extensions/interactions/PencilCodeEditor/directives/pencil-code-editor-validation.service.ts",
-    "extensions/interactions/PencilCodeEditor/directives/oppia-interactive-pencil-code-editor.component.ts",
-    "extensions/interactions/PencilCodeEditor/directives/oppia-response-pencil-code-editor.component.ts",
-    "extensions/interactions/PencilCodeEditor/directives/oppia-short-response-pencil-code-editor.component.ts"
-  ],
+  "extensions/interactions/PencilCodeEditor/PencilCodeEditor.ts": [],
   "extensions/interactions/PencilCodeEditor/pencil-code-editor-interactions.module.ts": [
     "core/templates/modules/material.module.ts",
     "extensions/interactions/PencilCodeEditor/directives/oppia-interactive-pencil-code-editor.component.ts",
@@ -12918,13 +12535,7 @@
   "extensions/interactions/PencilCodeEditor/directives/pencil-code-reset-confirmation.component.ts": [
     "extensions/interactions/PencilCodeEditor/directives/pencil-code-reset-confirmation.component.html"
   ],
-  "extensions/interactions/RatioExpressionInput/RatioExpressionInput.ts": [
-    "extensions/interactions/RatioExpressionInput/directives/ratio-expression-input-rules.service.ts",
-    "extensions/interactions/RatioExpressionInput/directives/ratio-expression-input-validation.service.ts",
-    "extensions/interactions/RatioExpressionInput/directives/oppia-interactive-ratio-expression-input.component.ts",
-    "extensions/interactions/RatioExpressionInput/directives/oppia-response-ratio-expression-input.component.ts",
-    "extensions/interactions/RatioExpressionInput/directives/oppia-short-response-ratio-expression-input.component.ts"
-  ],
+  "extensions/interactions/RatioExpressionInput/RatioExpressionInput.ts": [],
   "extensions/interactions/RatioExpressionInput/ratio-expression-input-interactions.module.ts": [
     "extensions/interactions/RatioExpressionInput/directives/oppia-interactive-ratio-expression-input.component.ts",
     "extensions/interactions/RatioExpressionInput/directives/oppia-response-ratio-expression-input.component.ts",
@@ -12973,13 +12584,7 @@
     "core/templates/app.constants.ts",
     "extensions/interactions/answer-defs.ts"
   ],
-  "extensions/interactions/SetInput/SetInput.ts": [
-    "extensions/interactions/SetInput/directives/set-input-rules.service.ts",
-    "extensions/interactions/SetInput/directives/set-input-validation.service.ts",
-    "extensions/interactions/SetInput/directives/oppia-interactive-set-input.component.ts",
-    "extensions/interactions/SetInput/directives/oppia-response-set-input.component.ts",
-    "extensions/interactions/SetInput/directives/oppia-short-response-set-input.component.ts"
-  ],
+  "extensions/interactions/SetInput/SetInput.ts": [],
   "extensions/interactions/SetInput/set-input-interactions.module.ts": [
     "core/templates/components/forms/shared-forms.module.ts",
     "extensions/interactions/SetInput/directives/oppia-interactive-set-input.component.ts",
@@ -13023,14 +12628,7 @@
     "core/templates/domain/exploration/rule.model.ts",
     "extensions/interactions/rule-input-defs.ts"
   ],
-  "extensions/interactions/TextInput/TextInput.ts": [
-    "extensions/interactions/TextInput/text-input-prediction.service.ts",
-    "extensions/interactions/TextInput/directives/text-input-rules.service.ts",
-    "extensions/interactions/TextInput/directives/text-input-validation.service.ts",
-    "extensions/interactions/TextInput/directives/oppia-interactive-text-input.component.ts",
-    "extensions/interactions/TextInput/directives/oppia-response-text-input.component.ts",
-    "extensions/interactions/TextInput/directives/oppia-short-response-text-input.component.ts"
-  ],
+  "extensions/interactions/TextInput/TextInput.ts": [],
   "extensions/interactions/TextInput/text-input-interactions.module.ts": [
     "core/templates/components/forms/shared-forms.module.ts",
     "core/templates/filters/shared-pipes.module.ts",
@@ -13135,53 +12733,8 @@
     "extensions/objects/templates/parameter-name-editor.component.ts",
     "extensions/rich_text_components/rich-text-components.module.ts"
   ],
-  "extensions/objects/objectComponentsRequires.ts": [
-    "extensions/objects/templates/algebraic-expression-editor.component.ts",
-    "extensions/objects/templates/boolean-editor.component.ts",
-    "extensions/objects/templates/code-string-editor.component.ts",
-    "extensions/objects/templates/coord-two-dim-editor.component.ts",
-    "extensions/objects/templates/allowed-variables-editor.component.ts",
-    "extensions/objects/templates/drag-and-drop-positive-int-editor.component.ts",
-    "extensions/objects/templates/filepath-editor.component.ts",
-    "extensions/objects/templates/fraction-editor.component.ts",
-    "extensions/objects/templates/graph-editor.component.ts",
-    "extensions/objects/templates/graph-property-editor.component.ts",
-    "extensions/objects/templates/html-editor.component.ts",
-    "extensions/objects/templates/image-with-regions-editor.component.ts",
-    "extensions/objects/templates/int-editor.component.ts",
-    "extensions/objects/templates/list-of-sets-of-translatable-html-content-ids-editor.component.ts",
-    "extensions/objects/templates/list-of-tabs-editor.component.ts",
-    "extensions/objects/templates/list-of-unicode-string-editor.component.ts",
-    "extensions/objects/templates/math-equation-editor.component.ts",
-    "extensions/objects/templates/math-expression-content-editor.component.ts",
-    "extensions/objects/templates/music-phrase-editor.component.ts",
-    "extensions/objects/templates/nonnegative-int-editor.component.ts",
-    "extensions/objects/templates/normalized-string-editor.component.ts",
-    "extensions/objects/templates/number-with-units-editor.component.ts",
-    "extensions/objects/templates/numeric-expression-editor.component.ts",
-    "extensions/objects/templates/parameter-name-editor.component.ts",
-    "extensions/objects/templates/position-of-terms-editor.component.ts",
-    "extensions/objects/templates/positive-int-editor.component.ts",
-    "extensions/objects/templates/ratio-expression-editor.component.ts",
-    "extensions/objects/templates/real-editor.component.ts",
-    "extensions/objects/templates/sanitized-url-editor.component.ts",
-    "extensions/objects/templates/set-of-algebraic-identifier-editor.component.ts",
-    "extensions/objects/templates/translatable-html-content-id.component.ts",
-    "extensions/objects/templates/set-of-translatable-html-content-ids-editor.component.ts",
-    "extensions/objects/templates/translatable-set-of-normalized-string-editor.component.ts",
-    "extensions/objects/templates/translatable-set-of-unicode-string-editor.component.ts",
-    "extensions/objects/templates/set-of-unicode-string-editor.component.ts",
-    "extensions/objects/templates/skill-selector-editor.component.ts",
-    "extensions/objects/templates/subtitled-html-editor.component.ts",
-    "extensions/objects/templates/subtitled-unicode-editor.component.ts",
-    "extensions/objects/templates/svg-editor.component.ts",
-    "extensions/objects/templates/unicode-string-editor.component.ts"
-  ],
-  "extensions/objects/objectComponentsRequiresForPlayers.ts": [
-    "extensions/objects/templates/math-expression-content-editor.component.ts",
-    "extensions/objects/templates/sanitized-url-editor.component.ts",
-    "extensions/objects/templates/list-of-tabs-editor.component.ts"
-  ],
+  "extensions/objects/objectComponentsRequires.ts": [],
+  "extensions/objects/objectComponentsRequiresForPlayers.ts": [],
   "extensions/objects/templates/algebraic-expression-editor.component.html": [],
   "extensions/objects/templates/algebraic-expression-editor.component.ts": [
     "core/templates/app.constants.ts",
@@ -13521,15 +13074,7 @@
     "extensions/rich_text_components/rte-output-display.component.ts",
     "core/templates/components/common-layout-directives/common-elements/common-elements.module.ts"
   ],
-  "extensions/rich_text_components/richTextComponentsRequires.ts": [
-    "extensions/rich_text_components/Collapsible/directives/oppia-noninteractive-collapsible.component.ts",
-    "extensions/rich_text_components/Image/directives/oppia-noninteractive-image.component.ts",
-    "extensions/rich_text_components/Link/directives/oppia-noninteractive-link.component.ts",
-    "extensions/rich_text_components/Math/directives/oppia-noninteractive-math.component.ts",
-    "extensions/rich_text_components/Skillreview/directives/oppia-noninteractive-skillreview.component.ts",
-    "extensions/rich_text_components/Tabs/directives/oppia-noninteractive-tabs.component.ts",
-    "extensions/rich_text_components/Video/directives/oppia-noninteractive-video.component.ts"
-  ],
+  "extensions/rich_text_components/richTextComponentsRequires.ts": [],
   "extensions/rich_text_components/rte-output-display.component.html": [
     "extensions/rich_text_components/rte-output-display.component.ts",
     "extensions/rich_text_components/Collapsible/directives/oppia-noninteractive-collapsible.component.ts",
@@ -13611,10 +13156,7 @@
     "extensions/rich_text_components/Video/directives/video.component.html"
   ],
   "extensions/rich_text_components/Video/directives/video.component.html": [],
-  "extensions/value_generators/valueGeneratorsRequires.ts": [
-    "extensions/value_generators/templates/copier.component.ts",
-    "extensions/value_generators/templates/random-selector.component.ts"
-  ],
+  "extensions/value_generators/valueGeneratorsRequires.ts": [],
   "extensions/value_generators/templates/Copier.component.html": [],
   "extensions/value_generators/templates/RandomSelector.component.html": [
     "core/templates/components/forms/schema-based-editors/schema-based-editor.component.ts"
@@ -13665,12 +13207,7 @@
     "extensions/visualizations/oppia-visualization-sorted-tiles.component.css",
     "extensions/visualizations/oppia-visualization-sorted-tiles.component.html"
   ],
-  "extensions/visualizations/visualizationsRequires.ts": [
-    "extensions/visualizations/oppia-visualization-click-hexbins.directive.ts",
-    "extensions/visualizations/oppia-visualization-enumerated-frequency-table.directive.ts",
-    "extensions/visualizations/oppia-visualization-frequency-table.directive.ts",
-    "extensions/visualizations/oppia-visualization-sorted-tiles.component.ts"
-  ],
+  "extensions/visualizations/visualizationsRequires.ts": [],
   "src/index.html": [
     "core/templates/pages/lightweight-oppia-root/lightweight-oppia-root.component.ts"
   ],
