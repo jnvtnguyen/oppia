@@ -498,10 +498,12 @@ export class DependencyGraphGenerator {
     visited.add(filePath);
 
     let references = this.getFilesWithDepedency(filePath, ignoreModules);
+    /*
     if (references.length === 0 && ignoreModules) {
       ignoreModules = false;
       references = this.getFilesWithDepedency(filePath, ignoreModules);
     }
+    */
 
     if (references.length === 0) {
       return [filePath];
@@ -532,20 +534,9 @@ export class DependencyGraphGenerator {
         dependencyExtractor.extractDepedenciesFromFile(filePath);
     }
 
-    fs.writeFileSync(
-      path.resolve(ROOT_DIRECTORY, '_dependency-graph.json'),
-      JSON.stringify(this.dependenciesMapping, null, 2)
-    );
-
     for (const filePath of this.files) {
-      let ignoreModules = true;
-      if (this.fileAngularInformationsMapping[filePath].some(
-        (information) => information.type === 'module')
-      ) {
-        ignoreModules = false;
-      }
       this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(
-        filePath, ignoreModules);
+        filePath);
     }
 
     return this.dependencyGraph;
