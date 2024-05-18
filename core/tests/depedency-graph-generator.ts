@@ -51,19 +51,21 @@ type AngularInformation =
   | AngularComponentInformation
   | AngularDirectiveOrPipeInformation;
 
+const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
+
+// List of exclusions from the .gitignore file.
+const GIT_IGNORE_EXCLUSIONS = fs
+  .readFileSync(path.resolve(ROOT_DIRECTORY, '.gitignore'), 'utf8')
+  .split('\n')
+  .filter(line => line && !line.startsWith('#'));
+
 // List of directories to exclude from the search.
 const SEARCH_EXCLUSIONS = [
-  'node_modules',
-  'dist',
-  'build',
+  ...GIT_IGNORE_EXCLUSIONS,
   'types',
   'typings',
-  'local_compiled_js_for_test',
-  'third_party',
-  'webpack_bundles',
   'scripts',
   '.direnv',
-  'backend_prod_files',
   'core/tests/build_sources',
   'core/tests/data',
   'core/tests/load_tests',
@@ -93,8 +95,6 @@ const SEARCH_FILE_EXTENSIONS = [
   '.css',
   'CODEOWNERS',
 ];
-
-const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
 
 export class DependencyExtractor {
   typescriptHost: ts.CompilerHost;
@@ -172,11 +172,11 @@ export class DependencyExtractor {
           `The module with path: ${resolvedModulePath}, does not exist, occured at ${filePath}.`
         );
       }
-      // We need to add the mainpage file as a depedency if the file is an import file since
-      // it is loaded by webpack.
       fileDepedencies.push(resolvedModulePath);
     });
 
+    // We need to add the mainpage file as a depedency if the file is an import file since
+    // it is loaded by Webpack.
     if (filePath.endsWith('.import.ts')) {
       const mainpageFilePath = filePath.replace('.import.ts', '.mainpage.html');
       if (fs.existsSync(path.join(ROOT_DIRECTORY, mainpageFilePath))) {

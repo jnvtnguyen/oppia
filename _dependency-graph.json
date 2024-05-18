@@ -11667,12 +11667,8 @@
     "assets/hashes.json"
   ],
   "core/templates/utility/string-utility.ts": [],
-  "core/tests/depedency-graph-generator.js": [
-    "core/tests/typescript-extractor-utilities.ts"
-  ],
   "core/tests/karma.conf.ts": [],
   "core/tests/protractor-browserstack.conf.js": [],
-  "core/tests/typescript-extractor-utilities.js": [],
   "core/tests/typescript-extractor-utilities.ts": [],
   "core/tests/url-to-angular-module-mapper.ts": [
     "assets/constants.ts",
@@ -11857,14 +11853,6 @@
   ],
   "extensions/classifiers/text-input.tokenizer.ts": [],
   "extensions/classifiers/winnowing-preprocessing.service.ts": [],
-  "extensions/classifiers/proto/text_classifier.ts": [],
-  "extensions/classifiers/proto/text_classifier_pb.js": [],
-  "extensions/classifiers/proto/training_job_response_payload.ts": [
-    "extensions/classifiers/proto/text_classifier.ts"
-  ],
-  "extensions/classifiers/proto/training_job_response_payload_pb.js": [
-    "extensions/classifiers/proto/text_classifier_pb.js"
-  ],
   "extensions/interactions/answer-defs.ts": [],
   "extensions/interactions/base-interaction-validation.service.ts": [
     "core/templates/domain/exploration/AnswerGroupObjectFactory.ts",

@@ -41717,20 +41717,13 @@
     "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-page.module.ts",
     "extensions/visualizations/visualizationsRequires.ts"
   ],
-  "core/tests/depedency-graph-generator.js": [
-    "core/tests/depedency-graph-generator.js"
-  ],
   "core/tests/karma.conf.ts": [
     "core/tests/karma.conf.ts"
   ],
   "core/tests/protractor-browserstack.conf.js": [
     "core/tests/protractor-browserstack.conf.js"
   ],
-  "core/tests/typescript-extractor-utilities.js": [
-    "core/tests/typescript-extractor-utilities.js"
-  ],
   "core/tests/typescript-extractor-utilities.ts": [
-    "core/tests/depedency-graph-generator.js",
     "core/tests/url-to-angular-module-mapper.ts"
   ],
   "core/tests/url-to-angular-module-mapper.ts": [
@@ -42259,49 +42252,6 @@
     "core/templates/tests/console_errors.import.ts",
     "core/templates/AppSpec.ts",
     "core/templates/domain/question/QuestionObjectFactorySpec.ts"
-  ],
-  "extensions/classifiers/proto/text_classifier.ts": [
-    "extensions/classifiers/proto/training_job_response_payload.ts",
-    "core/templates/pages/skill-editor-page/skill-editor-page.import.ts",
-    "core/templates/pages/topic-editor-page/topic-editor-page.import.ts",
-    "core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.import.ts",
-    "core/templates/pages/exploration-editor-page/exploration-editor-page.import.ts",
-    "core/templates/pages/admin-page/admin-page.import.ts",
-    "core/templates/pages/blog-admin-page/blog-admin-page.import.ts",
-    "core/templates/pages/blog-dashboard-page/blog-dashboard-page.import.ts",
-    "core/templates/pages/classroom-admin-page/classroom-admin-page.import.ts",
-    "core/templates/pages/collection-editor-page/collection-editor-page.import.ts",
-    "core/templates/pages/collection-player-page/collection-player-page.import.ts",
-    "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.import.ts",
-    "core/templates/pages/creator-dashboard-page/creator-dashboard-page.import.ts",
-    "core/templates/pages/diagnostic-test-player-page/diagnostic-test-player-page.import.ts",
-    "core/templates/pages/email-dashboard-pages/email-dashboard-page.import.ts",
-    "core/templates/pages/facilitator-dashboard-page/facilitator-dashboard-page.import.ts",
-    "core/templates/pages/learner-dashboard-page/learner-dashboard-page.import.ts",
-    "core/templates/pages/learner-group-pages/create-group/create-learner-group-page.import.ts",
-    "core/templates/pages/learner-group-pages/edit-group/edit-learner-group-page.import.ts",
-    "core/templates/pages/moderator-page/moderator-page.import.ts",
-    "core/templates/pages/practice-session-page/practice-session-page.import.ts",
-    "core/templates/pages/review-test-page/review-test-page.import.ts",
-    "core/templates/pages/story-editor-page/story-editor-page.import.ts",
-    "core/templates/pages/subtopic-viewer-page/subtopic-viewer-page.import.ts",
-    "core/templates/pages/topic-viewer-page/topic-viewer-page.import.ts",
-    "core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.import.ts",
-    "core/templates/pages/voiceover-admin-page/voiceover-admin-page.import.ts",
-    "core/templates/tests/console_errors.import.ts",
-    "core/templates/domain/question/QuestionObjectFactorySpec.ts",
-    "core/templates/AppSpec.ts",
-    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-page.module.ts",
-    "extensions/interactions/interactionsQuestionsRequires.ts"
-  ],
-  "extensions/classifiers/proto/text_classifier_pb.js": [
-    "extensions/classifiers/proto/training_job_response_payload_pb.js"
-  ],
-  "extensions/classifiers/proto/training_job_response_payload.ts": [
-    "extensions/classifiers/proto/training_job_response_payload.ts"
-  ],
-  "extensions/classifiers/proto/training_job_response_payload_pb.js": [
-    "extensions/classifiers/proto/training_job_response_payload_pb.js"
   ],
   "extensions/interactions/answer-defs.ts": [
     "core/templates/pages/skill-editor-page/skill-editor-page.import.ts",
