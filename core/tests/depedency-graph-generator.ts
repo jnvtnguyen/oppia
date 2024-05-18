@@ -66,6 +66,7 @@ const SEARCH_EXCLUSIONS = [
   'typings',
   'scripts',
   '.direnv',
+  'src',
   'core/tests/build_sources',
   'core/tests/data',
   'core/tests/load_tests',
@@ -77,6 +78,9 @@ const SEARCH_EXCLUSIONS = [
   'core/tests/puppeteer-acceptance-tests/build',
   'core/tests/depedency-graph-generator.ts',
   'core/tests/test-url-to-angular-module-matcher.ts',
+  'core/templates/services/UpgradedServices.ts',
+  'core/templates/services/angular-services.index.ts',
+  'core/templates/pages/oppia-root/routing/app.routing.module.ts',
   'webpack.common.config.ts',
   'webpack.common.macros.ts',
   'webpack.dev.config.ts',
@@ -479,9 +483,9 @@ export class DependencyGraphGenerator {
         this.dependenciesMapping[key].includes(depedencyFilePath) &&
         (!ignoreModules ||
           !this.fileAngularInformationsMapping[key].some(
-            information => information.type === 'module'
-          ))
-    );
+            information => information.type === 'module')
+          )
+        );
   }
 
   /**
@@ -498,12 +502,10 @@ export class DependencyGraphGenerator {
     visited.add(filePath);
 
     let references = this.getFilesWithDepedency(filePath, ignoreModules);
-    /*
     if (references.length === 0 && ignoreModules) {
       ignoreModules = false;
       references = this.getFilesWithDepedency(filePath, ignoreModules);
     }
-    */
 
     if (references.length === 0) {
       return [filePath];
@@ -533,6 +535,11 @@ export class DependencyGraphGenerator {
       this.dependenciesMapping[filePath] =
         dependencyExtractor.extractDepedenciesFromFile(filePath);
     }
+
+    fs.writeFileSync(
+      path.resolve(ROOT_DIRECTORY, 'dependencies-mapping.json'),
+      JSON.stringify(this.dependenciesMapping, null, 2)
+    );
 
     for (const filePath of this.files) {
       this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(
