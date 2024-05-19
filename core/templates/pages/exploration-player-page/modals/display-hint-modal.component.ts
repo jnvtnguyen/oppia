@@ -58,7 +58,7 @@ export class DisplayHintModalComponent {
       this.index
     );
     if (displayHint === null) {
-      throw new Error('Hint not found.');
+      throw new Error('Hint not found. Testing...');
     }
     this.hint = displayHint;
     this.displayedCard = this.playerTranscriptService.getCard(
