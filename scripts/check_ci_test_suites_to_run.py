@@ -48,7 +48,7 @@ DEPEDENCY_GRAPH_PATH = os.path.join(OPPIA_DIRECTORY, 'dependency-graph.json')
 
 class TestSuiteDict(TypedDict):
     suite_name: str
-    module_path: Optional[str]
+    module_path: Optional[str] = None
     
 class TestSuitesByTypeMappingDict(TypedDict):
     e2e: List[TestSuiteDict]
@@ -176,7 +176,7 @@ def output_test_suites_to_run_to_github_workflow(
     test_suites_to_run: List[TestSuiteDict]
 ) -> None:
     with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as o:
-        print(f'{output_variable}={json.dumps([test_suite.pop('module_path') for test_suite in test_suites_to_run])}', file=o)
+        print(f'{output_variable}={json.dumps(test_suites_to_run)}', file=o)
         print(f'{output_variable}_COUNT={len(test_suites_to_run)}', file=o)
         
 
