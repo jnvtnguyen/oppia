@@ -167,7 +167,7 @@ jobs:
       - name: (Artifact re-build) Build Webpack
         if: steps.download_artifact_1.outcome == 'failure'
         run: python -m scripts.build --prod_env
-      - name: Run E2E Test ${{ matrix.suite.name }}
+      - name: Run E2E Test ${{ matrix.suite.suite_name }}
         uses: oppia/retry@a9fb265410e634c84ee90f3e87f323fde0541037
         with:
           max_attempts: 2
@@ -176,7 +176,7 @@ jobs:
             VIDEO_RECORDING_IS_ENABLED=0;
             xvfb-run -a --server-args="-screen 0, 1285x1000x24"
             python -m scripts.run_e2e_tests --skip-install
-            --skip-build --suite=${{ matrix.suite.name }} --prod_env
+            --skip-build --suite=${{ matrix.suite.suite_name }} --prod_env
       - name: Uploading webdriverio-video as Artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
@@ -207,7 +207,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        shard: ${{ fromJson(needs.check_tests_to_run.outputs.LIGHTHOUSE_TEST_SUITES_TO_RUN) }}
+        suite: ${{ fromJson(needs.check_tests_to_run.outputs.LIGHTHOUSE_TEST_SUITES_TO_RUN) }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -272,7 +272,7 @@ jobs:
         run: python -m scripts.install_chrome_for_ci
       - name: Run Lighthouse performance checks shard
         if: startsWith(github.head_ref, 'update-changelog-for-release') == false
-        run: python -m scripts.run_lighthouse_tests --mode performance --shard ${{ matrix.shard }} --skip_build --record_screen
+        run: python -m scripts.run_lighthouse_tests --mode performance --shard ${{ matrix.suite.suite_name }} --skip_build --record_screen
       - name: Uploading puppeteer video as Artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
@@ -357,9 +357,9 @@ jobs:
       - name: (Artifact re-build) Build Webpack
         if: steps.download_artifact_1.outcome == 'failure'
         run: python -m scripts.build --prod_env
-      - name: Run Desktop Acceptance Test ${{ matrix.suite.name }}
+      - name: Run Desktop Acceptance Test ${{ matrix.suite.suite_name }}
         run: xvfb-run -a --server-args="-screen 0, 1285x1000x24" python -m scripts.run_acceptance_tests --skip-build --suite=${{ matrix.suite.name }} --prod_env
-      - name: Run Mobile Acceptance Test ${{ matrix.suite.name }}
+      - name: Run Mobile Acceptance Test ${{ matrix.suite.suite_name }}
         run: xvfb-run -a --server-args="-screen 0, 1285x1000x24" python -m scripts.run_acceptance_tests --skip-build --suite=${{ matrix.suite.name }} --prod_env --mobile
       - name: Uploading webpack bundles as an artifact
         if: ${{ failure() }}

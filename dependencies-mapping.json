@@ -8480,6 +8480,11 @@
   "core/templates/pages/oppia-root/routing/access-validation-backend-api.service.ts": [
     "core/templates/domain/utilities/url-interpolation.service.ts"
   ],
+  "core/templates/pages/oppia-root/routing/app.route-definitions.ts": [
+    "core/templates/app.constants.ts",
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts",
+    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts"
+  ],
   "core/templates/pages/participation-playbook/playbook-page-root.component.html": [
     "core/templates/base-components/base-content.component.ts",
     "core/templates/components/oppia-angular-root.component.ts",
@@ -10997,12 +11002,8 @@
     "assets/hashes.json"
   ],
   "core/templates/utility/string-utility.ts": [],
-  "core/tests/dependency-graph-generator.ts": [
-    "core/tests/typescript-extractor-utilities.ts"
-  ],
   "core/tests/karma.conf.ts": [],
   "core/tests/protractor-browserstack.conf.js": [],
-  "core/tests/typescript-extractor-utilities.ts": [],
   "core/tests/wdio.conf.js": [
     "core/tests/webdriverio_utils/WebdriverioConstants.js"
   ],
