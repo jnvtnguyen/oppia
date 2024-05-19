@@ -185,6 +185,9 @@ def get_test_suites_affected_by_module(
     for test_suite, modules in test_suites_to_modules_mapping.items():
         if module in modules:
             affected_tests.append(test_suite)
+        # We also should check if the module is the actual test suite.
+        if module.rsplit('.', 1)[0] == test_suite:
+            affected_tests.append(test_suite)
     return affected_tests
         
         

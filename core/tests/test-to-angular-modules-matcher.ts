@@ -24,18 +24,16 @@ import {
   DefaultUrlSerializer,
   UrlSegment,
   UrlSegmentGroup,
-  Route,
+  Route
 } from '@angular/router';
-import constants from '../../assets/constants';
 import {
   TypescriptExtractorUtilities,
   readTypescriptConfig,
 } from './typescript-extractor-utilities';
+import {routeDefinitions} from
+  '../../core/templates/pages/oppia-root/routing/app.route-definitions';
 
 const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
-
-const APP_ROUTING_MODULE_PATH =
-  'core/templates/pages/oppia-root/routing/app.routing.module.ts';
 
 const ANGULAR_JS_URL_TO_MODULE_MAPPING = {};
 
@@ -58,13 +56,20 @@ export class TestToAngularModulesMatcher {
     };
   }
 
-  private matchUrl(url: string, route: Route): boolean {
+  private matchUrl(
+    url: string,
+    route: Route
+  ): boolean {
     const urlSerializer = new DefaultUrlSerializer();
     const urlTree = urlSerializer.parse(url);
     const segments: UrlSegment[] = urlTree.root.children.primary.segments;
     const segmentGroup: UrlSegmentGroup = urlTree.root.children.primary;
 
-    const parts = route.path!.split('/');
+    if (!route.path) {
+      return false;
+    }
+
+    const parts = route.path.split('/');
     if (parts.length > segments.length) {
       return false;
     }
@@ -92,83 +97,14 @@ export class TestToAngularModulesMatcher {
 
   private getAngularUrlToModuleMapping(): Map<Route, string> {
     const urlToAngularModuleMapping: Map<Route, string> = new Map();
-    const appRoutingModuleSourceFile = this.typescriptHost.getSourceFile(
-      path.resolve(ROOT_DIRECTORY, APP_ROUTING_MODULE_PATH),
-      ts.ScriptTarget.ES2020
-    );
-    if (!appRoutingModuleSourceFile) {
-      throw new Error(`Failed to read app routing module source file.`);
+
+    for (const routeDefinition of routeDefinitions) {
+      urlToAngularModuleMapping.set({
+        path: routeDefinition.path,
+        pathMatch: routeDefinition.pathMatch,
+      }, routeDefinition.module);
     }
-
-    appRoutingModuleSourceFile.forEachChild((node: any) => {
-      // First we look for the actual routes variable statement.
-      if (ts.isVariableStatement(node)) {
-        const declaration: any = node.declarationList.declarations[0];
-        const declarationName = declaration.name.getText(
-          appRoutingModuleSourceFile
-        );
-        if (declarationName !== 'routes') {
-          return;
-        }
-        // This array contains all the routes defined in the app routing module.
-        const arrayElements = declaration.initializer.elements;
-        for (const element of arrayElements) {
-          let constantsClone: any = {...constants};
-          let url: string | undefined;
-          let pathMatch: string | undefined;
-          let module: string | undefined;
-
-          // We iterate over the properties of each route.
-          for (const property of element.properties) {
-            const propertyName = property.name.getText(
-              appRoutingModuleSourceFile
-            );
-            if (propertyName === 'path') {
-              // If we are parsing the path property we need to iterate over the
-              // different accessors into the constants object using a stack.
-              const stack: string[] = [];
-              let initializer = property.initializer;
-              while (initializer.expression) {
-                stack.push(
-                  initializer.name.getText(appRoutingModuleSourceFile)
-                );
-                initializer = initializer.expression;
-              }
-              while (stack.length) {
-                const accessor = stack.pop();
-                if (accessor) {
-                  constantsClone = constantsClone[accessor];
-                }
-              }
-              url = constantsClone;
-            } else if (propertyName === 'pathMatch') {
-              pathMatch = property.initializer.getText(
-                appRoutingModuleSourceFile
-              );
-            } else if (propertyName === 'loadChildren') {
-              const loadChildren = property.initializer.getText(
-                appRoutingModuleSourceFile
-              );
-              const angularModule = /['"](.*?)['"]/.exec(loadChildren);
-              if (angularModule) {
-                const resolvedModulePath =
-                  this.typescriptExtractorUtilities.resolveModulePathToFilePath(
-                    this.typescriptExtractorUtilities.resolveExpressionIntoString(
-                      angularModule[0]
-                    ),
-                    APP_ROUTING_MODULE_PATH
-                  );
-                module = resolvedModulePath;
-              }
-            }
-          }
-          if (url && module) {
-            urlToAngularModuleMapping.set({path: module, pathMatch}, url);
-          }
-        }
-      }
-    });
-
+    
     return urlToAngularModuleMapping;
   }
 
@@ -185,7 +121,9 @@ export class TestToAngularModulesMatcher {
     }
 
     if (!matched) {
-      throw new Error(`No Angular module found for the URL: ${url}.`);
+      throw new Error(
+        `No Angular module found for the URL: ${url}.`
+      );
     }
   }
 
@@ -193,21 +131,19 @@ export class TestToAngularModulesMatcher {
     const goldenFileContent = fs.readFileSync(goldenFilePath, 'utf-8');
     const goldenModules = goldenFileContent.split('\n').filter(Boolean);
     const missingModules = goldenModules.filter(
-      module => !this.collectedTestAngularModules.includes(module)
+      (module) => !this.collectedTestAngularModules.includes(module)
     );
     if (missingModules.length) {
       throw new Error(
         `The following Angular modules are missing from the golden file 
-          at the path ${goldenFilePath}:\n${missingModules.join('\n')}`
-      );
+          at the path 
+          ${goldenFilePath}:\n${missingModules.join('\n')}`
+      )
     }
     const generatedGoldenFilePath = path.resolve(
       path.dirname(goldenFilePath),
       `generated-${path.basename(goldenFilePath)}`
     );
-    fs.writeFileSync(
-      generatedGoldenFilePath,
-      this.collectedTestAngularModules.join('\n')
-    );
+    fs.writeFileSync(generatedGoldenFilePath, this.collectedTestAngularModules.join('\n'));
   }
 }
