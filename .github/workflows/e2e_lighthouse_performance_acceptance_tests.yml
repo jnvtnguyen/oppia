@@ -26,6 +26,8 @@ jobs:
       TOTAL_ACCEPTANCE_TEST_SUITE_COUNT: ${{ steps.check_test_suites_to_run.outputs.TOTAL_ACCEPTANCE_TEST_SUITE_COUNT }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v4
         with:
           python-version: '3.8.15'
