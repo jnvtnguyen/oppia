@@ -38,6 +38,7 @@ jobs:
         id: check_test_suites_to_run
         run: python -m scripts.check_ci_test_suites_to_run --github_head_ref="origin/${{ github.event.pull_request.head.ref }}" --github_base_ref="origin/${{ github.event.pull_request.base.ref }}"
   lighthouse:
+    needs: check_test_suites_to_run
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
