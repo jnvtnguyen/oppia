@@ -41,6 +41,18 @@ jobs:
             requirements_dev.in
             requirements_dev.txt
       - uses: ./.github/actions/merge
+      - name: Cache node modules
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: /home/runner/work/oppia/yarn_cache
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - uses: ./.github/actions/install-oppia-dependencies
       - name: Check test suites to run
         id: check_test_suites_to_run
         run: python -m scripts.check_ci_test_suites_to_run --github_head_ref="origin/${{ github.event.pull_request.head.ref }}" --github_base_ref="origin/${{ github.event.pull_request.base.ref }}"
