@@ -230,12 +230,12 @@ def get_test_suites_affected_by_module(
     module: str,
     test_suites_to_modules_mapping: dict[str, List[str]],
     all_test_suites: List[TestSuiteDict]
-) -> List[str]:
+) -> List[TestSuiteDict]:
     affected_tests = []
     # If any of the test suites are not in the mapping, we should run them.
     for test_suite in all_test_suites:
         if test_suite.get('suite_name') not in test_suites_to_modules_mapping.keys():
-            affected_tests.append(test_suite.get('suite_name'))
+            affected_tests.append(test_suite)
     for test_suite_name, modules in test_suites_to_modules_mapping.items():
         test_suite = next(
             (test_suite for test_suite in all_test_suites if
@@ -243,9 +243,9 @@ def get_test_suites_affected_by_module(
             None
         )
         if module in modules:
-            affected_tests.append(test_suite.suite_name)
+            affected_tests.append(test_suite)
         if module == test_suite.module_path:
-            affected_tests.append(test_suite.suite_name)
+            affected_tests.append(test_suite)
     return affected_tests
         
         
@@ -253,7 +253,7 @@ def collect_ci_test_suites_to_run(
     modified_files: List[str],
     dependency_graph: dict
 ) -> TestSuitesByTypeMappingDict:
-    modified_modules = ['test.js']
+    modified_modules = []
     for file_path in modified_files:
         if file_path not in dependency_graph:
             return {
