@@ -52,7 +52,8 @@ const routeDefinitions: RouteDefinition[] = [
   {
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.DIAGNOSTIC_TEST_PLAYER
       .ROUTE,
-    module: 'pages/diagnostic-test-player-page/diagnostic-test-player-page.module',
+    module:
+      'pages/diagnostic-test-player-page/diagnostic-test-player-page.module',
     class: 'DiagnosticTestPlayerPageModule',
   },
   {
@@ -74,20 +75,26 @@ const routeDefinitions: RouteDefinition[] = [
     canActivate: [IsLoggedInGuard],
   },
   {
-    path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.LEARNER_GROUP_EDITOR.ROUTE,
-    module: 'pages/learner-group-pages/edit-group/edit-learner-group-page.module',
+    path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.LEARNER_GROUP_EDITOR
+      .ROUTE,
+    module:
+      'pages/learner-group-pages/edit-group/edit-learner-group-page.module',
     class: 'EditLearnerGroupPageModule',
     canActivate: [IsLoggedInGuard],
   },
   {
-    path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.FACILITATOR_DASHBOARD.ROUTE,
-    module: 'pages/facilitator-dashboard-page/facilitator-dashboard-page.module',
+    path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.FACILITATOR_DASHBOARD
+      .ROUTE,
+    module:
+      'pages/facilitator-dashboard-page/facilitator-dashboard-page.module',
     class: 'FacilitatorDashboardPageModule',
     canActivate: [IsLoggedInGuard],
   },
   {
-    path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.LEARNER_GROUP_CREATOR.ROUTE,
-    module: 'pages/learner-group-pages/create-group/create-learner-group-page.module',
+    path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.LEARNER_GROUP_CREATOR
+      .ROUTE,
+    module:
+      'pages/learner-group-pages/create-group/create-learner-group-page.module',
     class: 'CreateLearnerGroupPage',
     canActivate: [IsLoggedInGuard],
   },
@@ -102,9 +109,10 @@ const routeDefinitions: RouteDefinition[] = [
     class: 'AboutFoundationPageModule',
   },
   {
-    path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.CONTRIBUTOR_DASHBOARD_ADMIN
-      .ROUTE,
-    module: 'pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.module',
+    path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND
+      .CONTRIBUTOR_DASHBOARD_ADMIN.ROUTE,
+    module:
+      'pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.module',
     class: 'ContributorDashboardAdminPageModule',
     canActivate: [IsLoggedInGuard],
   },
@@ -121,7 +129,8 @@ const routeDefinitions: RouteDefinition[] = [
   },
   {
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.NEW_LESSON_PLAYER.ROUTE,
-    module: 'pages/exploration-player-page/new-lesson-player/lesson-player-page.module',
+    module:
+      'pages/exploration-player-page/new-lesson-player/lesson-player-page.module',
     class: 'NewLessonPlayerPageModule',
     canActivate: [IsNewLessonPlayerGuard],
   },
@@ -139,7 +148,8 @@ const routeDefinitions: RouteDefinition[] = [
   {
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.PENDING_ACCOUNT_DELETION
       .ROUTE,
-    module: 'pages/pending-account-deletion-page/pending-account-deletion-page.module',
+    module:
+      'pages/pending-account-deletion-page/pending-account-deletion-page.module',
     class: 'PendingAccountDeletionPageModule',
   },
   {
@@ -267,9 +277,11 @@ const routeDefinitions: RouteDefinition[] = [
     class: 'VolunteerPageModule',
   },
   {
-    path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.LEARNER_GROUP_VIEWER.ROUTE,
+    path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.LEARNER_GROUP_VIEWER
+      .ROUTE,
     pathMatch: 'full',
-    module: 'pages/learner-group-pages/view-group/view-learner-group-page.module',
+    module:
+      'pages/learner-group-pages/view-group/view-learner-group-page.module',
     class: 'ViewLearnerGroupPageModule',
   },
   {
@@ -279,7 +291,8 @@ const routeDefinitions: RouteDefinition[] = [
     class: 'BlogHomePageModule',
   },
   {
-    path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.BLOG_HOMEPAGE_SEARCH.ROUTE,
+    path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.BLOG_HOMEPAGE_SEARCH
+      .ROUTE,
     pathMatch: 'full',
     module: 'pages/blog-home-page/blog-home-page.module',
     class: 'BlogHomePageModule',
@@ -308,7 +321,7 @@ const routeDefinitions: RouteDefinition[] = [
     pathMatch: 'full',
     module: 'pages/collection-player-page/collection-player-page.module',
     class: 'CollectionPlayerPageModule',
-  }
+  },
 ];
 
 // Register stewards landing pages.
@@ -326,7 +339,8 @@ for (let key in AppConstants.AVAILABLE_LANDING_PAGES) {
   for (let i = 0; i < AppConstants.AVAILABLE_LANDING_PAGES[key].length; i++) {
     routeDefinitions.push({
       path: key + '/' + AppConstants.AVAILABLE_LANDING_PAGES[key][i],
-      module: 'pages/landing-pages/topic-landing-page/topic-landing-page.module',
+      module:
+        'pages/landing-pages/topic-landing-page/topic-landing-page.module',
       class: 'TopicLandingPageModule',
     });
   }

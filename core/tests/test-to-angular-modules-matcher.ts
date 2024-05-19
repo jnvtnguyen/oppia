@@ -24,14 +24,13 @@ import {
   DefaultUrlSerializer,
   UrlSegment,
   UrlSegmentGroup,
-  Route
+  Route,
 } from '@angular/router';
 import {
   TypescriptExtractorUtilities,
   readTypescriptConfig,
 } from './typescript-extractor-utilities';
-import {routeDefinitions} from
-  '../../core/templates/pages/oppia-root/routing/app.route-definitions';
+import {routeDefinitions} from '../../core/templates/pages/oppia-root/routing/app.route-definitions';
 
 const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
 
@@ -56,10 +55,7 @@ export class TestToAngularModulesMatcher {
     };
   }
 
-  private matchUrl(
-    url: string,
-    route: Route
-  ): boolean {
+  private matchUrl(url: string, route: Route): boolean {
     const urlSerializer = new DefaultUrlSerializer();
     const urlTree = urlSerializer.parse(url);
     const segments: UrlSegment[] = urlTree.root.children.primary.segments;
@@ -99,12 +95,15 @@ export class TestToAngularModulesMatcher {
     const urlToAngularModuleMapping: Map<Route, string> = new Map();
 
     for (const routeDefinition of routeDefinitions) {
-      urlToAngularModuleMapping.set({
-        path: routeDefinition.path,
-        pathMatch: routeDefinition.pathMatch,
-      }, routeDefinition.module);
+      urlToAngularModuleMapping.set(
+        {
+          path: routeDefinition.path,
+          pathMatch: routeDefinition.pathMatch,
+        },
+        routeDefinition.module
+      );
     }
-    
+
     return urlToAngularModuleMapping;
   }
 
@@ -121,9 +120,7 @@ export class TestToAngularModulesMatcher {
     }
 
     if (!matched) {
-      throw new Error(
-        `No Angular module found for the URL: ${url}.`
-      );
+      throw new Error(`No Angular module found for the URL: ${url}.`);
     }
   }
 
@@ -131,19 +128,22 @@ export class TestToAngularModulesMatcher {
     const goldenFileContent = fs.readFileSync(goldenFilePath, 'utf-8');
     const goldenModules = goldenFileContent.split('\n').filter(Boolean);
     const missingModules = goldenModules.filter(
-      (module) => !this.collectedTestAngularModules.includes(module)
+      module => !this.collectedTestAngularModules.includes(module)
     );
     if (missingModules.length) {
       throw new Error(
         `The following Angular modules are missing from the golden file 
           at the path 
           ${goldenFilePath}:\n${missingModules.join('\n')}`
-      )
+      );
     }
     const generatedGoldenFilePath = path.resolve(
       path.dirname(goldenFilePath),
       `generated-${path.basename(goldenFilePath)}`
     );
-    fs.writeFileSync(generatedGoldenFilePath, this.collectedTestAngularModules.join('\n'));
+    fs.writeFileSync(
+      generatedGoldenFilePath,
+      this.collectedTestAngularModules.join('\n')
+    );
   }
 }
