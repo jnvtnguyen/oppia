@@ -90,7 +90,7 @@ jobs:
           name: build_files
           path: /home/runner/work/oppia/build_files.zip
           retention-days: 1
-    e2e_test:
+  e2e_test:
     needs: [build, check_tests_to_run]
     runs-on:  ${{ matrix.os }}
     strategy:
