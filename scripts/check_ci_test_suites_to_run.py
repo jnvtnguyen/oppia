@@ -246,7 +246,7 @@ def get_test_suites_affected_by_module(
             affected_tests.append(test_suite)
         if module == test_suite.module_path:
             affected_tests.append(test_suite)
-    return affected_tests
+    return set(affected_tests)
         
         
 def collect_ci_test_suites_to_run(
@@ -320,9 +320,7 @@ def main(args: Optional[list[str]] = None) -> None:
             ENVIRONMENT_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_OUTPUT, ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES)
         return
     
-    print('Generating dependency graph...')
     generate_dependency_graph.main()
-    print('Successfully generated dependency graph.')
 
     with open(DEPEDENCY_GRAPH_PATH, 'r', encoding='utf-8') as f:
         dependency_graph = json.load(f)
