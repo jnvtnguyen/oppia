@@ -29436,6 +29436,9 @@
     "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-page.module.ts",
     "extensions/visualizations/visualizationsRequires.ts"
   ],
+  "core/tests/dependency-graph-generator.ts": [
+    "core/tests/dependency-graph-generator.ts"
+  ],
   "core/tests/karma.conf.ts": [
     "core/tests/karma.conf.ts"
   ],
@@ -29443,7 +29446,7 @@
     "core/tests/protractor-browserstack.conf.js"
   ],
   "core/tests/typescript-extractor-utilities.ts": [
-    "core/tests/typescript-extractor-utilities.ts"
+    "core/tests/dependency-graph-generator.ts"
   ],
   "core/tests/wdio.conf.js": [
     "core/tests/wdio.conf.js"

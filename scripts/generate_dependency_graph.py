@@ -11,15 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""A script to generate a dependency graph of the Oppia codebase."""
+
 from __future__ import annotations
 
 import subprocess
 
+
 def main() -> None:
     cmd = (
         './node_modules/typescript/bin/tsc --esModuleInterop %s' %
-        './core/tests/depedency-graph-generator.ts && %s' %
-        'node core/tests/depedency-graph-generator.js')
+        './core/tests/dependency-graph-generator.ts && %s' %
+        'node core/tests/dependency-graph-generator.js')
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     
@@ -30,6 +34,7 @@ def main() -> None:
         raise Exception(stderr)
     
     print(encoded_stdout.decode('utf-8'))
+
 
 # The 'no coverage' pragma is used as this line is un-testable. This is because
 # it will only be called when build.py is used as a script.

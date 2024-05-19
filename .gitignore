@@ -24,7 +24,7 @@ core/tests/.browserstack.env
 core/tests/puppeteer-acceptance-tests/build
 core/tests/dependency-graph-generator.js
 core/tests/typescript-extractor-utilities.js
-core/tests/test-url-to-angular-module-matcher.js
+core/tests/test-to-angular-modules-matcher.js
 node_modules/*
 # .angular is temp folder used by angular to put logs and other artefacts.
 .angular/*

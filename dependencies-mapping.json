@@ -10997,6 +10997,9 @@
     "assets/hashes.json"
   ],
   "core/templates/utility/string-utility.ts": [],
+  "core/tests/dependency-graph-generator.ts": [
+    "core/tests/typescript-extractor-utilities.ts"
+  ],
   "core/tests/karma.conf.ts": [],
   "core/tests/protractor-browserstack.conf.js": [],
   "core/tests/typescript-extractor-utilities.ts": [],
