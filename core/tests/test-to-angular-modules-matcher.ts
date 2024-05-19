@@ -17,15 +17,16 @@
  * Angular modules.
  */
 
-import constants from '../../assets/constants';
 import path from 'path';
+import fs from 'fs';
 import ts from 'typescript';
 import {
   DefaultUrlSerializer,
   UrlSegment,
   UrlSegmentGroup,
-  Route
+  Route,
 } from '@angular/router';
+import constants from '../../assets/constants';
 import {
   TypescriptExtractorUtilities,
   readTypescriptConfig,
@@ -57,10 +58,7 @@ export class TestToAngularModulesMatcher {
     };
   }
 
-  private matchUrl(
-    url: string,
-    route: Route
-  ): boolean {
+  private matchUrl(url: string, route: Route): boolean {
     const urlSerializer = new DefaultUrlSerializer();
     const urlTree = urlSerializer.parse(url);
     const segments: UrlSegment[] = urlTree.root.children.primary.segments;
@@ -92,18 +90,7 @@ export class TestToAngularModulesMatcher {
     return true;
   }
 
-  public registerUrl(url: string): void {
-    for (const [module, route] of Object.entries(this.urlToModuleMapping)) {
-      if (
-        this.matchUrl(url, route) &&
-        !this.collectedTestAngularModules.includes(module)
-      ) {
-        this.collectedTestAngularModules.push(module);
-      }
-    }
-  }
-
-  public getAngularUrlToModuleMapping(): Map<Route, string> {
+  private getAngularUrlToModuleMapping(): Map<Route, string> {
     const urlToAngularModuleMapping: Map<Route, string> = new Map();
     const appRoutingModuleSourceFile = this.typescriptHost.getSourceFile(
       path.resolve(ROOT_DIRECTORY, APP_ROUTING_MODULE_PATH),
@@ -183,5 +170,44 @@ export class TestToAngularModulesMatcher {
     });
 
     return urlToAngularModuleMapping;
+  }
+
+  public registerUrl(url: string): void {
+    let matched = false;
+    for (const [module, route] of Object.entries(this.urlToModuleMapping)) {
+      if (
+        this.matchUrl(url, route) &&
+        !this.collectedTestAngularModules.includes(module)
+      ) {
+        this.collectedTestAngularModules.push(module);
+        matched = true;
+      }
+    }
+
+    if (!matched) {
+      throw new Error(`No Angular module found for the URL: ${url}.`);
+    }
+  }
+
+  public compareAndOutputModules(goldenFilePath: string): void {
+    const goldenFileContent = fs.readFileSync(goldenFilePath, 'utf-8');
+    const goldenModules = goldenFileContent.split('\n').filter(Boolean);
+    const missingModules = goldenModules.filter(
+      module => !this.collectedTestAngularModules.includes(module)
+    );
+    if (missingModules.length) {
+      throw new Error(
+        `The following Angular modules are missing from the golden file 
+          at the path ${goldenFilePath}:\n${missingModules.join('\n')}`
+      );
+    }
+    const generatedGoldenFilePath = path.resolve(
+      path.dirname(goldenFilePath),
+      `generated-${path.basename(goldenFilePath)}`
+    );
+    fs.writeFileSync(
+      generatedGoldenFilePath,
+      this.collectedTestAngularModules.join('\n')
+    );
   }
 }

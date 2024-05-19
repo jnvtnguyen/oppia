@@ -37,9 +37,10 @@ _PARSER.add_argument(
     '--github_base_ref', type=str, required=True,
 )
 
-ENVIRONMENT_E2E_TEST_SUITES_OUTPUT = 'E2E_TEST_SUITES'
-ENVIRONMENT_ACCEPTANCE_TEST_SUITES_OUTPUT = 'ACCEPTANCE_TEST_SUITES'
-ENVIRONMENT_LIGHTHOUSE_TEST_SUITES_OUTPUT = 'LIGHTHOUSE_TEST_SUITES'
+ENVIRONMENT_E2E_TEST_SUITES_OUTPUT = 'E2E_TEST_SUITES_TO_RUN'
+ENVIRONMENT_ACCEPTANCE_TEST_SUITES_OUTPUT = 'ACCEPTANCE_TEST_SUITES_TO_RUN'
+ENVIRONMENT_LIGHTHOUSE_TEST_SUITES_OUTPUT = 'LIGHTHOUSE_TEST_SUITES_TO_RUN'
+ENVIRONMENT_TOTAL_TEST_SUITE_COUNT_OUTPUT = 'TOTAL_TEST_SUITE_COUNT'
 
 FILE_DIRECTORY: Final = os.path.abspath(os.path.dirname(__file__))
 OPPIA_DIRECTORY: Final = os.path.join(FILE_DIRECTORY, os.pardir)
@@ -52,7 +53,7 @@ class TestTypeSuiteMappingDict(TypedDict):
     e2e: List[TestSuiteDict]
     acceptance: List[TestSuiteDict]
     lighthouse: List[TestSuiteDict]
-
+    
 ALL_E2E_TEST_SUITES = [
     TestSuiteDict(name='accessibility'),
     TestSuiteDict(name='additionalEditorFeatures'),
@@ -148,12 +149,46 @@ def does_diff_include_python_files(diff_files: List[str]) -> bool:
     return False
 
 
-def output_test_suites_to_run(output_variable: str, test_suites_to_run: List[TestSuiteDict]) -> None:
+def output_test_suites_to_run_to_github_workflow(
+    output_variable: str,
+    test_suites_to_run: List[TestSuiteDict]
+) -> None:
     with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as o:
         print(f'{output_variable}={json.dumps(test_suites_to_run)}', file=o)
         
+
+def output_test_suite_count_to_github_workflow(
+    total_test_count: int
+) -> None:
+    with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as o:
+        print(f'{ENVIRONMENT_TOTAL_TEST_SUITE_COUNT_OUTPUT}={total_test_count}', file=o)
         
-def collect_ci_tests_to_run(
+        
+def get_test_suites_to_modules_mapping(
+    module_mapping_directory: str
+) -> dict[str, List[str]]:
+    test_suites_to_modules_mapping = {}
+    for root, _, files in os.walk(module_mapping_directory):
+        for file_path in files:
+            with open(os.path.join(root, file_path), 'r', encoding='utf-8') as f:
+                modules = f.read().splitlines()
+                test_suites_to_modules_mapping[file_path] = modules
+                
+    return test_suites_to_modules_mapping
+
+
+def get_test_suites_affected_by_module(
+    module: str,
+    test_suites_to_modules_mapping: dict[str, List[str]]
+) -> List[str]:
+    affected_tests = []
+    for test_suite, modules in test_suites_to_modules_mapping.items():
+        if module in modules:
+            affected_tests.append(test_suite)
+    return affected_tests
+        
+        
+def collect_ci_test_suites_to_run(
     modified_files: List[str],
     dependency_graph: dict
 ) -> TestTypeSuiteMappingDict:
@@ -173,8 +208,20 @@ def collect_ci_tests_to_run(
     # We are running all E2E tests regardless of the modified files. Remove this
     # after the E2E tests are removed. 
     e2e_test_suites = ALL_E2E_TEST_SUITES
-    acceptance_test_suites = ALL_ACCEPTANCE_TEST_SUITES
-    lighthouse_test_suites = ALL_LIGHTHOUSE_TEST_SUITES
+    acceptance_test_suites: List[TestSuiteDict] = []
+    lighthouse_test_suites: List[TestSuiteDict] = []
+
+    acceptance_test_suites_to_modules_mapping = get_test_suites_to_modules_mapping(
+        os.path.join(OPPIA_DIRECTORY, 'core/tests/acceptance-modules-mapping'))
+    
+    lighthouse_test_suites_to_modules_mapping = get_test_suites_to_modules_mapping(
+        os.path.join(OPPIA_DIRECTORY, 'core/tests/lighthouse-modules-mapping'))
+    
+    for module in modified_modules:
+        acceptance_test_suites.extend(
+            get_test_suites_affected_by_module(module, acceptance_test_suites_to_modules_mapping))
+        lighthouse_test_suites.extend(
+            get_test_suites_affected_by_module(module, lighthouse_test_suites_to_modules_mapping))
     
     return {
         'e2e': e2e_test_suites,
@@ -191,18 +238,26 @@ def main(args: Optional[list[str]] = None) -> None:
         parsed_args.github_base_ref, parsed_args.github_head_ref)
 
     if does_diff_include_python_files(modified_files):
-        output_test_suites_to_run(ENVIRONMENT_E2E_TEST_SUITES_OUTPUT, ALL_E2E_TEST_SUITES)
-        output_test_suites_to_run(ENVIRONMENT_ACCEPTANCE_TEST_SUITES_OUTPUT, ALL_ACCEPTANCE_TEST_SUITES)
-        output_test_suites_to_run(ENVIRONMENT_LIGHTHOUSE_TEST_SUITES_OUTPUT, ALL_LIGHTHOUSE_TEST_SUITES)
+        output_test_suites_to_run_to_github_workflow(
+            ENVIRONMENT_E2E_TEST_SUITES_OUTPUT, ALL_E2E_TEST_SUITES)
+        output_test_suites_to_run_to_github_workflow(
+            ENVIRONMENT_ACCEPTANCE_TEST_SUITES_OUTPUT, ALL_ACCEPTANCE_TEST_SUITES)
+        output_test_suites_to_run_to_github_workflow(
+            ENVIRONMENT_LIGHTHOUSE_TEST_SUITES_OUTPUT, ALL_LIGHTHOUSE_TEST_SUITES)
         return
     
     generate_dependency_graph.main()
     with open(DEPEDENCY_GRAPH_PATH, 'r', encoding='utf-8') as f:
         dependency_graph = json.load(f)
-        ci_tests_to_run = collect_ci_tests_to_run(modified_files, dependency_graph)
-        output_test_suites_to_run(ENVIRONMENT_E2E_TEST_SUITES_OUTPUT, ci_tests_to_run['e2e'])
-        output_test_suites_to_run(ENVIRONMENT_ACCEPTANCE_TEST_SUITES_OUTPUT, ci_tests_to_run['acceptance'])
-        output_test_suites_to_run(ENVIRONMENT_LIGHTHOUSE_TEST_SUITES_OUTPUT, ci_tests_to_run['lighthouse'])
+        ci_test_suites_to_run = collect_ci_test_suites_to_run(modified_files, dependency_graph)
+        total_suite_count = len(ci_test_suites_to_run['e2e']) + len(ci_test_suites_to_run['acceptance']) + len(ci_test_suites_to_run['lighthouse'])
+        output_test_suite_count_to_github_workflow(total_suite_count)
+        output_test_suites_to_run_to_github_workflow(
+            ENVIRONMENT_E2E_TEST_SUITES_OUTPUT, ci_test_suites_to_run['e2e'])
+        output_test_suites_to_run_to_github_workflow(
+            ENVIRONMENT_ACCEPTANCE_TEST_SUITES_OUTPUT, ci_test_suites_to_run['acceptance'])
+        output_test_suites_to_run_to_github_workflow(
+            ENVIRONMENT_LIGHTHOUSE_TEST_SUITES_OUTPUT, ci_test_suites_to_run['lighthouse'])
 
 
 # The 'no coverage' pragma is used as this line is un-testable. This is because
