@@ -30,7 +30,6 @@ import {
   TypescriptExtractorUtilities,
   readTypescriptConfig,
 } from './typescript-extractor-utilities';
-import {routeDefinitions} from '../../core/templates/pages/oppia-root/routing/app.route-definitions';
 
 const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
 
@@ -93,17 +92,6 @@ export class TestToAngularModulesMatcher {
 
   private getAngularUrlToModuleMapping(): Map<Route, string> {
     const urlToAngularModuleMapping: Map<Route, string> = new Map();
-
-    for (const routeDefinition of routeDefinitions) {
-      urlToAngularModuleMapping.set(
-        {
-          path: routeDefinition.path,
-          pathMatch: routeDefinition.pathMatch,
-        },
-        routeDefinition.module
-      );
-    }
-
     return urlToAngularModuleMapping;
   }
 
