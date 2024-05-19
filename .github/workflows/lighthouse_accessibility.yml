@@ -34,7 +34,6 @@ jobs:
             requirements_dev.in
             requirements_dev.txt
       - uses: ./.github/actions/merge
-      - uses: ./.github/actions/merge
       - name: Cache node modules
         uses: actions/cache@v3
         env:
