@@ -95,12 +95,12 @@ jobs:
           path: /home/runner/work/oppia/build_files.zip
           retention-days: 1
   e2e_test:
-    needs: [build, check_tests_to_run]
+    needs: [build, check_test_suites_to_run]
     runs-on:  ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        suite: ${{ fromJson(needs.check_tests_to_run.outputs.E2E_TEST_SUITES_TO_RUN) }}
+        suite: ${{ fromJson(needs.check_test_suites_to_run.outputs.E2E_TEST_SUITES_TO_RUN) }}
     name: e2e_test (${{ matrix.os }}, ${{ matrix.suite.name }})
     steps:
       - uses: actions/checkout@v3
@@ -206,12 +206,12 @@ jobs:
           message: "An E2E test failed on the upstream develop branch."
           webhook-url: ${{ secrets.BUILD_FAILURE_ROOM_WEBHOOK_URL }}
   lighthouse:
-    needs: [build, check_tests_to_run]
+    needs: [build, check_test_suites_to_run]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        suite: ${{ fromJson(needs.check_tests_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN) }}
+        suite: ${{ fromJson(needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN) }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -290,12 +290,12 @@ jobs:
           message: "A Lighthouse test failed on the upstream develop branch."
           webhook-url: ${{ secrets.BUILD_FAILURE_ROOM_WEBHOOK_URL }}
   acceptance_test:
-    needs: [build, check_tests_to_run]
+    needs: [build, check_test_suites_to_run]
     runs-on:  ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        suite: ${{ fromJson(needs.check_tests_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN) }}
+        suite: ${{ fromJson(needs.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN) }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
