@@ -19,11 +19,11 @@ jobs:
         os: [ubuntu-22.04]
     outputs:
       E2E_TEST_SUITES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.E2E_TEST_SUITES_TO_RUN }}
-      TOTAL_E2E_TEST_SUITE_COUNT: ${{ steps.check_test_suites_to_run.outputs.TOTAL_E2E_TEST_SUITE_COUNT }}
+      E2E_TEST_SUITES_TO_RUN_COUNT: ${{ steps.check_test_suites_to_run.outputs.E2E_TEST_SUITES_TO_RUN_COUNT }}
       LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN }}
-      TOTAL_LIGHTHOUSE_PERFORMANCE_TEST_SUITE_COUNT: ${{ steps.check_test_suites_to_run.outputs.TOTAL_LIGHTHOUSE_PERFORMANCE_TEST_SUITE_COUNT }}
+      LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN_COUNT: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN_COUNT }}
       ACCEPTANCE_TEST_SUITES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN }}
-      TOTAL_ACCEPTANCE_TEST_SUITE_COUNT: ${{ steps.check_test_suites_to_run.outputs.TOTAL_ACCEPTANCE_TEST_SUITE_COUNT }}
+      ACCEPTANCE_TEST_SUITES_TO_RUN_COUNT: ${{ steps.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN_COUNT }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -44,7 +44,7 @@ jobs:
         run: python -m scripts.check_ci_test_suites_to_run --github_head_ref="origin/${{ github.event.pull_request.head.ref }}" --github_base_ref="origin/${{ github.event.pull_request.base.ref }}"
   build:
     needs: check_test_suites_to_run
-    if: ${{ needs.check_test_suites_to_run.outputs.TOTAL_E2E_TEST_SUITE_COUNT != '0' || needs.check_test_suites_to_run.outputs.TOTAL_LIGHTHOUSE_PERFORMANCE_TEST_SUITE_COUNT != '0' || needs.check_test_suites_to_run.outputs.TOTAL_ACCEPTANCE_TEST_SUITE_COUNT != '0' }}
+    if: ${{ needs.check_test_suites_to_run.outputs.E2E_TEST_SUITES_TO_RUN_COUNT != '0' || needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN_COUNT != '0' || needs.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN_COUNT != '0' }}
     runs-on:  ${{ matrix.os }}
     strategy:
       matrix:

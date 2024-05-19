@@ -38,13 +38,9 @@ _PARSER.add_argument(
 )
 
 ENVIRONMENT_E2E_TEST_SUITES_OUTPUT = 'E2E_TEST_SUITES_TO_RUN'
-ENVIRONMENT_TOTAL_E2E_TEST_SUITE_COUNT_OUTPUT = 'TOTAL_E2E_TEST_SUITE_COUNT'
 ENVIRONMENT_ACCEPTANCE_TEST_SUITES_OUTPUT = 'ACCEPTANCE_TEST_SUITES_TO_RUN'
-ENVIRONMENT_TOTAL_ACCEPTANCE_TEST_SUITE_COUNT_OUTPUT = 'TOTAL_ACCEPTANCE_TEST_SUITE_COUNT'
 ENVIRONMENT_LIGHTHOUSE_PERFORMANCE_TEST_SUITES_OUTPUT = 'LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN'
-ENVIRONMENT_TOTAL_LIGHTHOUSE_PERFORMANCE_TEST_SUITE_COUNT_OUTPUT = 'TOTAL_LIGHTHOUSE_PERFORMANCE_TEST_SUITE_COUNT'
 ENVIRONMENT_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_OUTPUT = 'LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN'
-ENVIRONMENT_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITE_COUNT_OUTPUT = 'LIGHTHOUSE_ACCESSIBILITY_TEST_SUITE_COUNT'
 
 FILE_DIRECTORY: Final = os.path.abspath(os.path.dirname(__file__))
 OPPIA_DIRECTORY: Final = os.path.join(FILE_DIRECTORY, os.pardir)
@@ -180,16 +176,9 @@ def output_test_suites_to_run_to_github_workflow(
     test_suites_to_run: List[TestSuiteDict]
 ) -> None:
     with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as o:
-        print(f'{output_variable}={json.dumps(test_suites_to_run)}', file=o)
+        print(f'{output_variable}={json.dumps([test_suite.pop('module_path') for test_suite in test_suites_to_run])}', file=o)
+        print(f'{output_variable}_COUNT={len(test_suites_to_run)}', file=o)
         
-
-def output_test_suite_count_to_github_workflow(
-    output_variable: str,
-    total_test_count: int,
-) -> None:
-    with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as o:
-        print(f'{output_variable}={total_test_count}', file=o)
-
 
 def get_test_suites_to_modules_mapping_by_file(
     root_directory: str,
@@ -332,14 +321,6 @@ def main(args: Optional[list[str]] = None) -> None:
     with open(DEPEDENCY_GRAPH_PATH, 'r', encoding='utf-8') as f:
         dependency_graph = json.load(f)
         ci_test_suites_to_run = collect_ci_test_suites_to_run(modified_files, dependency_graph)
-        output_test_suite_count_to_github_workflow(
-            ENVIRONMENT_TOTAL_E2E_TEST_SUITE_COUNT_OUTPUT, len(ci_test_suites_to_run['e2e']))
-        output_test_suite_count_to_github_workflow(
-            ENVIRONMENT_TOTAL_ACCEPTANCE_TEST_SUITE_COUNT_OUTPUT, len(ci_test_suites_to_run['acceptance']))
-        output_test_suite_count_to_github_workflow(
-            ENVIRONMENT_TOTAL_LIGHTHOUSE_PERFORMANCE_TEST_SUITE_COUNT_OUTPUT, len(ci_test_suites_to_run['lighthouse_performance']))
-        output_test_suite_count_to_github_workflow(
-            ENVIRONMENT_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITE_COUNT_OUTPUT, len(ci_test_suites_to_run['lighthouse_accessibility']))
 
         output_test_suites_to_run_to_github_workflow(
             ENVIRONMENT_E2E_TEST_SUITES_OUTPUT, ci_test_suites_to_run['e2e'])
@@ -347,7 +328,7 @@ def main(args: Optional[list[str]] = None) -> None:
             ENVIRONMENT_ACCEPTANCE_TEST_SUITES_OUTPUT, ci_test_suites_to_run['acceptance'])
         output_test_suites_to_run_to_github_workflow(
             ENVIRONMENT_LIGHTHOUSE_PERFORMANCE_TEST_SUITES_OUTPUT, ci_test_suites_to_run['lighthouse_performance'])
-        output_test_suite_count_to_github_workflow(
+        output_test_suites_to_run_to_github_workflow(
             ENVIRONMENT_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_OUTPUT, ci_test_suites_to_run['lighthouse_accessibility'])
 
 
