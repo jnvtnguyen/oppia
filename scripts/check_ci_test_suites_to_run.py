@@ -175,9 +175,13 @@ def output_test_suites_to_run_to_github_workflow(
     output_variable: str,
     test_suites_to_run: List[TestSuiteDict]
 ) -> None:
+    formatted_test_suites_to_run = [
+        test_suite.get('suite_name') for test_suite in test_suites_to_run
+    ]
+    test_suites_to_run_count = len(test_suites_to_run)
     with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as o:
-        print(f'{output_variable}={json.dumps(test_suites_to_run)}', file=o)
-        print(f'{output_variable}_COUNT={len(test_suites_to_run)}', file=o)
+        print(f'{output_variable}={json.dumps(formatted_test_suites_to_run)}', file=o)
+        print(f'{output_variable}_COUNT={test_suites_to_run_count}', file=o)
         
 
 def get_test_suites_to_modules_mapping_by_file(
