@@ -176,7 +176,9 @@ def output_test_suites_to_run_to_github_workflow(
     test_suites_to_run: List[TestSuiteDict]
 ) -> None:
     formatted_test_suites_to_run = [
-        test_suite.get('suite_name') for test_suite in test_suites_to_run
+        {
+            'name': test_suite.get('suite_name')
+        } for test_suite in test_suites_to_run
     ]
     test_suites_to_run_count = len(test_suites_to_run)
     with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as o:
