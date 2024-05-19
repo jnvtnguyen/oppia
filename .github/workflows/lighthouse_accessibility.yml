@@ -5,10 +5,12 @@ on:
   push:
     branches:
       - develop
+      - gsoc-planning
       - release-*
   pull_request:
     branches:
       - develop
+      - gsoc-planning
       - release-*
 
 jobs:
