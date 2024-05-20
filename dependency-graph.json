@@ -47,9 +47,6 @@
   "assets/README.md": [
     "assets/README.md"
   ],
-  "assets/constants.js": [
-    "assets/constants.js"
-  ],
   "assets/constants.ts": [
     "core/templates/AppSpec.ts",
     "core/templates/pages/admin-page/admin-page.import.ts",
@@ -79,7 +76,6 @@
     "core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.import.ts",
     "core/templates/pages/voiceover-admin-page/voiceover-admin-page.import.ts",
     "core/templates/tests/console_errors.import.ts",
-    "core/templates/app.constants.js",
     "core/templates/pages/about-foundation-page/about-foundation-page.module.ts",
     "core/templates/pages/about-page/about-page.module.ts",
     "core/templates/pages/android-page/android-page.module.ts",
@@ -136,8 +132,9 @@
     "core/templates/domain/exploration/StatesObjectFactorySpec.ts",
     "core/templates/domain/state/StateObjectFactorySpec.ts",
     "core/templates/domain/collection/search-explorations-backend-api.service.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts",
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts",
     "core/templates/pages/oppia-root/index.ts",
+    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts",
     "core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.constants.ajs.ts",
     "core/templates/domain/exploration/InteractionObjectFactorySpec.ts",
     "core/templates/domain/exploration/SolutionObjectFactorySpec.ts"
@@ -370,9 +367,6 @@
     "core/templates/pages/voiceover-admin-page/voiceover-admin-page.import.ts",
     "core/templates/tests/console_errors.import.ts"
   ],
-  "core/templates/app.constants.js": [
-    "core/templates/app.constants.js"
-  ],
   "core/templates/app.constants.ts": [
     "core/templates/pages/admin-page/admin-page.import.ts",
     "core/templates/pages/blog-admin-page/blog-admin-page.import.ts",
@@ -457,8 +451,9 @@
     "core/templates/domain/exploration/StatesObjectFactorySpec.ts",
     "core/templates/domain/state/StateObjectFactorySpec.ts",
     "core/templates/domain/collection/search-explorations-backend-api.service.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts",
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts",
     "core/templates/pages/oppia-root/index.ts",
+    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts",
     "core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.constants.ajs.ts",
     "core/templates/domain/exploration/InteractionObjectFactorySpec.ts",
     "core/templates/domain/exploration/SolutionObjectFactorySpec.ts"
@@ -7891,6 +7886,15 @@
   "core/templates/components/summary-tile/learner-topic-summary-tile.component.ts": [
     "core/templates/pages/learner-dashboard-page/learner-dashboard-page.import.ts"
   ],
+  "core/templates/components/summary-tile/lesson-card.component.html": [
+    "core/templates/pages/learner-dashboard-page/learner-dashboard-page.import.ts"
+  ],
+  "core/templates/components/summary-tile/lesson-card.component.ts": [
+    "core/templates/pages/learner-dashboard-page/learner-dashboard-page.import.ts"
+  ],
+  "core/templates/components/summary-tile/lesson-card.module.ts": [
+    "core/templates/pages/learner-dashboard-page/learner-dashboard-page.import.ts"
+  ],
   "core/templates/components/summary-tile/story-summary-tile.component.css": [
     "core/templates/pages/topic-editor-page/topic-editor-page.import.ts",
     "core/templates/pages/topic-viewer-page/topic-viewer-page.import.ts"
@@ -8765,13 +8769,13 @@
     "core/templates/pages/collection-editor-page/collection-editor-page.import.ts"
   ],
   "core/templates/domain/collection/collection-summary.model.ts": [
+    "core/templates/pages/learner-dashboard-page/learner-dashboard-page.import.ts",
     "core/templates/pages/creator-dashboard-page/creator-dashboard-page.import.ts",
     "core/templates/pages/practice-session-page/practice-session-page.import.ts",
     "core/templates/pages/review-test-page/review-test-page.import.ts",
     "core/templates/pages/diagnostic-test-player-page/diagnostic-test-player-page.import.ts",
     "core/templates/pages/exploration-editor-page/exploration-editor-page.import.ts",
     "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-page.module.ts",
-    "core/templates/pages/learner-dashboard-page/learner-dashboard-page.import.ts",
     "core/templates/pages/skill-editor-page/skill-editor-page.import.ts",
     "core/templates/pages/library-page/library-page.module.ts"
   ],
@@ -11197,7 +11201,7 @@
     "core/templates/pages/classroom-admin-page/classroom-admin-page.import.ts",
     "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.import.ts",
     "core/templates/pages/voiceover-admin-page/voiceover-admin-page.import.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts"
   ],
   "core/templates/domain/feature-flag/feature-flag-domain.constants.ts": [
     "core/templates/pages/release-coordinator-page/release-coordinator-page.module.ts",
@@ -11264,7 +11268,7 @@
     "core/templates/pages/classroom-admin-page/classroom-admin-page.import.ts",
     "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.import.ts",
     "core/templates/pages/voiceover-admin-page/voiceover-admin-page.import.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts"
   ],
   "core/templates/domain/feature-flag/feature-flag-dummy-backend-api.service.ts": [
     "core/templates/pages/release-coordinator-page/release-coordinator-page.module.ts"
@@ -11334,7 +11338,7 @@
     "core/templates/pages/classroom-admin-page/classroom-admin-page.import.ts",
     "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.import.ts",
     "core/templates/pages/voiceover-admin-page/voiceover-admin-page.import.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts"
   ],
   "core/templates/domain/feature-flag/feature-status-summary.model.ts": [
     "core/templates/pages/release-coordinator-page/release-coordinator-page.module.ts",
@@ -11401,7 +11405,7 @@
     "core/templates/pages/classroom-admin-page/classroom-admin-page.import.ts",
     "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.import.ts",
     "core/templates/pages/voiceover-admin-page/voiceover-admin-page.import.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts"
   ],
   "core/templates/domain/feedback_message/ThreadMessage.model.ts": [
     "core/templates/pages/creator-dashboard-page/creator-dashboard-page.import.ts",
@@ -15173,7 +15177,7 @@
     "extensions/value_generators/valueGeneratorsRequires.ts",
     "core/templates/pages/error-pages/error-iframed-page/error-iframed.mainpage.html",
     "core/templates/tests/console_errors.html",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts"
   ],
   "core/templates/domain/user/user-profile.model.ts": [
     "core/templates/pages/admin-page/admin-page.import.ts",
@@ -15325,7 +15329,7 @@
     "core/templates/components/concept-card/concept-card-modal.template.html",
     "extensions/rich_text_components/richTextComponentsRequires.ts",
     "core/templates/tests/console_errors.html",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts"
   ],
   "core/templates/domain/utilities/audio-language.model.ts": [
     "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.import.ts",
@@ -15711,7 +15715,7 @@
     "core/templates/components/concept-card/concept-card-modal.template.html",
     "extensions/rich_text_components/richTextComponentsRequires.ts",
     "core/templates/tests/console_errors.html",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts"
   ],
   "core/templates/domain/utilities/image-file.model.ts": [
     "core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.import.ts",
@@ -15789,7 +15793,7 @@
     "core/templates/components/concept-card/concept-card-modal.template.html",
     "extensions/rich_text_components/richTextComponentsRequires.ts",
     "core/templates/tests/console_errors.html",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts"
   ],
   "core/templates/domain/utilities/language-util.service.ts": [
     "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.import.ts",
@@ -15953,7 +15957,7 @@
     "core/templates/domain/exploration/ExplorationObjectFactorySpec.ts",
     "core/templates/components/concept-card/concept-card-modal.template.html",
     "extensions/rich_text_components/richTextComponentsRequires.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts"
   ],
   "core/templates/domain/voiceover/voiceover-backend-api.service.ts": [
     "core/templates/pages/voiceover-admin-page/voiceover-admin-page.import.ts"
@@ -21400,7 +21404,7 @@
     "core/templates/pages/exploration-player-page/new-lesson-player/README.md"
   ],
   "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts": [
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts"
   ],
   "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-page-root.component.html": [
     "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-page.module.ts"
@@ -22814,7 +22818,7 @@
     "core/templates/pages/lightweight-oppia-root/index.ts"
   ],
   "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts": [
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts"
   ],
   "core/templates/pages/login-page/login-page-root.component.html": [
     "core/templates/pages/login-page/login-page.module.ts"
@@ -22981,9 +22985,6 @@
     "core/templates/pages/preferences-page/preferences-page.module.ts",
     "core/templates/pages/profile-page/profile-page.module.ts",
     "core/templates/pages/release-coordinator-page/release-coordinator-page.module.ts"
-  ],
-  "core/templates/pages/oppia-root/routing/app.route-definitions.ts": [
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
   ],
   "core/templates/pages/participation-playbook/playbook-page-root.component.html": [
     "core/templates/pages/participation-playbook/playbook.import.ts"
@@ -24499,7 +24500,7 @@
     "core/templates/domain/exploration/ExplorationObjectFactorySpec.ts",
     "core/templates/components/concept-card/concept-card-modal.template.html",
     "extensions/rich_text_components/richTextComponentsRequires.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts",
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts",
     "core/templates/domain/skill/SkillObjectFactorySpec.ts"
   ],
   "core/templates/services/app.service.ts": [
@@ -24608,7 +24609,7 @@
     "core/templates/components/concept-card/concept-card-modal.template.html",
     "extensions/rich_text_components/richTextComponentsRequires.ts",
     "core/templates/tests/console_errors.html",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts"
   ],
   "core/templates/services/attribution.service.ts": [
     "core/templates/pages/practice-session-page/practice-session-page.import.ts",
@@ -25119,7 +25120,7 @@
     "core/templates/components/concept-card/concept-card-modal.template.html",
     "extensions/rich_text_components/richTextComponentsRequires.ts",
     "core/templates/tests/console_errors.html",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts",
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts",
     "core/templates/pages/oppia-root/index.ts"
   ],
   "core/templates/services/date-time-format.service.ts": [
@@ -25931,7 +25932,7 @@
     "extensions/value_generators/valueGeneratorsRequires.ts",
     "core/templates/pages/error-pages/error-iframed-page/error-iframed.mainpage.html",
     "core/templates/tests/console_errors.html",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts",
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts",
     "core/templates/components/concept-card/concept-card-modal.template.html",
     "extensions/rich_text_components/richTextComponentsRequires.ts"
   ],
@@ -26009,7 +26010,7 @@
     "extensions/value_generators/valueGeneratorsRequires.ts",
     "core/templates/pages/error-pages/error-iframed-page/error-iframed.mainpage.html",
     "core/templates/tests/console_errors.html",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts",
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts",
     "core/templates/components/concept-card/concept-card-modal.template.html",
     "extensions/rich_text_components/richTextComponentsRequires.ts"
   ],
@@ -26765,7 +26766,7 @@
     "core/templates/pages/classroom-admin-page/classroom-admin-page.import.ts",
     "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.import.ts",
     "core/templates/pages/voiceover-admin-page/voiceover-admin-page.import.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts"
   ],
   "core/templates/services/playthrough-issues-backend-api.service.ts": [
     "core/templates/pages/exploration-editor-page/exploration-editor-page.import.ts"
@@ -27935,7 +27936,7 @@
     "core/templates/components/concept-card/concept-card-modal.template.html",
     "extensions/rich_text_components/richTextComponentsRequires.ts",
     "core/templates/tests/console_errors.html",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts"
   ],
   "core/templates/services/translation-file-hash-loader-backend-api.service.ts": [
     "core/templates/pages/admin-page/admin-page.import.ts",
@@ -28040,7 +28041,7 @@
     "extensions/value_generators/valueGeneratorsRequires.ts",
     "core/templates/pages/error-pages/error-iframed-page/error-iframed.mainpage.html",
     "core/templates/tests/console_errors.html",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts"
   ],
   "core/templates/services/user.service.ts": [
     "core/templates/pages/admin-page/admin-page.import.ts",
@@ -28116,7 +28117,7 @@
     "extensions/objects/objectComponentsRequires.ts",
     "extensions/objects/objectComponentsRequiresForPlayers.ts",
     "extensions/value_generators/valueGeneratorsRequires.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts"
   ],
   "core/templates/services/utils.service.ts": [
     "core/templates/pages/skill-editor-page/skill-editor-page.import.ts",
@@ -28198,7 +28199,7 @@
     "core/templates/domain/exploration/ExplorationObjectFactorySpec.ts",
     "core/templates/components/concept-card/concept-card-modal.template.html",
     "extensions/rich_text_components/richTextComponentsRequires.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts",
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts",
     "core/templates/domain/skill/SkillObjectFactorySpec.ts"
   ],
   "core/templates/services/validators.service.ts": [
@@ -28518,8 +28519,9 @@
     "core/templates/tests/console_errors.html",
     "core/templates/components/state-editor/state-editor-properties-services/state-written-translations.service.ts",
     "core/templates/domain/collection/search-explorations-backend-api.service.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts",
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts",
     "core/templates/domain/skill/SkillObjectFactorySpec.ts",
+    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts",
     "extensions/classifiers/python-program.tokenizer.ts"
   ],
   "core/templates/services/contextual/meta-tag-customization.service.ts": [
@@ -28674,7 +28676,8 @@
     "core/templates/components/concept-card/concept-card-modal.template.html",
     "extensions/rich_text_components/richTextComponentsRequires.ts",
     "core/templates/domain/collection/search-explorations-backend-api.service.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts",
+    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts"
   ],
   "core/templates/services/contextual/window-dimensions.service.ts": [
     "core/templates/pages/practice-session-page/practice-session-page.import.ts",
@@ -28818,7 +28821,8 @@
     "extensions/value_generators/valueGeneratorsRequires.ts",
     "core/templates/components/concept-card/concept-card-modal.template.html",
     "extensions/rich_text_components/richTextComponentsRequires.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts",
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts",
+    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts",
     "core/templates/domain/exploration/ExplorationObjectFactorySpec.ts",
     "core/templates/domain/collection/search-explorations-backend-api.service.ts"
   ],
@@ -29343,86 +29347,6 @@
     "extensions/objects/objectComponentsRequiresForPlayers.ts",
     "extensions/value_generators/valueGeneratorsRequires.ts"
   ],
-  "core/templates/utility/hashes.ts": [
-    "core/templates/pages/admin-page/admin-page.import.ts",
-    "core/templates/pages/blog-admin-page/blog-admin-page.import.ts",
-    "core/templates/pages/blog-dashboard-page/blog-dashboard-page.import.ts",
-    "core/templates/pages/classroom-admin-page/classroom-admin-page.import.ts",
-    "core/templates/pages/collection-editor-page/collection-editor-page.import.ts",
-    "core/templates/pages/collection-player-page/collection-player-page.import.ts",
-    "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.import.ts",
-    "core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.import.ts",
-    "core/templates/pages/creator-dashboard-page/creator-dashboard-page.import.ts",
-    "core/templates/pages/diagnostic-test-player-page/diagnostic-test-player-page.import.ts",
-    "core/templates/pages/email-dashboard-pages/email-dashboard-page.import.ts",
-    "core/templates/pages/exploration-editor-page/exploration-editor-page.import.ts",
-    "core/templates/pages/facilitator-dashboard-page/facilitator-dashboard-page.import.ts",
-    "core/templates/pages/learner-dashboard-page/learner-dashboard-page.import.ts",
-    "core/templates/pages/learner-group-pages/create-group/create-learner-group-page.import.ts",
-    "core/templates/pages/learner-group-pages/edit-group/edit-learner-group-page.import.ts",
-    "core/templates/pages/moderator-page/moderator-page.import.ts",
-    "core/templates/pages/practice-session-page/practice-session-page.import.ts",
-    "core/templates/pages/review-test-page/review-test-page.import.ts",
-    "core/templates/pages/skill-editor-page/skill-editor-page.import.ts",
-    "core/templates/pages/story-editor-page/story-editor-page.import.ts",
-    "core/templates/pages/subtopic-viewer-page/subtopic-viewer-page.import.ts",
-    "core/templates/pages/topic-editor-page/topic-editor-page.import.ts",
-    "core/templates/pages/topic-viewer-page/topic-viewer-page.import.ts",
-    "core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.import.ts",
-    "core/templates/pages/voiceover-admin-page/voiceover-admin-page.import.ts",
-    "core/templates/tests/console_errors.import.ts",
-    "core/templates/pages/about-foundation-page/about-foundation-page.module.ts",
-    "core/templates/pages/about-page/about-page.module.ts",
-    "core/templates/pages/android-page/android-page.module.ts",
-    "core/templates/pages/blog-author-profile-page/blog-author-profile-page.module.ts",
-    "core/templates/pages/blog-home-page/blog-home-page.module.ts",
-    "core/templates/pages/blog-post-page/blog-post-page.module.ts",
-    "core/templates/pages/contact-page/contact-page.module.ts",
-    "core/templates/pages/delete-account-page/delete-account-page.module.ts",
-    "core/templates/pages/donate-page/donate-page.module.ts",
-    "core/templates/pages/email-dashboard-pages/email-dashboard-result.import.ts",
-    "core/templates/pages/error-pages/error-page.module.ts",
-    "core/templates/pages/error-pages/error-page.import.ts",
-    "core/templates/pages/classroom-page/classroom-page.module.ts",
-    "core/templates/pages/feedback-updates-page/feedback-updates-page.module.ts",
-    "core/templates/pages/learner-group-pages/view-group/view-learner-group-page.module.ts",
-    "core/templates/pages/lightweight-oppia-root/index.ts",
-    "core/templates/pages/pending-account-deletion-page/pending-account-deletion-page.module.ts",
-    "core/templates/pages/preferences-page/preferences-page.module.ts",
-    "core/templates/pages/profile-page/profile-page.module.ts",
-    "core/templates/pages/release-coordinator-page/release-coordinator-page.module.ts",
-    "core/templates/pages/error-pages/error-iframed-page/error-iframed-page.import.ts",
-    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-page.module.ts",
-    "core/templates/pages/get-started-page/get-started-page.module.ts",
-    "core/templates/pages/landing-pages/topic-landing-page/topic-landing-page.module.ts",
-    "core/templates/pages/library-page/library-page.module.ts",
-    "core/templates/pages/license-page/license.module.ts",
-    "core/templates/pages/login-page/login-page.module.ts",
-    "core/templates/pages/logout-page/logout-page.module.ts",
-    "core/templates/pages/maintenance-page/maintenance-page.import.ts",
-    "core/templates/pages/participation-playbook/playbook.import.ts",
-    "core/templates/pages/partnerships-page/partnerships-page.module.ts",
-    "core/templates/pages/privacy-page/privacy-page.module.ts",
-    "core/templates/pages/signup-page/signup-page.module.ts",
-    "core/templates/pages/story-viewer-page/story-viewer-page.module.ts",
-    "core/templates/pages/teach-page/teach-page.module.ts",
-    "core/templates/pages/terms-page/terms-page.module.ts",
-    "core/templates/pages/thanks-page/thanks-page.module.ts",
-    "core/templates/pages/volunteer-page/volunteer-page.module.ts",
-    "extensions/visualizations/visualizationsRequires.ts",
-    "extensions/interactions/interactionsQuestionsRequires.ts",
-    "core/templates/tests/form_entry_point_modal_directive.html",
-    "extensions/objects/objectComponentsRequires.ts",
-    "extensions/objects/objectComponentsRequiresForPlayers.ts",
-    "extensions/value_generators/valueGeneratorsRequires.ts",
-    "core/templates/pages/error-pages/error-iframed-page/error-iframed.mainpage.html",
-    "core/templates/tests/console_errors.html",
-    "core/templates/domain/collection/search-explorations-backend-api.service.ts",
-    "core/templates/domain/exploration/ExplorationObjectFactorySpec.ts",
-    "core/templates/components/concept-card/concept-card-modal.template.html",
-    "extensions/rich_text_components/richTextComponentsRequires.ts",
-    "core/templates/pages/oppia-root/routing/app.route-definitions.ts"
-  ],
   "core/templates/utility/string-utility.ts": [
     "core/templates/pages/skill-editor-page/skill-editor-page.import.ts",
     "core/templates/pages/topic-editor-page/topic-editor-page.import.ts",
@@ -29458,6 +29382,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",
@@ -29475,6 +29400,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",
@@ -29493,6 +29419,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",
@@ -29510,6 +29437,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",
@@ -29527,6 +29455,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",
@@ -29544,6 +29473,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",
@@ -29585,6 +29515,9 @@
   "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts": [
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts"
   ],
+  "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts": [
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts"
+  ],
   "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts": [
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts"
   ],
@@ -29609,6 +29542,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",
@@ -29626,6 +29560,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",
@@ -29643,6 +29578,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",
@@ -29660,6 +29596,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",
@@ -29677,6 +29614,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",
@@ -29694,6 +29632,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",
@@ -29711,6 +29650,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",
@@ -29728,6 +29668,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",
@@ -29745,6 +29686,7 @@
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-thanks-for-donating-page.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-in-about-oppia-footer.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-links-on-get-started-page.spec.ts",
+    "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/add-translation-rights.spec.ts",
     "core/tests/puppeteer-acceptance-tests/spec/translation-admin-tests/remove-translation-rights.spec.ts",

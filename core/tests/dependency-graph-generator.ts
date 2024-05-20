@@ -78,9 +78,9 @@ const SEARCH_EXCLUSIONS = [
   'core/tests/dependency-graph-generator.ts',
   'core/tests/typescript-extractor-utilities.ts',
   'core/tests/test-to-angular-modules-matcher.ts',
+  'core/templates/pages/oppia-root/routing/app.routing.module.ts',
   'core/templates/services/UpgradedServices.ts',
   'core/templates/services/angular-services.index.ts',
-  'core/templates/pages/oppia-root/routing/app.routing.module.ts',
   'core/templates/utility/hashes.ts',
   'webpack.common.config.ts',
   'webpack.common.macros.ts',
@@ -121,7 +121,7 @@ export class DependencyExtractor {
   }
 
   /**
-   * Extracts the depedencies from the given TypeScript or Javascript file.
+   * Extracts the depedencies from the given TypeScript or JavaScript file.
    */
   private extractDepedenciesFromTypescriptOrJavascriptFile(
     filePath: string
@@ -131,7 +131,7 @@ export class DependencyExtractor {
       ts.ScriptTarget.ES2020
     );
     if (!sourceFile) {
-      throw new Error(`Failed to read source file: ${filePath}.`);
+      throw new Error(`Failed to read source file at ${filePath}.`);
     }
 
     const fileAngularInformations =
@@ -144,8 +144,8 @@ export class DependencyExtractor {
       // If the node is an import statement, we extract the module path.
       if (ts.isImportDeclaration(node)) {
         modulePath =
-          this.typescriptExtractorUtilities.resolveExpressionIntoString(
-            node.moduleSpecifier.getText(sourceFile)
+          this.typescriptExtractorUtilities.evaluateNode(
+            node.moduleSpecifier
           );
       }
       // If the node is a require or import function call, we extract the module path.
@@ -158,8 +158,8 @@ export class DependencyExtractor {
           return;
         }
         modulePath =
-          this.typescriptExtractorUtilities.resolveExpressionIntoString(
-            node.arguments[0].getText(sourceFile)
+          this.typescriptExtractorUtilities.evaluateNode(
+            node.arguments[0]
           );
       }
       if (!modulePath) return;
@@ -190,6 +190,7 @@ export class DependencyExtractor {
       }
     }
 
+    // We need to add the template URL of the components as depedencies.
     for (const fileAngularInformation of fileAngularInformations) {
       if (fileAngularInformation.type === 'component') {
         fileDepedencies.push(fileAngularInformation.templateUrl);
@@ -203,10 +204,10 @@ export class DependencyExtractor {
    * Extracts the depedencies from the given HTML file.
    */
   private extractDepedenciesFromHTMLFile(filePath: string): string[] {
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    const document = cheerio.load(fileContent);
+    const htmlContent = fs.readFileSync(filePath, 'utf8');
+    const cheerioDocument = cheerio.load(htmlContent);
     const fileDepedencies: string[] = [];
-    document('*')
+    cheerioDocument('*')
       .children()
       .each((_, element) => {
         // Here we replace any Angular binding attributes with regular attributes
@@ -218,12 +219,12 @@ export class DependencyExtractor {
             (attributeName.startsWith('[') && attributeName.endsWith(']')) ||
             (attributeName.startsWith('(') && attributeName.endsWith(')'))
           ) {
-            document(element).removeAttr(attributeName);
-            document(element).attr(attributeName.slice(1, -1), attributeValue);
+            cheerioDocument(element).removeAttr(attributeName);
+            cheerioDocument(element).attr(attributeName.slice(1, -1), attributeValue);
           }
         }
         // Here we check if the element has a load function.
-        const elementText = document(element).text();
+        const elementText = cheerioDocument(element).text();
         if (elementText.includes('@load')) {
           const loadFunctions = elementText
             .split('\n')
@@ -233,18 +234,16 @@ export class DependencyExtractor {
               loadFunction.indexOf('(') + 1,
               loadFunction.indexOf(')')
             );
-            const loadFilePath =
-              this.typescriptExtractorUtilities.resolveExpressionIntoString(
-                args.split(',')[0]
-              );
+            const loadFilePath = args.split(',')[0].slice(1, -1);
             const resolvedLoadFilePath =
               this.typescriptExtractorUtilities.resolveModulePathToFilePath(
                 loadFilePath,
                 filePath
               );
-            if (resolvedLoadFilePath) {
-              fileDepedencies.push(resolvedLoadFilePath);
+            if (!resolvedLoadFilePath) {
+              return;
             }
+            fileDepedencies.push(resolvedLoadFilePath);
           }
         }
         const elementTag = element.tagName;
@@ -272,10 +271,10 @@ export class DependencyExtractor {
       for (const fileAngularInformation of fileAngularInformations) {
         let depedencyIsPresent = false;
         if (fileAngularInformation.type === 'pipe') {
-          document('*')
+          cheerioDocument('*')
             .children()
             .each((_, element) => {
-              const elementText = document(element).text();
+              const elementText = cheerioDocument(element).text();
               if (
                 elementText.includes('|') &&
                 elementText.includes(fileAngularInformation.selector)
@@ -298,7 +297,7 @@ export class DependencyExtractor {
           fileAngularInformation.type === 'directive'
         ) {
           depedencyIsPresent =
-            document(fileAngularInformation.selector).length > 0;
+            cheerioDocument(fileAngularInformation.selector).length > 0;
         }
         if (depedencyIsPresent) {
           fileDepedencies.push(searchingFilePath);
@@ -324,8 +323,8 @@ export class DependencyExtractor {
         ts.isIdentifier(property.name) &&
         property.name.getText(sourceFile) === propertyName
       ) {
-        return this.typescriptExtractorUtilities.resolveExpressionIntoString(
-          property.initializer.getText(sourceFile)
+        return this.typescriptExtractorUtilities.evaluateNode(
+          property.initializer
         );
       }
     }
