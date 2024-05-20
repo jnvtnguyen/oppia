@@ -75,7 +75,7 @@ export class AdminMiscTabComponent {
       return;
     }
 
-    this.setStatusMessage.emit('Clearing search index...');
+    this.setStatusMessage.emit('Clearing search index..ss.');
 
     this.adminTaskManagerService.startTask();
     this.adminBackendApiService.clearSearchIndexAsync().then(
