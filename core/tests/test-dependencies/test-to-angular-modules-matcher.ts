@@ -28,17 +28,15 @@ import {
 import {AngularRouteToModuleGenerator} from './angular-route-to-module-generator';
 
 export class TestToAngularModulesMatcher {
-  static angularRouteToModuleMapping: Map<Route, string> = new Map();
+  static angularRouteToModuleMapping: Map<Route, string> =
+    new AngularRouteToModuleGenerator().getAngularRouteToModuleMapping();
   static collectedTestAngularModules: string[] = [];
   static collectedTestErrors: string[] = [];
 
-  constructor() {
-    const angularRouteToModuleGenerator = new AngularRouteToModuleGenerator();
-    TestToAngularModulesMatcher.angularRouteToModuleMapping =
-      angularRouteToModuleGenerator.getAngularRouteToModuleMapping();
-  }
-
   private static matchUrl(url: string, route: Route): boolean {
+    if (route.path === url) {
+      return true;
+    }
     const urlSerializer = new DefaultUrlSerializer();
     const urlTree = urlSerializer.parse(url);
     if (!urlTree.root.children.primary) {
@@ -47,7 +45,7 @@ export class TestToAngularModulesMatcher {
     const segments: UrlSegment[] = urlTree.root.children.primary.segments;
     const segmentGroup: UrlSegmentGroup = urlTree.root.children.primary;
 
-    if (!route.path) {
+    if (route.path === undefined) {
       return false;
     }
 
@@ -78,21 +76,23 @@ export class TestToAngularModulesMatcher {
   }
 
   public static registerUrl(url: string): void {
-    if (!url.includes('http://localhost:8181')) {
+    if (!url.includes('http://localhost:8181/')) {
       return;
     }
-    const urlWithoutHost = url.replace('http://localhost:8181', '');
+    const urlWithoutHost = url.replace('http://localhost:8181/', '');
     let matched = false;
     for (const [route, module] of TestToAngularModulesMatcher.angularRouteToModuleMapping.entries()) {
       if (
         TestToAngularModulesMatcher.matchUrl(urlWithoutHost, route)
       ) {
+        matched = true;
         if (!TestToAngularModulesMatcher.collectedTestAngularModules.includes(module)) {
           TestToAngularModulesMatcher.collectedTestAngularModules.push(module);
         }
-        matched = true;
       }
     }
+
+    console.log(matched)
 
     if (!matched) {
       const errorMessage = `No Angular module found for the URL: ${url}.`;
