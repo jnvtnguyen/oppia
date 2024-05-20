@@ -28,6 +28,8 @@ import subprocess
 import sys
 import tempfile
 import threading
+import cProfile
+from pstats import Stats
 
 from core import feconf
 from core import utils
@@ -76,10 +78,20 @@ def mock_managed_process(
 class BuildTests(test_utils.GenericTestBase):
     """Test the build methods."""
 
+    def setUp(self) -> None:
+        super().setUp()
+        self.profile = cProfile.Profile()
+        self.profile.enable()
+
     def tearDown(self) -> None:
         super().tearDown()
         build.safe_delete_directory_tree(TEST_DIR)
         build.safe_delete_directory_tree(EMPTY_DIR)
+        self.profile.disable()
+        stats = Stats(self.profile)
+        stats.strip_dirs()
+        stats.sort_stats('cumulative')
+        stats.print_stats()
 
     def test_minify_func_with_invalid_filepath(self) -> None:
         """Tests minify_func with an invalid filepath."""

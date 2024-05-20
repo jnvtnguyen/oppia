@@ -25,8 +25,10 @@ from core.jobs.transforms.validation import base_validation
 from core.jobs.types import base_validation_errors
 from core.jobs.types import model_property
 from core.platform import models
+import cProfile
 
 from typing import Final, Type
+from pstats import Stats
 
 MYPY = False
 if MYPY: # pragma: no cover
@@ -40,7 +42,6 @@ if MYPY: # pragma: no cover
 
 
 class AuditAllStorageModelsJobTests(job_test_utils.JobTestBase):
-
     JOB_CLASS: Type[
         model_validation_jobs.AuditAllStorageModelsJob
     ] = model_validation_jobs.AuditAllStorageModelsJob

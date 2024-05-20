@@ -19,6 +19,8 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import cProfile
+from pstats import Stats
 
 from core import utils
 from core.tests import test_utils
@@ -42,6 +44,15 @@ class TypescriptChecksTests(test_utils.GenericTestBase):
             return process
 
         self.popen_swap = self.swap(subprocess, 'Popen', mock_popen)
+        self.profile = cProfile.Profile()
+        self.profile.enable()
+
+    def tearDown(self) -> None:
+        self.profile.disable()
+        stats = Stats(self.profile)
+        stats.strip_dirs()
+        stats.sort_stats('cumulative')
+        stats.print_stats()
 
     def test_compiled_js_dir_validation(self) -> None:
         """Test that run_typescript_checks.COMPILED_JS_DIR is validated 

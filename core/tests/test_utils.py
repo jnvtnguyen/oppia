@@ -35,6 +35,8 @@ import re
 import string
 from types import TracebackType
 import unittest
+import cProfile
+from pstats import Stats
 
 from core import feature_flag_list
 from core import feconf
@@ -1249,6 +1251,14 @@ class TestBase(unittest.TestCase):
 
     # A test unicode string.
     UNICODE_TEST_STRING: Final = 'unicode ¡马!'
+    
+    def setUp(self) -> None:
+        self.profile = cProfile.Profile()
+        self.profile.enable()
+        
+    def tearDown(self) -> None:
+        self.profile.disable()
+        Stats(self.profile).strip_dirs().sort_stats('cumulative').print_stats()
 
     @property
     def namespace(self) -> str:
