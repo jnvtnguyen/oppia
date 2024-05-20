@@ -291,6 +291,11 @@ jobs:
       - name: Run Lighthouse performance checks shard
         if: startsWith(github.head_ref, 'update-changelog-for-release') == false
         run: python -m scripts.run_lighthouse_tests --mode performance --shard ${{ matrix.suite.name }} --skip_build --record_screen
+      - name: Uploading generated test to angular modules as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: generated-test-to-angular-modules
+          path: /home/runner/work/oppia/oppia/core/tests/test-modules-mapping/lighthouse-performance/${{ matrix.suite.name }}-generated.txt
       - name: Uploading puppeteer video as Artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
@@ -381,7 +386,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: generated-test-to-angular-modules
-          path: /home/runner/work/oppia/oppia/core/tests/test-modules-mapping/acceptance/${{ matrix.suite.name }}.txt
+          path: /home/runner/work/oppia/oppia/core/tests/test-modules-mapping/acceptance/${{ matrix.suite.name }}-generated.txt
       - name: Run Mobile Acceptance Test ${{ matrix.suite.name }}
         run: xvfb-run -a --server-args="-screen 0, 1285x1000x24" python -m scripts.run_acceptance_tests --skip-build --suite=${{ matrix.suite.name }} --prod_env --mobile
       - name: Uploading webpack bundles as an artifact

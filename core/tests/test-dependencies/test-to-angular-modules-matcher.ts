@@ -121,27 +121,24 @@ export class TestToAngularModulesMatcher {
     const goldenModules = goldenFileContent
       .split('\n')
       .filter(line => line !== '');
-    const missingModules = goldenModules.filter(
-      module =>
-        !TestToAngularModulesMatcher.collectedTestAngularModules.includes(
-          module
-        )
+    const missingModules = TestToAngularModulesMatcher.collectedTestAngularModules.filter(
+      module => !goldenModules.includes(module)
     );
-    if (missingModules.length) {
-      throw new Error(
-        `The following Angular modules are missing from the golden file 
-          at the path 
-          ${goldenFilePath}:\n${missingModules.join('\n')}`
-      );
-    }
+    const goldenFileBasePathWithoutExtension = path.basename(goldenFilePath).split('.txt')[0];
     const generatedGoldenFilePath = path.resolve(
       path.dirname(goldenFilePath),
-      `generated-${path.basename(goldenFilePath)}`
+      `${goldenFileBasePathWithoutExtension}-generated.txt`
     );
     fs.mkdirSync(path.dirname(generatedGoldenFilePath), {recursive: true});
     fs.writeFileSync(
       generatedGoldenFilePath,
       TestToAngularModulesMatcher.collectedTestAngularModules.join('\n')
     );
+    if (missingModules.length) {
+      throw new Error(
+        'The following Angular modules are missing from the golden file ' + 
+        `at the path ${goldenFilePath}:\n${missingModules.join('\n')}`
+      );
+    }
   }
 }
