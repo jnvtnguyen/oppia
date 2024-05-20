@@ -280,13 +280,13 @@ def collect_ci_test_suites_to_run(
     lighthouse_accessibility_test_suites: List[TestSuiteDict] = []
 
     acceptance_test_suites_to_modules_mapping = get_test_suites_to_modules_mapping_by_type(
-        os.path.join(OPPIA_DIRECTORY, 'core/tests/acceptance-modules-mapping'), ALL_ACCEPTANCE_TEST_SUITES)
+        os.path.join(OPPIA_DIRECTORY, 'core/tests/modules-mapping/acceptance'), ALL_ACCEPTANCE_TEST_SUITES)
     
     lighthouse_performance_test_suites_to_modules_mapping = get_test_suites_to_modules_mapping_by_type(
-        os.path.join(OPPIA_DIRECTORY, 'core/tests/lighthouse-peformance-modules-mapping'), ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES)
+        os.path.join(OPPIA_DIRECTORY, 'core/tests/modules-mapping/lighthouse-performance'), ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES)
     
     lighthouse_accessibility_test_suites_to_modules_mapping = get_test_suites_to_modules_mapping_by_type(
-        os.path.join(OPPIA_DIRECTORY, 'core/tests/lighthouse-accessibility-modules-mapping'), ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES)
+        os.path.join(OPPIA_DIRECTORY, 'core/tests/modules-mapping/lighthouse-accessibility'), ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES)
     
     for module in modified_modules:
         acceptance_test_suites.extend(

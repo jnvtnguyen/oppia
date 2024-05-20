@@ -274,6 +274,6 @@ afterEach(() => {
 afterAll(() => {
   const testSpecName = process.env.TEST_SPEC_NAME;
   TestToAngularModulesMatcher.compareAndOutputModules(
-    `core/tests/acceptance-modules-mapping/${testSpecName}.txt`
+    `core/tests/test-modules-mapping/acceptance/${testSpecName}.txt`
   );
 });
