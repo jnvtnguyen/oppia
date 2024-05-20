@@ -30,6 +30,7 @@ import sys
 import unittest
 
 from typing import Final, List, Optional
+from concurrencytest import ConcurrentTestSuite, fork_for_tests
 
 sys.path.insert(1, os.getcwd())
 
@@ -137,7 +138,7 @@ def main(args: Optional[List[str]] = None) -> None:
         test_target=parsed_args.test_target,
     )
 
-    results = [unittest.TextTestRunner(verbosity=2).run(suite)
+    results = [unittest.TextTestRunner(verbosity=2).run(ConcurrentTestSuite(suite, fork_for_tests(4)))
                for suite in suites]
 
     for result in results:

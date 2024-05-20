@@ -16,6 +16,9 @@ certifi==2023.7.22 \
     --hash=sha256:539cc1d13202e33ca466e88b2807e29f4c13049d6d87031a3c110744495cb082 \
     --hash=sha256:92d6037539857d8206b8f6ae472e8b77db8058fec5937a1ef3f54304089edbb9
     # via -r requirements_dev.in
+concurrencytest==0.1.2 \
+    --hash=sha256:64a9c5b5cdb9949a375fcc5e114a82180f6a07cc1a026d3956230aecf980c2d8
+    # via -r requirements_dev.in
 coverage==7.2.3 \
     --hash=sha256:06ddd9c0249a0546997fdda5a30fbcb40f23926df0a874a60a8a185bc3a87d93 \
     --hash=sha256:0743b0035d4b0e32bc1df5de70fba3059662ace5b9a2a86a9f894cfe66569013 \
@@ -126,6 +129,10 @@ grpcio==1.54.0 \
     --hash=sha256:ed3d458ded32ff3a58f157b60cc140c88f7ac8c506a1c567b2a9ee8a2fd2ce54 \
     --hash=sha256:f4a7dca8ccd8023d916b900aa3c626f1bd181bd5b70159479b142f957ff420e4
     # via -r requirements_dev.in
+iso8601==2.1.0 \
+    --hash=sha256:6b1d3829ee8921c4301998c909f7829fa9ed3cbdac0d3b16af2d743aed1ba8df \
+    --hash=sha256:aac4145c4dcb66ad8b648a02830f5e2ff6c24af20f4f482689be402db2429242
+    # via python-subunit
 isort==5.12.0 \
     --hash=sha256:8bef7dde241278824a6d83f44a544709b065191b95b6e50894bdc722fcba0504 \
     --hash=sha256:f84c2818376e66cf843d497486ea8fed8700b340f308f076c6fb1229dff318b6
@@ -287,6 +294,10 @@ pylint-quotes==0.2.3 \
     --hash=sha256:2d6bb3fa8a1a85af3af8a0ca875a719ac5bcdb735c45756284699d809c109c95 \
     --hash=sha256:89decd985d3c019314da630f5e3fe0e0df951c2310525fbd6e710bca329c810e
     # via -r requirements_dev.in
+python-subunit==1.4.4 \
+    --hash=sha256:1079363131aa1d3f45259237265bc2e61a77e35f20edfb6e3d1d2558a2cdea34 \
+    --hash=sha256:27b27909cfb20c3aa59add6ff97471afd869daa3c9035ac7ef5eed8dc394f7a5
+    # via concurrencytest
 pyyaml==6.0 \
     --hash=sha256:01b45c0191e6d66c470b6cf1b9531a771a83c1c4208272ead47a3ae4f2f603bf \
     --hash=sha256:0283c35a6a9fbf047493e3a0ce8d79ef5030852c51e9d911a27badfde0605293 \
@@ -362,6 +373,12 @@ soupsieve==2.4.1 \
     --hash=sha256:1c1bfee6819544a3447586c889157365a27e10d88cde3ad3da0cf0ddf646feb8 \
     --hash=sha256:89d12b2d5dfcd2c9e8c22326da9d9aa9cb3dfab0a83a024f05704076ee8d35ea
     # via beautifulsoup4
+testtools==2.7.1 \
+    --hash=sha256:56e118ce251544d436d9fbb5ba62f44aeb237aa8fcc3147372b484bbe5f48ef7 \
+    --hash=sha256:df6de96010e29ee21f637a147eabf30d50b25e3841dd1d68f93ee89ce77e366c
+    # via
+    #   concurrencytest
+    #   python-subunit
 tomli==2.0.1 \
     --hash=sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc \
     --hash=sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f
