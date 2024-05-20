@@ -231,7 +231,7 @@ def get_test_suites_affected_by_module(
     test_suites_to_modules_mapping: dict[str, List[str]],
     all_test_suites: List[TestSuiteDict]
 ) -> List[TestSuiteDict]:
-    affected_tests = []
+    affected_tests: List[TestSuiteDict] = []
     # If any of the test suites are not in the mapping, we should run them.
     for test_suite in all_test_suites:
         if test_suite.get('suite_name') not in test_suites_to_modules_mapping.keys():
@@ -247,7 +247,7 @@ def get_test_suites_affected_by_module(
         if module == test_suite.module_path:
             affected_tests.append(test_suite)
 
-    return [dict(test_suite) for test_suite in {tuple(affected_test_suite) for affected_test_suite in affected_tests}]
+    return [dict(test_suite) for test_suite in {tuple(affected_test_suite.items()) for affected_test_suite in affected_tests}]
         
         
 def collect_ci_test_suites_to_run(
