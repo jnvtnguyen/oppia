@@ -35,29 +35,31 @@ const WEBPACK_DEFINED_ALIASES = {
 // List of built in node modules.
 const BUILT_IN_NODE_MODULES = ['fs', 'path', 'console', 'child_process'];
 
-const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
-
-/**
- * Reads the tsconfig file and returns the parsed configuration.
- */
-export const readTypescriptConfig = (typescriptConfigPath: string): any => {
-  const typescriptConfig = ts.readConfigFile(
-    typescriptConfigPath,
-    ts.sys.readFile
-  );
-  if (typescriptConfig.error) {
-    throw new Error(
-      `Failed to read TypeScript configuration: ${typescriptConfigPath}.`
-    );
+const getRootDirectory = (): string => {
+  let currentDirectory = __dirname;
+  while (!fs.existsSync(path.join(currentDirectory, 'package.json'))) {
+    currentDirectory = path.resolve(currentDirectory, '..');
   }
-  return typescriptConfig.config;
-};
+  return currentDirectory;
+}
+export const ROOT_DIRECTORY = getRootDirectory();
+const TYPESCRIPT_CONFIG_PATH = path.resolve(ROOT_DIRECTORY, 'tsconfig.json');
 
 export class TypescriptExtractorUtilities {
   typescriptConfig: any;
 
-  constructor(typescriptConfig: any) {
-    this.typescriptConfig = typescriptConfig;
+  constructor() {
+    this.typescriptConfig = ts.readConfigFile(
+      TYPESCRIPT_CONFIG_PATH,
+      ts.sys.readFile
+    ).config;
+  }
+
+  /**
+   * Returns the TypeScript compiler host.
+   */
+  public getTypescriptHost = (): ts.CompilerHost => {
+    return ts.createCompilerHost(this.typescriptConfig);
   }
 
   /**
@@ -120,12 +122,13 @@ export class TypescriptExtractorUtilities {
         return filePath.replace(formattedAliasPath, fullAliasPath);
       }
     }
+    return undefined;
   }
 
   /**
    * Resolves a module path to a file path relative to the root directory.
    */
-  public resolveModulePathToFilePath(
+  public resolveModule(
     modulePath: string,
     relativeFilePath: string
   ): string | undefined {
@@ -133,7 +136,7 @@ export class TypescriptExtractorUtilities {
       !this.isFilePathRelative(modulePath) &&
       this.isFilePathALib(modulePath)
     ) {
-      return;
+      return undefined;
     }
     const pathByAlias = this.resolvePathByAlias(modulePath);
     if (pathByAlias) {

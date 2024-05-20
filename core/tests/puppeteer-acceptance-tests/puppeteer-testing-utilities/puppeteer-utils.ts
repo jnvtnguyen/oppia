@@ -20,6 +20,7 @@ import puppeteer, {Page, Browser, Viewport, ElementHandle} from 'puppeteer';
 import testConstants from './test-constants';
 import isElementClickable from '../functions/is-element-clickable';
 import {ConsoleReporter} from './console-reporter';
+import {TestToAngularModulesMatcher} from '../../test-dependencies/test-to-angular-modules-matcher';
 
 const VIEWPORT_WIDTH_BREAKPOINTS = testConstants.ViewportWidthBreakpoints;
 
@@ -92,6 +93,10 @@ export class BaseUser {
         this.browserObject = browser;
         ConsoleReporter.trackConsoleMessagesInBrowser(browser);
         this.page = await browser.newPage();
+
+        this.page.on('framenavigated', async (frame) => {
+          TestToAngularModulesMatcher.registerUrl(frame.url());
+        });
 
         if (mobile) {
           // This is the default viewport and user agent settings for iPhone 6.

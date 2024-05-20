@@ -7726,14 +7726,6 @@
     "core/templates/pages/learner-dashboard-page/learner-dashboard-page.constants.ts"
   ],
   "core/templates/pages/learner-dashboard-page/learner-dashboard-page.constants.ts": [],
-  "core/templates/pages/learner-dashboard-page/learner-dashboard-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/learner-dashboard-page/learner-dashboard-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/base-components/base-content.component.ts",
-    "core/templates/pages/learner-dashboard-page/learner-dashboard-page.component.ts"
-  ],
   "core/templates/pages/learner-dashboard-page/learner-dashboard-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/components/summary-tile/lesson-card.module.ts",
@@ -8450,13 +8442,6 @@
     "core/templates/pages/moderator-page/services/moderator-page-backend-api.service.ts",
     "core/templates/pages/moderator-page/moderator-page.component.html"
   ],
-  "core/templates/pages/moderator-page/moderator-page.import.ts": [
-    "core/templates/Polyfills.ts",
-    "core/templates/pages/moderator-page/moderator-page.module.ts",
-    "core/templates/App.ts",
-    "core/templates/base-components/oppia-root.directive.ts",
-    "core/templates/pages/moderator-page/moderator-page.component.ts"
-  ],
   "core/templates/pages/moderator-page/moderator-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
     "core/templates/pages/moderator-page/moderator-page.component.ts",
@@ -8496,6 +8481,60 @@
   ],
   "core/templates/pages/oppia-root/routing/access-validation-backend-api.service.ts": [
     "core/templates/domain/utilities/url-interpolation.service.ts"
+  ],
+  "core/templates/pages/oppia-root/routing/app.routing.module.ts": [
+    "core/templates/app.constants.ts",
+    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts",
+    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts",
+    "core/templates/pages/admin-page/admin-page.module.ts",
+    "core/templates/pages/collection-editor-page/collection-editor-page.module.ts",
+    "core/templates/pages/moderator-page/moderator-page.module.ts",
+    "core/templates/pages/blog-admin-page/blog-admin-page.module.ts",
+    "core/templates/pages/blog-dashboard-page/blog-dashboard-page.module.ts",
+    "core/templates/pages/email-dashboard-pages/email-dashboard-page.module.ts",
+    "core/templates/pages/diagnostic-test-player-page/diagnostic-test-player-page.module.ts",
+    "core/templates/pages/classroom-page/classroom-page.module.ts",
+    "core/templates/pages/classroom-admin-page/classroom-admin-page.module.ts",
+    "core/templates/pages/learner-dashboard-page/learner-dashboard-page.module.ts",
+    "core/templates/pages/learner-group-pages/edit-group/edit-learner-group-page.module.ts",
+    "core/templates/pages/facilitator-dashboard-page/facilitator-dashboard-page.module.ts",
+    "core/templates/pages/learner-group-pages/create-group/create-learner-group-page.module.ts",
+    "core/templates/pages/about-page/about-page.module.ts",
+    "core/templates/pages/about-foundation-page/about-foundation-page.module.ts",
+    "core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.module.ts",
+    "core/templates/pages/exploration-player-page/exploration-player-page.module.ts",
+    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-page.module.ts",
+    "core/templates/pages/android-page/android-page.module.ts",
+    "core/templates/pages/delete-account-page/delete-account-page.module.ts",
+    "core/templates/pages/pending-account-deletion-page/pending-account-deletion-page.module.ts",
+    "core/templates/pages/preferences-page/preferences-page.module.ts",
+    "core/templates/pages/feedback-updates-page/feedback-updates-page.module.ts",
+    "core/templates/pages/profile-page/profile-page.module.ts",
+    "core/templates/pages/release-coordinator-page/release-coordinator-page.module.ts",
+    "core/templates/pages/library-page/library-page.module.ts",
+    "core/templates/pages/story-viewer-page/story-viewer-page.module.ts",
+    "core/templates/pages/contact-page/contact-page.module.ts",
+    "core/templates/pages/donate-page/donate-page.module.ts",
+    "core/templates/pages/get-started-page/get-started-page.module.ts",
+    "core/templates/pages/license-page/license.module.ts",
+    "core/templates/pages/login-page/login-page.module.ts",
+    "core/templates/pages/logout-page/logout-page.module.ts",
+    "core/templates/pages/partnerships-page/partnerships-page.module.ts",
+    "core/templates/pages/participation-playbook/playbook.module.ts",
+    "core/templates/pages/privacy-page/privacy-page.module.ts",
+    "core/templates/pages/signup-page/signup-page.module.ts",
+    "core/templates/pages/teach-page/teach-page.module.ts",
+    "core/templates/pages/terms-page/terms-page.module.ts",
+    "core/templates/pages/thanks-page/thanks-page.module.ts",
+    "core/templates/pages/volunteer-page/volunteer-page.module.ts",
+    "core/templates/pages/learner-group-pages/view-group/view-learner-group-page.module.ts",
+    "core/templates/pages/blog-home-page/blog-home-page.module.ts",
+    "core/templates/pages/blog-author-profile-page/blog-author-profile-page.module.ts",
+    "core/templates/pages/blog-post-page/blog-post-page.module.ts",
+    "core/templates/pages/voiceover-admin-page/voiceover-admin-page.module.ts",
+    "core/templates/pages/collection-player-page/collection-player-page.module.ts",
+    "core/templates/pages/landing-pages/topic-landing-page/topic-landing-page.module.ts",
+    "core/templates/pages/error-pages/error-page.module.ts"
   ],
   "core/templates/pages/participation-playbook/playbook-page-root.component.html": [
     "core/templates/base-components/base-content.component.ts",
@@ -11022,7 +11061,8 @@
   "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/puppeteer-utils.ts": [
     "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/test-constants.ts",
     "core/tests/puppeteer-acceptance-tests/functions/is-element-clickable.ts",
-    "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/console-reporter.ts"
+    "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/console-reporter.ts",
+    "core/tests/test-dependencies/test-to-angular-modules-matcher.ts"
   ],
   "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/show-message-utils.ts": [],
   "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/test-constants.ts": [],
@@ -11072,7 +11112,8 @@
     "core/tests/puppeteer-acceptance-tests/user-utilities/exploration-editor-utils.ts"
   ],
   "core/tests/puppeteer-acceptance-tests/spec/helpers/reporter.ts": [
-    "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/console-reporter.ts"
+    "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/console-reporter.ts",
+    "core/tests/test-dependencies/test-to-angular-modules-matcher.ts"
   ],
   "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/click-all-buttons-on-about-foundation-page.spec.ts": [
     "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/user-factory.ts",

@@ -20,10 +20,8 @@ import ts from 'typescript';
 import path from 'path';
 import fs from 'fs';
 import * as cheerio from 'cheerio';
-import {
-  TypescriptExtractorUtilities,
-  readTypescriptConfig,
-} from './typescript-extractor-utilities';
+import {TypescriptExtractorUtilities, ROOT_DIRECTORY} from './typescript-extractor-utilities';
+import {AngularRouteToModuleGenerator} from './angular-route-to-module-generator';
 
 type BaseAngularInformation = {
   className: string;
@@ -51,8 +49,6 @@ type AngularInformation =
   | AngularComponentInformation
   | AngularDirectiveOrPipeInformation;
 
-const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
-
 // List of exclusions from the .gitignore file.
 const GIT_IGNORE_EXCLUSIONS = fs
   .readFileSync(path.resolve(ROOT_DIRECTORY, '.gitignore'), 'utf8')
@@ -75,10 +71,7 @@ const SEARCH_EXCLUSIONS = [
   'core/tests/webdriverio',
   'core/tests/webdriverio_desktop',
   'core/tests/webdriverio_utils',
-  'core/tests/dependency-graph-generator.ts',
-  'core/tests/typescript-extractor-utilities.ts',
-  'core/tests/test-to-angular-modules-matcher.ts',
-  'core/templates/pages/oppia-root/routing/app.routing.module.ts',
+  'core/tests/test-dependencies',
   'core/templates/services/UpgradedServices.ts',
   'core/templates/services/angular-services.index.ts',
   'core/templates/utility/hashes.ts',
@@ -103,21 +96,16 @@ const SEARCH_FILE_EXTENSIONS = [
 
 export class DependencyExtractor {
   typescriptHost: ts.CompilerHost;
-  typescriptConfig: any;
   fileAngularInformationsMapping: Record<string, AngularInformation[]>;
-  typescriptExtractorUtilities: TypescriptExtractorUtilities;
+  typescriptExtractorUtilities: TypescriptExtractorUtilities =
+    new TypescriptExtractorUtilities();
 
   constructor(
     typescriptHost: ts.CompilerHost,
-    typescriptConfig: any,
     fileAngularInformationsMapping: Record<string, AngularInformation[]>
   ) {
     this.typescriptHost = typescriptHost;
-    this.typescriptConfig = typescriptConfig;
     this.fileAngularInformationsMapping = fileAngularInformationsMapping;
-    this.typescriptExtractorUtilities = new TypescriptExtractorUtilities(
-      typescriptConfig
-    );
   }
 
   /**
@@ -143,10 +131,9 @@ export class DependencyExtractor {
       let modulePath: string | undefined;
       // If the node is an import statement, we extract the module path.
       if (ts.isImportDeclaration(node)) {
-        modulePath =
-          this.typescriptExtractorUtilities.evaluateNode(
-            node.moduleSpecifier
-          );
+        modulePath = this.typescriptExtractorUtilities.evaluateNode(
+          node.moduleSpecifier
+        );
       }
       // If the node is a require or import function call, we extract the module path.
       if (ts.isCallExpression(node)) {
@@ -157,17 +144,13 @@ export class DependencyExtractor {
         ) {
           return;
         }
-        modulePath =
-          this.typescriptExtractorUtilities.evaluateNode(
-            node.arguments[0]
-          );
+        modulePath = this.typescriptExtractorUtilities.evaluateNode(
+          node.arguments[0]
+        );
       }
       if (!modulePath) return;
       const resolvedModulePath =
-        this.typescriptExtractorUtilities.resolveModulePathToFilePath(
-          modulePath,
-          filePath
-        );
+        this.typescriptExtractorUtilities.resolveModule(modulePath, filePath);
       if (!resolvedModulePath) return;
       if (!fs.existsSync(path.join(ROOT_DIRECTORY, resolvedModulePath))) {
         throw new Error(
@@ -220,7 +203,10 @@ export class DependencyExtractor {
             (attributeName.startsWith('(') && attributeName.endsWith(')'))
           ) {
             cheerioDocument(element).removeAttr(attributeName);
-            cheerioDocument(element).attr(attributeName.slice(1, -1), attributeValue);
+            cheerioDocument(element).attr(
+              attributeName.slice(1, -1),
+              attributeValue
+            );
           }
         }
         // Here we check if the element has a load function.
@@ -236,7 +222,7 @@ export class DependencyExtractor {
             );
             const loadFilePath = args.split(',')[0].slice(1, -1);
             const resolvedLoadFilePath =
-              this.typescriptExtractorUtilities.resolveModulePathToFilePath(
+              this.typescriptExtractorUtilities.resolveModule(
                 loadFilePath,
                 filePath
               );
@@ -385,7 +371,7 @@ export class DependencyExtractor {
           );
           if (!selectorText || !templateUrlText) continue;
           const resolvedTemplateUrl =
-            this.typescriptExtractorUtilities.resolveModulePathToFilePath(
+            this.typescriptExtractorUtilities.resolveModule(
               templateUrlText,
               filePath
             );
@@ -418,17 +404,16 @@ export class DependencyExtractor {
 
 export class DependencyGraphGenerator {
   typescriptHost: ts.CompilerHost;
-  typescriptConfig: any;
+  typescriptExtractorUtilities: TypescriptExtractorUtilities =
+    new TypescriptExtractorUtilities();
   files: string[];
+  fileAngularInformationsMapping: Record<string, AngularInformation[]>;
+  angularPageModules: string[] = [];
   dependenciesMapping: Record<string, string[]> = {};
   dependencyGraph: Record<string, string[]> = {};
-  fileAngularInformationsMapping: Record<string, AngularInformation[]>;
 
   constructor() {
-    const typescriptConfigPath = path.resolve(ROOT_DIRECTORY, 'tsconfig.json');
-    this.typescriptConfig = readTypescriptConfig(typescriptConfigPath);
-    this.typescriptHost = ts.createCompilerHost(this.typescriptConfig);
-
+    this.typescriptHost = this.typescriptExtractorUtilities.getTypescriptHost();
     this.files = this.typescriptHost.readDirectory!(
       ROOT_DIRECTORY,
       SEARCH_FILE_EXTENSIONS,
@@ -445,6 +430,10 @@ export class DependencyGraphGenerator {
       return acc;
     }, []);
 
+    const angularRouteToModuleGenerator = new AngularRouteToModuleGenerator();
+    this.angularPageModules = Array.from(
+      angularRouteToModuleGenerator.getAngularRouteToModuleMapping().values()
+    );
     this.fileAngularInformationsMapping =
       this.getFileAngularInformationsMapping();
   }
@@ -461,7 +450,6 @@ export class DependencyGraphGenerator {
     for (const filePath of this.files) {
       const depedencyExtractor = new DependencyExtractor(
         this.typescriptHost,
-        this.typescriptConfig,
         fileAngularInformationsMapping
       );
       fileAngularInformationsMapping[filePath] =
@@ -507,7 +495,12 @@ export class DependencyGraphGenerator {
       references = this.getFilesWithDepedency(filePath, ignoreModules);
     }
 
-    if (references.length === 0) {
+    if (references.length === 0 || this.angularPageModules.includes(filePath)) {
+      // Check if the page module has a upper import file.
+      const upperReferences = this.getFilesWithDepedency(filePath, false);
+      if (upperReferences.length && upperReferences[0].endsWith('.import.ts')) {
+        return [upperReferences[0]];
+      }
       return [filePath];
     }
 
@@ -527,7 +520,6 @@ export class DependencyGraphGenerator {
   public generateDepedencyGraph(): Record<string, string[]> {
     const dependencyExtractor = new DependencyExtractor(
       this.typescriptHost,
-      this.typescriptConfig,
       this.fileAngularInformationsMapping
     );
 

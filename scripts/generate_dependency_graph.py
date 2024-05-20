@@ -22,8 +22,8 @@ import subprocess
 def main() -> None:
     cmd = (
         './node_modules/typescript/bin/tsc --esModuleInterop %s' %
-        './core/tests/dependency-graph-generator.ts && %s' %
-        'node core/tests/dependency-graph-generator.js')
+        './core/tests/test-dependencies/dependency-graph-generator.ts && %s' %
+        'node core/tests/test-dependencies/dependency-graph-generator.js')
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     

@@ -185,7 +185,6 @@
     "gif-frames": "^1.0.1",
     "gifshot": "^0.4.5",
     "globalthis": "^1.0.2",
-    "guess-parser": "^0.4.22",
     "guppy-dev": "git+https://github.com/oppia/guppy#f509e",
     "hammerjs": "^2.0.8",
     "hash-wasm": "^4.4.1",

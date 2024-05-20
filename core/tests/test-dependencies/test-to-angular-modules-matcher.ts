@@ -19,41 +19,31 @@
 
 import path from 'path';
 import fs from 'fs';
-import ts from 'typescript';
 import {
   DefaultUrlSerializer,
   UrlSegment,
   UrlSegmentGroup,
   Route,
 } from '@angular/router';
-import {
-  readTypescriptConfig,
-} from './typescript-extractor-utilities';
-import {parseAngularRoutes} from 'guess-parser';
-
-const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
-
-const ANGULAR_JS_URL_TO_MODULE_MAPPING = {};
+import {AngularRouteToModuleGenerator} from './angular-route-to-module-generator';
 
 export class TestToAngularModulesMatcher {
-  typescriptHost: ts.CompilerHost;
-  urlToModuleMapping: Map<Route, string> = new Map();
-  collectedTestAngularModules: string[] = [];
+  static angularRouteToModuleMapping: Map<Route, string> = new Map();
+  static collectedTestAngularModules: string[] = [];
+  static collectedTestErrors: string[] = [];
 
   constructor() {
-    const typescriptConfigPath = path.resolve(ROOT_DIRECTORY, 'tsconfig.json');
-    const typescriptConfig = readTypescriptConfig(typescriptConfigPath);
-    this.typescriptHost = ts.createCompilerHost(typescriptConfig);
-    this.urlToModuleMapping = {
-      ...ANGULAR_JS_URL_TO_MODULE_MAPPING,
-      ...this.getAngularUrlToModuleMapping(),
-    };
-    console.log(parseAngularRoutes('../../tsconfig.json'))
+    const angularRouteToModuleGenerator = new AngularRouteToModuleGenerator();
+    TestToAngularModulesMatcher.angularRouteToModuleMapping =
+      angularRouteToModuleGenerator.getAngularRouteToModuleMapping();
   }
 
-  private matchUrl(url: string, route: Route): boolean {
+  private static matchUrl(url: string, route: Route): boolean {
     const urlSerializer = new DefaultUrlSerializer();
     const urlTree = urlSerializer.parse(url);
+    if (!urlTree.root.children.primary) {
+      return false;
+    }
     const segments: UrlSegment[] = urlTree.root.children.primary.segments;
     const segmentGroup: UrlSegmentGroup = urlTree.root.children.primary;
 
@@ -87,33 +77,40 @@ export class TestToAngularModulesMatcher {
     return true;
   }
 
-  private getAngularUrlToModuleMapping(): Map<Route, string> {
-    const urlToAngularModuleMapping: Map<Route, string> = new Map();
-    return urlToAngularModuleMapping;
-  }
-
-  public registerUrl(url: string): void {
+  public static registerUrl(url: string): void {
+    if (!url.includes('http://localhost:8181')) {
+      return;
+    }
+    const urlWithoutHost = url.replace('http://localhost:8181', '');
     let matched = false;
-    for (const [module, route] of Object.entries(this.urlToModuleMapping)) {
+    for (const [route, module] of TestToAngularModulesMatcher.angularRouteToModuleMapping.entries()) {
       if (
-        this.matchUrl(url, route) &&
-        !this.collectedTestAngularModules.includes(module)
+        TestToAngularModulesMatcher.matchUrl(urlWithoutHost, route)
       ) {
-        this.collectedTestAngularModules.push(module);
+        if (!TestToAngularModulesMatcher.collectedTestAngularModules.includes(module)) {
+          TestToAngularModulesMatcher.collectedTestAngularModules.push(module);
+        }
         matched = true;
       }
     }
 
     if (!matched) {
-      throw new Error(`No Angular module found for the URL: ${url}.`);
+      const errorMessage = `No Angular module found for the URL: ${url}.`;
+      if (!TestToAngularModulesMatcher.collectedTestErrors.includes(errorMessage)) {
+        TestToAngularModulesMatcher.collectedTestErrors.push(errorMessage);
+      }
     }
   }
 
-  public compareAndOutputModules(goldenFilePath: string): void {
+  public static compareAndOutputModules(goldenFilePath: string): void {
+    if (TestToAngularModulesMatcher.collectedTestErrors.length > 0) {
+      throw new Error(TestToAngularModulesMatcher.collectedTestErrors.join('\n'));
+    }
+
     const goldenFileContent = fs.readFileSync(goldenFilePath, 'utf-8');
     const goldenModules = goldenFileContent.split('\n').filter(Boolean);
     const missingModules = goldenModules.filter(
-      module => !this.collectedTestAngularModules.includes(module)
+      module => !TestToAngularModulesMatcher.collectedTestAngularModules.includes(module)
     );
     if (missingModules.length) {
       throw new Error(
@@ -128,9 +125,7 @@ export class TestToAngularModulesMatcher {
     );
     fs.writeFileSync(
       generatedGoldenFilePath,
-      this.collectedTestAngularModules.join('\n')
+      TestToAngularModulesMatcher.collectedTestAngularModules.join('\n')
     );
   }
 }
-
-new TestToAngularModulesMatcher();

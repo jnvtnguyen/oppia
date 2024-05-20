@@ -19,6 +19,7 @@
 import util from 'util';
 import sourceMapSupport from 'source-map-support';
 import {ConsoleReporter} from '../../puppeteer-testing-utilities/console-reporter';
+import { TestToAngularModulesMatcher } from '../../../test-dependencies/test-to-angular-modules-matcher';
 
 sourceMapSupport.install();
 
@@ -268,4 +269,11 @@ jasmine.getEnv().addReporter(Reporter);
 // Here we report console errors after each test suite.
 afterEach(() => {
   ConsoleReporter.reportConsoleErrors();
+});
+
+afterAll(() => {
+  const testSpecName = process.env.TEST_SPEC_NAME;
+  TestToAngularModulesMatcher.compareAndOutputModules(
+    `core/tests/acceptance-modules-mapping/${testSpecName}.txt`
+  );
 });
