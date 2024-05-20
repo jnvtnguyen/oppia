@@ -27,9 +27,9 @@ import {
   Route,
 } from '@angular/router';
 import {
-  TypescriptExtractorUtilities,
   readTypescriptConfig,
 } from './typescript-extractor-utilities';
+import {parseAngularRoutes} from 'guess-parser';
 
 const ROOT_DIRECTORY = path.resolve(__dirname, '../../');
 
@@ -37,7 +37,6 @@ const ANGULAR_JS_URL_TO_MODULE_MAPPING = {};
 
 export class TestToAngularModulesMatcher {
   typescriptHost: ts.CompilerHost;
-  typescriptExtractorUtilities: TypescriptExtractorUtilities;
   urlToModuleMapping: Map<Route, string> = new Map();
   collectedTestAngularModules: string[] = [];
 
@@ -45,13 +44,11 @@ export class TestToAngularModulesMatcher {
     const typescriptConfigPath = path.resolve(ROOT_DIRECTORY, 'tsconfig.json');
     const typescriptConfig = readTypescriptConfig(typescriptConfigPath);
     this.typescriptHost = ts.createCompilerHost(typescriptConfig);
-    this.typescriptExtractorUtilities = new TypescriptExtractorUtilities(
-      typescriptConfig
-    );
     this.urlToModuleMapping = {
       ...ANGULAR_JS_URL_TO_MODULE_MAPPING,
       ...this.getAngularUrlToModuleMapping(),
     };
+    console.log(parseAngularRoutes('../../tsconfig.json'))
   }
 
   private matchUrl(url: string, route: Route): boolean {
@@ -135,3 +132,5 @@ export class TestToAngularModulesMatcher {
     );
   }
 }
+
+new TestToAngularModulesMatcher();

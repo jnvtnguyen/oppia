@@ -19,6 +19,7 @@
 import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
+import {evaluate} from 'ts-evaluator';
 
 // List of Webpack Definied Aliases defined in webpack.config.ts.
 const WEBPACK_DEFINED_ALIASES = {
@@ -62,18 +63,12 @@ export class TypescriptExtractorUtilities {
   /**
    * Resolves a TypeScript/JavaScript expression into a regular string.
    */
-  public resolveExpressionIntoString = (expression: string): string => {
-    // If the expression contains a + then add the two strings together.
-    if (expression.includes('+')) {
-      const parts = expression.split('+');
-      return parts
-        .map(part => {
-          return part.trim().slice(1, -1);
-        })
-        .join('');
+  public evaluateNode = (node: ts.Statement | ts.Declaration | ts.Expression): string | undefined => {
+    const response = evaluate({node});
+    if (!response.success) {
+      throw new Error(`Failed to evaluate node: ${response}`);
     }
-    // Since the expression is a string, remove the quotes around it.
-    return expression.slice(1, -1);
+    return response.value as string;
   };
 
   /*

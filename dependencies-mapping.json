@@ -22,7 +22,6 @@
   ".github/ISSUE_TEMPLATE/4_server_error_template.md": [],
   ".github/workflows/README.md": [],
   "assets/README.md": [],
-  "assets/constants.js": [],
   "assets/constants.ts": [],
   "assets/rich_text_components_definitions.ts": [],
   "assets/scripts/README.md": [],
@@ -85,9 +84,6 @@
   "core/templates/Polyfills.ts": [],
   "core/templates/app.constants.ajs.ts": [
     "core/templates/app.constants.ts",
-    "assets/constants.ts"
-  ],
-  "core/templates/app.constants.js": [
     "assets/constants.ts"
   ],
   "core/templates/app.constants.ts": [
@@ -1660,7 +1656,9 @@
     "core/templates/components/summary-tile/exploration-summary-tile.component.css",
     "core/templates/components/summary-tile/exploration-summary-tile.component.html"
   ],
-  "core/templates/components/summary-tile/learner-story-summary-tile.component.html": [],
+  "core/templates/components/summary-tile/learner-story-summary-tile.component.html": [
+    "core/templates/components/summary-tile/lesson-card.component.ts"
+  ],
   "core/templates/components/summary-tile/learner-story-summary-tile.component.ts": [
     "core/templates/domain/utilities/url-interpolation.service.ts",
     "core/templates/domain/topic_viewer/topic-viewer-domain.constants.ts",
@@ -1691,6 +1689,21 @@
     "core/templates/domain/topic/learner-topic-summary.model.ts",
     "core/templates/domain/classroom/classroom-domain.constants.ts",
     "core/templates/components/summary-tile/learner-topic-summary-tile.component.html"
+  ],
+  "core/templates/components/summary-tile/lesson-card.component.html": [],
+  "core/templates/components/summary-tile/lesson-card.component.ts": [
+    "core/templates/app.constants.ts",
+    "core/templates/services/assets-backend-api.service.ts",
+    "core/templates/services/contextual/url.service.ts",
+    "core/templates/domain/utilities/url-interpolation.service.ts",
+    "core/templates/domain/collection/collection-summary.model.ts",
+    "core/templates/domain/summary/learner-exploration-summary.model.ts",
+    "core/templates/domain/story/story-summary.model.ts",
+    "core/templates/domain/story/story-node.model.ts",
+    "core/templates/components/summary-tile/lesson-card.component.html"
+  ],
+  "core/templates/components/summary-tile/lesson-card.module.ts": [
+    "core/templates/components/summary-tile/lesson-card.component.ts"
   ],
   "core/templates/components/summary-tile/story-summary-tile.component.css": [],
   "core/templates/components/summary-tile/story-summary-tile.component.html": [],
@@ -7638,11 +7651,14 @@
   "core/templates/pages/learner-dashboard-page/home-tab.component.html": [
     "core/templates/components/summary-tile/learner-story-summary-tile.component.ts",
     "core/templates/components/summary-tile/learner-topic-summary-tile.component.ts",
+    "core/templates/components/summary-tile/lesson-card.component.ts",
     "core/templates/directives/focus-on.directive.ts"
   ],
   "core/templates/pages/learner-dashboard-page/home-tab.component.ts": [
     "core/templates/app.constants.ts",
+    "core/templates/domain/collection/collection-summary.model.ts",
     "core/templates/domain/topic/learner-topic-summary.model.ts",
+    "core/templates/domain/summary/learner-exploration-summary.model.ts",
     "core/templates/pages/learner-dashboard-page/learner-dashboard-page.constants.ts",
     "core/templates/domain/utilities/url-interpolation.service.ts",
     "core/templates/services/contextual/window-dimensions.service.ts",
@@ -7720,6 +7736,7 @@
   ],
   "core/templates/pages/learner-dashboard-page/learner-dashboard-page.module.ts": [
     "core/templates/components/shared-component.module.ts",
+    "core/templates/components/summary-tile/lesson-card.module.ts",
     "core/templates/components/summary-tile/learner-story-summary-tile.component.ts",
     "core/templates/components/summary-tile/learner-topic-goals-summary-tile.component.ts",
     "core/templates/pages/learner-dashboard-page/progress-tab.component.ts",
@@ -8479,11 +8496,6 @@
   ],
   "core/templates/pages/oppia-root/routing/access-validation-backend-api.service.ts": [
     "core/templates/domain/utilities/url-interpolation.service.ts"
-  ],
-  "core/templates/pages/oppia-root/routing/app.route-definitions.ts": [
-    "core/templates/app.constants.ts",
-    "core/templates/pages/lightweight-oppia-root/routing/guards/is-logged-in.guard.ts",
-    "core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-flag.guard.ts"
   ],
   "core/templates/pages/participation-playbook/playbook-page-root.component.html": [
     "core/templates/base-components/base-content.component.ts",
@@ -10998,9 +11010,6 @@
     "third_party/static/ui-tree-2.22.6/dist/angular-ui-tree.min.js"
   ],
   "core/templates/utility/forms.ts": [],
-  "core/templates/utility/hashes.ts": [
-    "assets/hashes.json"
-  ],
   "core/templates/utility/string-utility.ts": [],
   "core/tests/karma.conf.ts": [],
   "core/tests/protractor-browserstack.conf.js": [],
@@ -11095,6 +11104,12 @@
     "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/user-factory.ts",
     "core/tests/puppeteer-acceptance-tests/user-utilities/logged-in-users-utils.ts",
     "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/test-constants.ts"
+  ],
+  "core/tests/puppeteer-acceptance-tests/spec/logged-in-user-tests/subscribe-to-creator-and-view-all-explorations-by-that-creator.spec.ts": [
+    "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/test-constants.ts",
+    "core/tests/puppeteer-acceptance-tests/user-utilities/exploration-editor-utils.ts",
+    "core/tests/puppeteer-acceptance-tests/user-utilities/logged-in-users-utils.ts",
+    "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/user-factory.ts"
   ],
   "core/tests/puppeteer-acceptance-tests/spec/practice-question-admin-tests/add-and-remove-contribution-rights.spec.ts": [
     "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/user-factory.ts",
