@@ -41,7 +41,7 @@ const getRootDirectory = (): string => {
     currentDirectory = path.resolve(currentDirectory, '..');
   }
   return currentDirectory;
-}
+};
 export const ROOT_DIRECTORY = getRootDirectory();
 const TYPESCRIPT_CONFIG_PATH = path.resolve(ROOT_DIRECTORY, 'tsconfig.json');
 
@@ -60,12 +60,14 @@ export class TypescriptExtractorUtilities {
    */
   public getTypescriptHost = (): ts.CompilerHost => {
     return ts.createCompilerHost(this.typescriptConfig);
-  }
+  };
 
   /**
    * Resolves a TypeScript/JavaScript expression into a regular string.
    */
-  public evaluateNode = (node: ts.Statement | ts.Declaration | ts.Expression): string | undefined => {
+  public evaluateNode = (
+    node: ts.Statement | ts.Declaration | ts.Expression
+  ): string | undefined => {
     const response = evaluate({node});
     if (!response.success) {
       throw new Error(`Failed to evaluate node: ${response}`);

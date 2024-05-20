@@ -61,22 +61,19 @@ export class AngularRouteToModuleGenerator {
 
     // We iterate over the properties of each route.
     for (const property of node.properties) {
-      const propertyName = property.name.getText(
-        routingModuleSourceFile
-      );
+      const propertyName = property.name.getText(routingModuleSourceFile);
       if (propertyName === 'path') {
         try {
-          path = this.typescriptExtractorUtilities.evaluateNode(property.initializer);
-        }
-        catch (error) {
+          path = this.typescriptExtractorUtilities.evaluateNode(
+            property.initializer
+          );
+        } catch (error) {
           // If we are parsing the path property we need to iterate over the
           // different accessors into the constants object using a stack.
           const stack: string[] = [];
           let initializer = property.initializer;
           while (initializer.expression) {
-            stack.push(
-              initializer.name.getText(routingModuleSourceFile)
-            );
+            stack.push(initializer.name.getText(routingModuleSourceFile));
             initializer = initializer.expression;
           }
           while (stack.length) {
@@ -100,14 +97,13 @@ export class AngularRouteToModuleGenerator {
               routingModuleFilePath,
               parentPath ? `${parentPath}${path}` : path
             ),
-            ...angularRouteToModuleMapping]
-          );
+            ...angularRouteToModuleMapping,
+          ]);
         }
       } else if (propertyName === 'loadChildren') {
-        const importModule =
-          this.typescriptExtractorUtilities.evaluateNode(
-            property.initializer.body.expression.expression.arguments[0]
-          );
+        const importModule = this.typescriptExtractorUtilities.evaluateNode(
+          property.initializer.body.expression.expression.arguments[0]
+        );
         if (importModule) {
           const resolvedModulePath =
             this.typescriptExtractorUtilities.resolveModule(
@@ -122,13 +118,13 @@ export class AngularRouteToModuleGenerator {
       angularRouteToModuleMapping.set(
         {
           path: parentPath ? `${parentPath}${path}` : path,
-          pathMatch
-        }, 
+          pathMatch,
+        },
         module
       );
     }
     return angularRouteToModuleMapping;
-  };
+  }
 
   public getAngularRouteToModuleMapping(): Map<Route, string> {
     let angularRouteToModuleMapping: Map<Route, string> = new Map(
@@ -163,8 +159,8 @@ export class AngularRouteToModuleGenerator {
                 appRoutingModuleSourceFile,
                 routingModuleFilePath
               ),
-              ...angularRouteToModuleMapping
-            ]); 
+              ...angularRouteToModuleMapping,
+            ]);
           }
         }
       });

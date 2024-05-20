@@ -1,0 +1,6 @@
+core/templates/pages/splash-page/splash-page.module.ts
+core/templates/pages/login-page/login-page.module.ts
+core/templates/pages/signup-page/signup-page.module.ts
+core/templates/pages/learner-dashboard-page/learner-dashboard-page.module.ts
+core/templates/pages/admin-page/admin-page.module.ts
+core/templates/pages/blog-admin-page/blog-admin-page.module.ts

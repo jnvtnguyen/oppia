@@ -377,6 +377,11 @@ jobs:
         run: python -m scripts.build --prod_env
       - name: Run Desktop Acceptance Test ${{ matrix.suite.name }}
         run: xvfb-run -a --server-args="-screen 0, 1285x1000x24" python -m scripts.run_acceptance_tests --skip-build --suite=${{ matrix.suite.name }} --prod_env
+      - name: Uploading generated test to angular modules as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: generated-test-to-angular-modules
+          path: /home/runner/work/oppia/oppia/core/tests/acceptance-modules-mapping/${{ matrix.suite.name }}.txt
       - name: Run Mobile Acceptance Test ${{ matrix.suite.name }}
         run: xvfb-run -a --server-args="-screen 0, 1285x1000x24" python -m scripts.run_acceptance_tests --skip-build --suite=${{ matrix.suite.name }} --prod_env --mobile
       - name: Uploading webpack bundles as an artifact

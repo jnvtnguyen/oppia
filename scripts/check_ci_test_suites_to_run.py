@@ -247,8 +247,12 @@ def get_test_suites_affected_by_module(
         if module == test_suite.module_path:
             affected_tests.append(test_suite)
 
-    return [dict(test_suite) for test_suite in {tuple(affected_test_suite.items()) for affected_test_suite in affected_tests}]
-        
+    distinct_affected_tests = []
+    for test_suite in affected_tests:
+        if test_suite not in distinct_affected_tests:
+            distinct_affected_tests.append(test_suite)
+            
+    return distinct_affected_tests
         
 def collect_ci_test_suites_to_run(
     modified_files: List[str],

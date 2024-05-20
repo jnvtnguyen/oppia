@@ -81,22 +81,27 @@ export class TestToAngularModulesMatcher {
     }
     const urlWithoutHost = url.replace('http://localhost:8181/', '');
     let matched = false;
-    for (const [route, module] of TestToAngularModulesMatcher.angularRouteToModuleMapping.entries()) {
-      if (
-        TestToAngularModulesMatcher.matchUrl(urlWithoutHost, route)
-      ) {
+    for (const [
+      route,
+      module,
+    ] of TestToAngularModulesMatcher.angularRouteToModuleMapping.entries()) {
+      if (TestToAngularModulesMatcher.matchUrl(urlWithoutHost, route)) {
         matched = true;
-        if (!TestToAngularModulesMatcher.collectedTestAngularModules.includes(module)) {
+        if (
+          !TestToAngularModulesMatcher.collectedTestAngularModules.includes(
+            module
+          )
+        ) {
           TestToAngularModulesMatcher.collectedTestAngularModules.push(module);
         }
       }
     }
 
-    console.log(matched)
-
     if (!matched) {
       const errorMessage = `No Angular module found for the URL: ${url}.`;
-      if (!TestToAngularModulesMatcher.collectedTestErrors.includes(errorMessage)) {
+      if (
+        !TestToAngularModulesMatcher.collectedTestErrors.includes(errorMessage)
+      ) {
         TestToAngularModulesMatcher.collectedTestErrors.push(errorMessage);
       }
     }
@@ -104,13 +109,23 @@ export class TestToAngularModulesMatcher {
 
   public static compareAndOutputModules(goldenFilePath: string): void {
     if (TestToAngularModulesMatcher.collectedTestErrors.length > 0) {
-      throw new Error(TestToAngularModulesMatcher.collectedTestErrors.join('\n'));
+      throw new Error(
+        TestToAngularModulesMatcher.collectedTestErrors.join('\n')
+      );
     }
 
-    const goldenFileContent = fs.readFileSync(goldenFilePath, 'utf-8');
-    const goldenModules = goldenFileContent.split('\n').filter(Boolean);
+    let goldenFileContent = '';
+    if (fs.existsSync(goldenFilePath)) {
+      goldenFileContent = fs.readFileSync(goldenFilePath, 'utf-8');
+    }
+    const goldenModules = goldenFileContent
+      .split('\n')
+      .filter(line => line !== '');
     const missingModules = goldenModules.filter(
-      module => !TestToAngularModulesMatcher.collectedTestAngularModules.includes(module)
+      module =>
+        !TestToAngularModulesMatcher.collectedTestAngularModules.includes(
+          module
+        )
     );
     if (missingModules.length) {
       throw new Error(
@@ -123,6 +138,7 @@ export class TestToAngularModulesMatcher {
       path.dirname(goldenFilePath),
       `generated-${path.basename(goldenFilePath)}`
     );
+    fs.mkdirSync(path.dirname(generatedGoldenFilePath), {recursive: true});
     fs.writeFileSync(
       generatedGoldenFilePath,
       TestToAngularModulesMatcher.collectedTestAngularModules.join('\n')

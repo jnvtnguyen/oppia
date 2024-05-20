@@ -20,7 +20,10 @@ import ts from 'typescript';
 import path from 'path';
 import fs from 'fs';
 import * as cheerio from 'cheerio';
-import {TypescriptExtractorUtilities, ROOT_DIRECTORY} from './typescript-extractor-utilities';
+import {
+  TypescriptExtractorUtilities,
+  ROOT_DIRECTORY,
+} from './typescript-extractor-utilities';
 import {AngularRouteToModuleGenerator} from './angular-route-to-module-generator';
 
 type BaseAngularInformation = {
