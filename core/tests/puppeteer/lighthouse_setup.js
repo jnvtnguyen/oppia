@@ -20,6 +20,9 @@ var FirebaseAdmin = require('firebase-admin');
 const process = require('process');
 const puppeteer = require('puppeteer');
 const {PuppeteerScreenRecorder} = require('puppeteer-screen-recorder');
+const {
+  TestToAngularModulesMatcher,
+} = require('../test-dependencies/test-to-angular-modules-matcher');
 
 const ADMIN_URL = 'http://localhost:8181/admin';
 const CREATOR_DASHBOARD_URL = 'http://localhost:8181/creator-dashboard';
@@ -462,6 +465,9 @@ const main = async function () {
   // Change headless to false to see the puppeteer actions.
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
+  page.on('framenavigated', async frame => {
+    TestToAngularModulesMatcher.registerUrl(frame.url());
+  });
   await page.setViewport({
     width: 1920,
     height: 1080,
@@ -514,6 +520,9 @@ const main = async function () {
     await recorder.stop();
   }
   await page.close();
+  TestToAngularModulesMatcher.compareAndOutputModules(
+    `core/tests/test-modules-mapping/lighthouse-${process.env.LIGHTHOUSE_MODE}/${process.env.LIGHTHOUSE_SHARD}.txt`
+  );
   process.exit(0);
 };
 

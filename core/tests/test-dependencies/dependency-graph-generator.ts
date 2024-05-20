@@ -280,6 +280,7 @@ export class DependencyExtractor {
                   return false;
                 }
               }
+              return true;
             });
         } else if (
           fileAngularInformation.type === 'component' ||
@@ -305,7 +306,9 @@ export class DependencyExtractor {
     propertyName: string,
     sourceFile: ts.SourceFile
   ): string | undefined {
-    if (!ts.isObjectLiteralExpression(expression)) return;
+    if (!ts.isObjectLiteralExpression(expression)) {
+      return undefined;
+    }
     for (const property of expression.properties) {
       if (!ts.isPropertyAssignment(property)) continue;
       if (
@@ -317,6 +320,7 @@ export class DependencyExtractor {
         );
       }
     }
+    return undefined;
   }
 
   /**

@@ -17,15 +17,18 @@
 from __future__ import annotations
 
 import subprocess
+import os
+
+from scripts import common
 
 
 def main() -> None:
-    cmd = (
-        './node_modules/typescript/bin/tsc --esModuleInterop %s' %
-        './core/tests/test-dependencies/dependency-graph-generator.ts && %s' %
-        'node core/tests/test-dependencies/dependency-graph-generator.js')
+    common.compile_test_dependencies()
+    dependency_graph_generator_path = os.path.join(
+        'core', 'tests', 'test-dependencies', 'dependency-graph-generator.js') 
+    cmd = [common.NODE_BIN_PATH, dependency_graph_generator_path]
     proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     encoded_stdout, encoded_sterr = proc.communicate()
     stderr = encoded_sterr.decode('utf-8')

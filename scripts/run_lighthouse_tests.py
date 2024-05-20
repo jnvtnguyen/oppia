@@ -145,7 +145,7 @@ def run_webpack_compilation() -> None:
     if not os.path.isdir(webpack_bundles_dir_name):
         print('Failed to complete webpack compilation, exiting...')
         sys.exit(1)
-
+        
 
 def export_url(line: str) -> None:
     """Exports the entity ID in the given line to an environment variable, if
@@ -210,6 +210,10 @@ def main(args: Optional[List[str]] = None) -> None:
 
     # Verify if Chrome is installed.
     common.setup_chrome_bin_env_variable()
+    
+    common.compile_test_dependencies()
+    os.environ['LIGHTHOUSE_MODE'] = parsed_args.mode
+    os.environ['LIGHTHOUSE_SHARD'] = parsed_args.shard
 
     if parsed_args.mode == LIGHTHOUSE_MODE_ACCESSIBILITY:
         lighthouse_mode = LIGHTHOUSE_MODE_ACCESSIBILITY
