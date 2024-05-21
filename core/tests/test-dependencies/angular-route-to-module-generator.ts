@@ -36,7 +36,32 @@ const ROUTING_MODULES = [
   ),
 ];
 
-const MANUAL_ROUTE_TO_MODULE_MAPPING: Map<Route, string> = new Map([]);
+const MANUAL_ROUTE_TO_MODULE_MAPPING: Map<Route, string> = new Map([
+  [
+    {
+      path: 'create/:exploration_id',
+    },
+    'core/templates/pages/exploration-editor-page/exploration-editor-page.import.ts'
+  ],
+  [
+    {
+      path: 'topics-and-skills-dashboard',
+    },
+    'core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.import.ts'
+  ],
+  [
+    {
+      path: 'topic_editor/:topic_id',
+    },
+    'core/templates/pages/topic-editor-page/topic-editor-page.import.ts'
+  ],
+  [
+    {
+      path: 'story_editor/:story_id',
+    },
+    'core/templates/pages/story-editor-page/story-editor-page.import.ts'
+  ]
+]);
 
 export class AngularRouteToModuleGenerator {
   typescriptHost: ts.CompilerHost;
