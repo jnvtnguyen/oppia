@@ -80,7 +80,7 @@ export class CollectionEditorStateService {
         },
         error => {
           this.alertsService.addWarning(
-            error || 'There was an error when loading the collection.'
+            error || 'There was an error when loading the collection...'
           );
           this._collectionIsLoading = false;
         }
