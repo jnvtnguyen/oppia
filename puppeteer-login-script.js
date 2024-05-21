@@ -18,8 +18,6 @@
  * @param {puppeteer.Browser} browser
  * @param {{url: string, options: LHCI.CollectCommand.Options}} context
  */
-const {TestToAngularModulesMatcher} = require(
-  './core/tests/test-dependencies/test-to-angular-modules-matcher');
 
 const LOGIN_URL = 'http://localhost:8181/login';
 const CREATOR_DASHBOARD_URL = 'http://localhost:8181/creator-dashboard';
@@ -39,11 +37,6 @@ var addNewRoleButton = '.e2e-test-add-new-role-button';
 var roleSelect = '.e2e-test-new-role-selector';
 
 module.exports = async (browser, context) => {
-  const lighthouseMode = process.env.LIGHTHOUSE_MODE;
-  const lighthouseShard = process.env.LIGHTHOUSE_SHARD;
-  TestToAngularModulesMatcher.setGoldenFilePath(
-    `core/tests/test-modules-mapping/lighthouse-${lighthouseMode}/${lighthouseShard}.txt`);
-  TestToAngularModulesMatcher.registerPuppeteerBrowser(browser);
   const page = await browser.newPage();
   await page.setDefaultNavigationTimeout(0);
   // Sign into Oppia.
@@ -60,7 +53,6 @@ module.exports = async (browser, context) => {
     await setRole(page, 'BLOG_ADMIN');
   }
   await page.close();
-  TestToAngularModulesMatcher.compareAndOutputModules();
 };
 
 // Needed to relogin after lighthouse_setup.js.

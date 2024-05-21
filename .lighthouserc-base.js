@@ -16,6 +16,9 @@
  * @fileoverview Configuration for lighthouse-ci.
  */
 
+const {TestToAngularModulesMatcher} = require(
+  './core/tests/test-dependencies/test-to-angular-modules-matcher');
+
 module.exports = {
   numberOfRuns: 3,
   puppeteerScript: 'puppeteer-login-script.js',
@@ -98,3 +101,12 @@ module.exports = {
     'categories:accessibility': ['error', {minScore: 1}],
   },
 };
+
+const lighthouseMode = process.env.LIGHTHOUSE_MODE;
+const lighthouseShard = process.env.LIGHTHOUSE_SHARD;
+TestToAngularModulesMatcher.setGoldenFilePath(
+  `core/tests/test-modules-mapping/lighthouse-${lighthouseMode}/${lighthouseShard}.txt`);
+for (const url in module.exports.urlShards[lighthouseShard]) {
+  TestToAngularModulesMatcher.registerUrl(url);
+}
+TestToAngularModulesMatcher.compareAndOutputModules();
