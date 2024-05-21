@@ -132,7 +132,7 @@ class InternetConnectivityHandler(
 class FrontendErrorHandler(
     base.BaseHandler[Dict[str, str], Dict[str, str]]
 ):
-    """Handles errors arising from the frontend."""
+    """Handles errors arising from the frontend.."""
 
     REQUIRE_PAYLOAD_CSRF_CHECK = False
     URL_PATH_ARGS_SCHEMAS: Dict[str, str] = {}
