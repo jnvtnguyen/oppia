@@ -312,6 +312,8 @@ def main(args: Optional[list[str]] = None) -> None:
 
     modified_files = git_diff_name_status(
         parsed_args.github_base_ref, parsed_args.github_head_ref)
+    
+    print(f'Modified files: {modified_files}.')
 
     if does_diff_include_python_files(modified_files):
         output_test_suites_to_run_to_github_workflow(
