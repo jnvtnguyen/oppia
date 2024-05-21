@@ -27,6 +27,14 @@ import {
 } from '@angular/router';
 import {AngularRouteToModuleGenerator} from './angular-route-to-module-generator';
 
+const COMMON_EXCLUDED_MODULES = [
+  'core/templates/pages/splash-page/splash-page.module.ts',
+  'core/templates/pages/login-page/login-page.module.ts',
+  'core/templates/pages/signup-page/signup-page.module.ts',
+  'core/templates/pages/admin-page/admin-page.module.ts',
+  'core/templates/pages/learner-dashboard-page/learner-dashboard-page.module.ts',
+];
+
 export class TestToAngularModulesMatcher {
   static angularRouteToModuleMapping: Map<Route, string> =
     new AngularRouteToModuleGenerator().getAngularRouteToModuleMapping();
@@ -90,7 +98,8 @@ export class TestToAngularModulesMatcher {
         if (
           !TestToAngularModulesMatcher.collectedTestAngularModules.includes(
             module
-          )
+          ) &&
+          !COMMON_EXCLUDED_MODULES.includes(module)
         ) {
           TestToAngularModulesMatcher.collectedTestAngularModules.push(module);
         }
@@ -124,6 +133,9 @@ export class TestToAngularModulesMatcher {
     const missingModules = TestToAngularModulesMatcher.collectedTestAngularModules.filter(
       module => !goldenModules.includes(module)
     );
+    const extraModules = goldenModules.filter(
+      module => !TestToAngularModulesMatcher.collectedTestAngularModules.includes(module)
+    );
     const goldenFileBasePathWithoutExtension = path.basename(goldenFilePath).split('.txt')[0];
     const generatedGoldenFilePath = path.resolve(
       path.dirname(goldenFilePath),
@@ -138,6 +150,12 @@ export class TestToAngularModulesMatcher {
       throw new Error(
         'The following Angular modules are missing from the golden file ' + 
         `at the path ${goldenFilePath}:\n${missingModules.join('\n')}`
+      );
+    }
+    if (extraModules.length) {
+      throw new Error(
+        'The following Angular modules are extra in the golden file ' + 
+        `at the path ${goldenFilePath}:\n${extraModules.join('\n')}`
       );
     }
   }

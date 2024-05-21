@@ -27,7 +27,7 @@ core/tests/test-dependencies/dependency-graph-generator.js
 core/tests/test-dependencies/typescript-extractor-utilities.js
 core/tests/test-dependencies/test-to-angular-modules-matcher.js
 core/tests/test-dependencies/angular-route-to-module-generator.js
-core/tests/test-modules-mapping/**/generated-*
+core/tests/test-modules-mapping/**/*-generated.txt
 node_modules/*
 # .angular is temp folder used by angular to put logs and other artefacts.
 .angular/*

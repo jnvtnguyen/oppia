@@ -226,6 +226,7 @@ jobs:
       matrix:
         os: [ubuntu-22.04]
         suite: ${{ fromJson(needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN) }}
+      fail-fast: false
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
