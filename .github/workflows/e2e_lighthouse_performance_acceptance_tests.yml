@@ -292,7 +292,7 @@ jobs:
         if: startsWith(github.head_ref, 'update-changelog-for-release') == false
         run: python -m scripts.run_lighthouse_tests --mode performance --shard ${{ matrix.suite.name }} --skip_build --record_screen
       - name: Uploading generated test to angular modules as an artifact
-      if: ${{ faliure() }}
+        if: ${{ faliure() }}
         uses: actions/upload-artifact@v3
         with:
           name: generated-test-to-angular-modules
