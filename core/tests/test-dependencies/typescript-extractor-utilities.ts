@@ -35,6 +35,10 @@ const WEBPACK_DEFINED_ALIASES = {
 // List of built in node modules.
 const BUILT_IN_NODE_MODULES = ['fs', 'path', 'console', 'child_process'];
 
+/**
+ * Gets the root directory of the project by traversing up the directory tree
+ * until a 'package.json' file is found.
+ */
 const getRootDirectory = (): string => {
   let currentDirectory = __dirname;
   while (!fs.existsSync(path.join(currentDirectory, 'package.json'))) {

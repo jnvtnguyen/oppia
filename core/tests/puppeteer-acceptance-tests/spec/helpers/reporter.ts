@@ -272,7 +272,7 @@ afterEach(() => {
 });
 
 afterAll(() => {
-  const mobile = process.env.MOBILE;
+  const mobile = process.env.MOBILE === 'true';
   if (!mobile) {
     TestToAngularModulesMatcher.compareAndOutputModules();
   }

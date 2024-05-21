@@ -71,6 +71,7 @@ export class BaseUser {
 
     const headless = process.env.HEADLESS === 'true';
     const mobile = process.env.MOBILE === 'true';
+    const testSpecName = process.env.TEST_SPEC_NAME;
     /**
      * Here we are disabling the site isolation trials because it is causing
      * tests to fail while running in non headless mode (see
@@ -93,7 +94,6 @@ export class BaseUser {
         this.browserObject = browser;
         ConsoleReporter.trackConsoleMessagesInBrowser(browser);
 
-        const testSpecName = process.env.TEST_SPEC_NAME;
         if (!mobile) {
           TestToAngularModulesMatcher.setGoldenFilePath(
             `core/tests/test-modules-mapping/acceptance/${testSpecName}.txt`);
