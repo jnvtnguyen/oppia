@@ -985,7 +985,7 @@ def is_oppia_server_already_running() -> bool:
     return False
 
 
-def compile_test_dependencies() -> None:
+def compile_typescript_test_dependencies() -> None:
     print('Compiling test dependencies...')
 
     config_path = 'tsconfig.test-dependencies.json'

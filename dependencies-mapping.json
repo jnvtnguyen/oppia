@@ -1,18 +1,12 @@
 {
-  ".lighthouserc-1.js": [
-    ".lighthouserc-base.js"
-  ],
-  ".lighthouserc-2.js": [
-    ".lighthouserc-base.js"
-  ],
-  ".lighthouserc-accessibility-1.js": [
-    ".lighthouserc-base.js"
-  ],
-  ".lighthouserc-accessibility-2.js": [
+  ".lighthouserc-accessibility.js": [
     ".lighthouserc-base.js"
   ],
   ".lighthouserc-base.js": [
     "core/tests/test-dependencies/test-to-angular-modules-matcher.ts"
+  ],
+  ".lighthouserc-performance.js": [
+    ".lighthouserc-base.js"
   ],
   "puppeteer-login-script.js": [],
   ".github/CODEOWNERS": [],

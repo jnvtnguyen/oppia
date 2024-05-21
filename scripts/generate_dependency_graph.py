@@ -23,7 +23,8 @@ from scripts import common
 
 
 def main() -> None:
-    common.compile_test_dependencies()
+    common.compile_typescript_test_dependencies()
+    print('Generating dependency graph...')
     dependency_graph_generator_path = os.path.join(
         'core', 'tests', 'test-dependencies', 'dependency-graph-generator.js') 
     cmd = [common.NODE_BIN_PATH, dependency_graph_generator_path]
@@ -37,6 +38,7 @@ def main() -> None:
         raise Exception(stderr)
     
     print(encoded_stdout.decode('utf-8'))
+    print('Dependency graph generated successfully!')
 
 
 # The 'no coverage' pragma is used as this line is un-testable. This is because

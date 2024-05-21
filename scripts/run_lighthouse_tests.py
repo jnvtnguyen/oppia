@@ -203,7 +203,7 @@ def main(args: Optional[List[str]] = None) -> None:
     # Verify if Chrome is installed.
     common.setup_chrome_bin_env_variable()
     
-    common.compile_test_dependencies()
+    common.compile_typescript_test_dependencies()
     os.environ['LIGHTHOUSE_MODE'] = parsed_args.mode
     if parsed_args.pages:
         os.environ['LIGHTHOUSE_PAGES_TO_RUN'] = parsed_args.pages
