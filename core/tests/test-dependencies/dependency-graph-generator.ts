@@ -129,8 +129,8 @@ export class DependencyExtractor {
       this.fileAngularInformationsMapping[filePath];
     const fileDepedencies: string[] = [];
 
-    const visitNode = (node: ts.Node) => {
-      ts.forEachChild(node, visitNode);
+    const scrapeDependenciesFromNode = (node: ts.Node) => {
+      ts.forEachChild(node, scrapeDependenciesFromNode);
       let modulePath: string | undefined;
       // If the node is an import statement, we extract the module path.
       if (ts.isImportDeclaration(node)) {
@@ -164,7 +164,7 @@ export class DependencyExtractor {
     };
 
     sourceFile.forEachChild(node => {
-      visitNode(node);
+      scrapeDependenciesFromNode(node);
     });
 
     // We need to add the mainpage file as a depedency if the file is an import file since

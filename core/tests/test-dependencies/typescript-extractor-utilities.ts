@@ -67,7 +67,7 @@ export class TypescriptExtractorUtilities {
   };
 
   /**
-   * Resolves a TypeScript/JavaScript expression into a regular string.
+   * Evaluates a TypeScript node and returns the result as a string.
    */
   public evaluateNode = (
     node: ts.Statement | ts.Declaration | ts.Expression
@@ -81,7 +81,9 @@ export class TypescriptExtractorUtilities {
 
   /*
    * Provided a file path without an extension, it returns the file path with the
-   * extension '.ts' or '.js' if it exists.
+   * extension '.ts' or '.js' if it exists, this prioritizes '.ts' over '.js', since
+   * in cases where there is both a '.ts' and '.js' file, the '.js' file is usually
+   * a compiled version of the '.ts' file.
    */
   public getFilePathWithExtension = (path: string): string => {
     if (fs.existsSync(path + '.ts')) return path + '.ts';
@@ -113,7 +115,8 @@ export class TypescriptExtractorUtilities {
   }
 
   /**
-   * Returns the path by alias using the TypeScript config, if it exists.
+   * Returns the path by alias using the TypeScript config and
+   * the Webpack config, if it exists.
    */
   public resolvePathByAlias(filePath: string): string | undefined {
     const aliases = {
@@ -132,32 +135,36 @@ export class TypescriptExtractorUtilities {
   }
 
   /**
-   * Resolves a module path to a file path relative to the root directory.
+   * Resolves a module to a file path relative to the root directory.
    */
   public resolveModule(
     modulePath: string,
     relativeFilePath: string
   ): string | undefined {
+    // If the file is not relative and is a lib, then the module should
+    // not be resolved.
     if (
       !this.isFilePathRelative(modulePath) &&
       this.isFilePathALib(modulePath)
     ) {
       return undefined;
     }
+    // If there is an alias for the module path, then resolve the path using the alias.
     const pathByAlias = this.resolvePathByAlias(modulePath);
     if (pathByAlias) {
       return this.getFilePathWithExtension(pathByAlias);
     }
+    // If the module path is relative, then resolve the path using the relative file path.
     if (this.isFilePathRelative(modulePath)) {
       return this.getFilePathWithExtension(
         path.join(path.dirname(relativeFilePath), modulePath)
       );
-    } else {
-      return this.getFilePathWithExtension(
-        path
-          .resolve(ROOT_DIRECTORY, 'core/templates', modulePath)
-          .replace(`${ROOT_DIRECTORY}/`, '')
-      );
     }
+    // For all other instances, the path is resolved using the core/templates directory.
+    return this.getFilePathWithExtension(
+      path
+        .resolve(ROOT_DIRECTORY, 'core/templates', modulePath)
+        .replace(`${ROOT_DIRECTORY}/`, '')
+    );
   }
 }

@@ -41,50 +41,50 @@ const MANUAL_ROUTE_TO_MODULE_MAPPING: Map<Route, string> = new Map([
     {
       path: 'creator-dashboard',
     },
-    'core/templates/pages/creator-dashboard-page/creator-dashboard-page.import.ts'
+    'core/templates/pages/creator-dashboard-page/creator-dashboard-page.import.ts',
   ],
   [
     {
       path: 'create/:exploration_id',
     },
-    'core/templates/pages/exploration-editor-page/exploration-editor-page.import.ts'
+    'core/templates/pages/exploration-editor-page/exploration-editor-page.import.ts',
   ],
   [
     {
       path: 'topics-and-skills-dashboard',
     },
-    'core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.import.ts'
+    'core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.import.ts',
   ],
   [
     {
       path: 'topic_editor/:topic_id',
     },
-    'core/templates/pages/topic-editor-page/topic-editor-page.import.ts'
+    'core/templates/pages/topic-editor-page/topic-editor-page.import.ts',
   ],
   [
     {
       path: 'story_editor/:story_id',
     },
-    'core/templates/pages/story-editor-page/story-editor-page.import.ts'
+    'core/templates/pages/story-editor-page/story-editor-page.import.ts',
   ],
   [
     {
       path: 'contributor-dashboard',
     },
-    'core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.import.ts'
+    'core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.import.ts',
   ],
   [
     {
       path: 'skill_editor/:skill_id',
     },
-    'core/templates/pages/skill-editor-page/skill-editor-page.import.ts'
+    'core/templates/pages/skill-editor-page/skill-editor-page.import.ts',
   ],
   [
     {
       path: 'learn/:classroom_url_fragment/:topic_url_fragment/story',
     },
-    'core/templates/pages/topic-viewer-page/topic-viewer-page.import.ts'
-  ]
+    'core/templates/pages/topic-viewer-page/topic-viewer-page.import.ts',
+  ],
 ]);
 
 export class AngularRouteToModuleGenerator {
@@ -177,7 +177,7 @@ export class AngularRouteToModuleGenerator {
 
   public getAngularRouteToModuleMapping(): Map<Route, string> {
     let angularRouteToModuleMapping: Map<Route, string> = new Map([
-      ...MANUAL_ROUTE_TO_MODULE_MAPPING
+      ...MANUAL_ROUTE_TO_MODULE_MAPPING,
     ]);
     for (const routingModuleFilePath of ROUTING_MODULES) {
       const appRoutingModuleSourceFile = this.typescriptHost.getSourceFile(

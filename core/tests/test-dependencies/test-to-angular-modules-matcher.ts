@@ -41,11 +41,12 @@ const COMMON_EXCLUDED_MODULES: Record<string, string[]> = {
     'core/tests/test-modules-mapping/lighthouse-accessibility/1.txt',
     'core/tests/test-modules-mapping/lighthouse-performance/1.txt',
   ],
-  'core/templates/pages/learner-dashboard-page/learner-dashboard-page.module.ts': [
-    'core/tests/test-modules-mapping/lighthouse-accessibility/1.txt',
-    'core/tests/test-modules-mapping/lighthouse-performance/1.txt',
-  ],
-}
+  'core/templates/pages/learner-dashboard-page/learner-dashboard-page.module.ts':
+    [
+      'core/tests/test-modules-mapping/lighthouse-accessibility/1.txt',
+      'core/tests/test-modules-mapping/lighthouse-performance/2.txt',
+    ],
+};
 
 export class TestToAngularModulesMatcher {
   static angularRouteToModuleMapping: Map<Route, string> =
@@ -54,6 +55,9 @@ export class TestToAngularModulesMatcher {
   static collectedTestErrors: string[] = [];
   static goldenFilePath: string;
 
+  /**
+   * Returns whether the provided URL matches the given Angular route.
+   */
   private static matchUrl(url: string, route: Route): boolean {
     if (route.path === url) {
       return true;
@@ -97,12 +101,12 @@ export class TestToAngularModulesMatcher {
   }
 
   /**
-   * Registers a puppeteer browser to be used for getting test's the Angular modules.
+   * Registers a puppeteer browser to be used for getting a test's Angular modules.
    */
   public static registerPuppeteerBrowser(browser: any): void {
-    browser.on('targetchanged', async (target) => {
+    browser.on('targetchanged', async target => {
       const page = await target.page();
-      page.on('framenavigated', async (frame) => {
+      page.on('framenavigated', async frame => {
         TestToAngularModulesMatcher.registerUrl(frame.url());
       });
     });
@@ -135,11 +139,11 @@ export class TestToAngularModulesMatcher {
         if (
           !TestToAngularModulesMatcher.collectedTestAngularModules.includes(
             module
-          ) && (
-          !COMMON_EXCLUDED_MODULES[module] ||
-          COMMON_EXCLUDED_MODULES[module].includes(
-            TestToAngularModulesMatcher.goldenFilePath
-          ))
+          ) &&
+          (!COMMON_EXCLUDED_MODULES[module] ||
+            COMMON_EXCLUDED_MODULES[module].includes(
+              TestToAngularModulesMatcher.goldenFilePath
+            ))
         ) {
           TestToAngularModulesMatcher.collectedTestAngularModules.push(module);
         }
@@ -170,19 +174,27 @@ export class TestToAngularModulesMatcher {
     }
     let goldenFileContent = '';
     if (fs.existsSync(TestToAngularModulesMatcher.goldenFilePath)) {
-      goldenFileContent = fs.readFileSync(TestToAngularModulesMatcher.goldenFilePath, 'utf-8');
+      goldenFileContent = fs.readFileSync(
+        TestToAngularModulesMatcher.goldenFilePath,
+        'utf-8'
+      );
     }
     const goldenModules = goldenFileContent
       .split('\n')
       .filter(line => line !== '');
-    const missingModules = TestToAngularModulesMatcher.collectedTestAngularModules.filter(
-      module => !goldenModules.includes(module)
-    );
+    const missingModules =
+      TestToAngularModulesMatcher.collectedTestAngularModules.filter(
+        module => !goldenModules.includes(module)
+      );
     const extraModules = goldenModules.filter(
-      module => !TestToAngularModulesMatcher.collectedTestAngularModules.includes(module)
+      module =>
+        !TestToAngularModulesMatcher.collectedTestAngularModules.includes(
+          module
+        )
     );
-    const goldenFileBasePathWithoutExtension = path.basename(
-      TestToAngularModulesMatcher.goldenFilePath).split('.txt')[0];
+    const goldenFileBasePathWithoutExtension = path
+      .basename(TestToAngularModulesMatcher.goldenFilePath)
+      .split('.txt')[0];
     const generatedGoldenFilePath = path.resolve(
       path.dirname(TestToAngularModulesMatcher.goldenFilePath),
       `${goldenFileBasePathWithoutExtension}-generated.txt`
@@ -194,16 +206,16 @@ export class TestToAngularModulesMatcher {
     );
     if (missingModules.length) {
       throw new Error(
-        'The following Angular modules are missing from the golden file ' + 
-        `at the path ${TestToAngularModulesMatcher.goldenFilePath}:\n` + 
-        missingModules.join('\n')
+        'The following Angular modules are missing from the golden file ' +
+          `at the path ${TestToAngularModulesMatcher.goldenFilePath}:\n` +
+          missingModules.join('\n')
       );
     }
     if (extraModules.length) {
       throw new Error(
-        'The following Angular modules are extra in the golden file ' + 
-        `at the path ${TestToAngularModulesMatcher.goldenFilePath}:\n` +
-        extraModules.join('\n')
+        'The following Angular modules are extra in the golden file ' +
+          `at the path ${TestToAngularModulesMatcher.goldenFilePath}:\n` +
+          extraModules.join('\n')
       );
     }
   }
