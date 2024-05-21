@@ -152,9 +152,9 @@ export class AngularRouteToModuleGenerator {
   }
 
   public getAngularRouteToModuleMapping(): Map<Route, string> {
-    let angularRouteToModuleMapping: Map<Route, string> = new Map(
-      MANUAL_ROUTE_TO_MODULE_MAPPING
-    );
+    let angularRouteToModuleMapping: Map<Route, string> = new Map([
+      ...MANUAL_ROUTE_TO_MODULE_MAPPING
+    ]);
     for (const routingModuleFilePath of ROUTING_MODULES) {
       const appRoutingModuleSourceFile = this.typescriptHost.getSourceFile(
         routingModuleFilePath,
@@ -194,3 +194,5 @@ export class AngularRouteToModuleGenerator {
     return angularRouteToModuleMapping;
   }
 }
+
+console.log(new AngularRouteToModuleGenerator().getAngularRouteToModuleMapping());
