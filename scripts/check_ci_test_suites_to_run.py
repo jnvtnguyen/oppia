@@ -189,12 +189,16 @@ def output_test_suites_to_run_to_github_workflow(
 def get_test_suites_to_modules_mapping_by_file(
     root_directory: str,
     file_path: str,
+    test_directory: str,
     all_test_suites: List[TestSuiteDict]
 ) -> dict[str, List[str]]:
     test_suites_to_modules_mapping = {}
     with open(os.path.join(root_directory, file_path), 'r', encoding='utf-8') as f:
         modules = f.read().splitlines()
-        file_path_without_extension = os.path.splitext(file_path)[0]
+        file_path_relative_to_test_directory = os.path.relpath(
+            os.path.join(root_directory, file_path), test_directory)
+        file_path_without_extension = os.path.splitext(
+            file_path_relative_to_test_directory)[0]
         test_suite = next(
             (test_suite for test_suite in all_test_suites if
                 test_suite.get('suite_name') == file_path_without_extension),
@@ -208,19 +212,23 @@ def get_test_suites_to_modules_mapping_by_file(
         
 def get_test_suites_to_modules_mapping_by_type(
     directory: str,
-    all_test_suites: List[TestSuiteDict]
+    all_test_suites: List[TestSuiteDict],
+    test_directory: Optional[str] = None
 ) -> dict[str, List[str]]:
+    if test_directory is None:
+        test_directory = directory
     test_suites_to_modules_mapping = {}
     for root, directories, files in os.walk(directory):
         for file_path in files:
+            print(os.path.join(root, file_path))
             test_suites_to_modules_mapping.update(
                 get_test_suites_to_modules_mapping_by_file(
-                    root, file_path, all_test_suites))
+                    root, file_path, test_directory, all_test_suites))
         for directory in directories:
             subdir_path = os.path.join(root, directory)
             test_suites_to_modules_mapping.update(
                 get_test_suites_to_modules_mapping_by_type(
-                    subdir_path, all_test_suites))
+                    subdir_path, all_test_suites, test_directory))
                 
     return test_suites_to_modules_mapping
 
@@ -243,7 +251,7 @@ def get_test_suites_affected_by_module(
         )
         if module in modules:
             affected_tests.append(test_suite)
-        if module == test_suite.module_path:
+        if module == test_suite.get('module_path'):
             affected_tests.append(test_suite)
 
     distinct_affected_tests = []
@@ -270,7 +278,7 @@ def collect_ci_test_suites_to_run(
         for file_module in file_modules:
             if file_module not in modified_modules:
                 modified_modules.append(file_module)
-
+                
     # We are running all E2E tests regardless of the modified files. Remove this
     # after the E2E tests are removed. 
     e2e_test_suites = ALL_E2E_TEST_SUITES
@@ -279,13 +287,13 @@ def collect_ci_test_suites_to_run(
     lighthouse_accessibility_test_suites: List[TestSuiteDict] = []
 
     acceptance_test_suites_to_modules_mapping = get_test_suites_to_modules_mapping_by_type(
-        os.path.join(OPPIA_DIRECTORY, 'core/tests/modules-mapping/acceptance'), ALL_ACCEPTANCE_TEST_SUITES)
+        os.path.join(OPPIA_DIRECTORY, 'core/tests/test-modules-mapping/acceptance'), ALL_ACCEPTANCE_TEST_SUITES)
     
     lighthouse_performance_test_suites_to_modules_mapping = get_test_suites_to_modules_mapping_by_type(
-        os.path.join(OPPIA_DIRECTORY, 'core/tests/modules-mapping/lighthouse-performance'), ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES)
+        os.path.join(OPPIA_DIRECTORY, 'core/tests/test-modules-mapping/lighthouse-performance'), ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES)
     
     lighthouse_accessibility_test_suites_to_modules_mapping = get_test_suites_to_modules_mapping_by_type(
-        os.path.join(OPPIA_DIRECTORY, 'core/tests/modules-mapping/lighthouse-accessibility'), ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES)
+        os.path.join(OPPIA_DIRECTORY, 'core/tests/test-modules-mapping/lighthouse-accessibility'), ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES)
     
     for module in modified_modules:
         acceptance_test_suites.extend(
@@ -331,6 +339,12 @@ def main(args: Optional[list[str]] = None) -> None:
     with open(DEPEDENCY_GRAPH_PATH, 'r', encoding='utf-8') as f:
         dependency_graph = json.load(f)
         ci_test_suites_to_run = collect_ci_test_suites_to_run(modified_files, dependency_graph)
+
+        print('CI test suites to run:')
+        print(f'E2E: {ci_test_suites_to_run["e2e"]}')
+        print(f'Acceptance: {ci_test_suites_to_run["acceptance"]}')
+        print(f'Lighthouse performance: {ci_test_suites_to_run["lighthouse_performance"]}')
+        print(f'Lighthouse accessibility: {ci_test_suites_to_run["lighthouse_accessibility"]}')
 
         output_test_suites_to_run_to_github_workflow(
             ENVIRONMENT_E2E_TEST_SUITES_OUTPUT, ci_test_suites_to_run['e2e'])

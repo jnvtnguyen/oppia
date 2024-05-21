@@ -150,7 +150,7 @@ export class TestToAngularModulesMatcher {
             module
           ) && (
           !COMMON_EXCLUDED_MODULES[module] ||
-          !COMMON_EXCLUDED_MODULES[module].includes(
+          COMMON_EXCLUDED_MODULES[module].includes(
             TestToAngularModulesMatcher.goldenFilePath
           ))
         ) {
