@@ -39,6 +39,12 @@ const ROUTING_MODULES = [
 const MANUAL_ROUTE_TO_MODULE_MAPPING: Map<Route, string> = new Map([
   [
     {
+      path: 'creator-dashboard',
+    },
+    'core/templates/pages/creator-dashboard-page/creator-dashboard-page.import.ts'
+  ],
+  [
+    {
       path: 'create/:exploration_id',
     },
     'core/templates/pages/exploration-editor-page/exploration-editor-page.import.ts'
@@ -194,5 +200,3 @@ export class AngularRouteToModuleGenerator {
     return angularRouteToModuleMapping;
   }
 }
-
-console.log(new AngularRouteToModuleGenerator().getAngularRouteToModuleMapping());

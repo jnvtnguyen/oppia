@@ -207,21 +207,20 @@ def get_test_suites_to_modules_mapping_by_file(
  
         
 def get_test_suites_to_modules_mapping_by_type(
-    modules_mapping_directory: str,
+    directory: str,
     all_test_suites: List[TestSuiteDict]
 ) -> dict[str, List[str]]:
     test_suites_to_modules_mapping = {}
-    for root, directories, files in os.walk(modules_mapping_directory):
+    for root, directories, files in os.walk(directory):
         for file_path in files:
             test_suites_to_modules_mapping.update(
                 get_test_suites_to_modules_mapping_by_file(
                     root, file_path, all_test_suites))
         for directory in directories:
-            for _, _, files in os.walk(os.path.join(root, directory)):
-                for file_path in files:
-                    test_suites_to_modules_mapping.update(
-                        get_test_suites_to_modules_mapping_by_file(
-                            root, os.path.join(directory, file_path), all_test_suites))
+            subdir_path = os.path.join(root, directory)
+            test_suites_to_modules_mapping.update(
+                get_test_suites_to_modules_mapping_by_type(
+                    subdir_path, all_test_suites))
                 
     return test_suites_to_modules_mapping
 
