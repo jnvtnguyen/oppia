@@ -109,7 +109,7 @@ export class BlogAdminPageComponent implements OnInit {
     if (this.adminTaskManagerService.isTaskRunning()) {
       return;
     }
-    this.statusMessage = 'Updating User Role';
+    this.statusMessage = 'Updating User Role..';
     this.adminTaskManagerService.startTask();
     this.backendApiService
       .updateUserRoleAsync(
