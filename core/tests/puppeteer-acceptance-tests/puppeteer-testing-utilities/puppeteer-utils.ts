@@ -92,12 +92,13 @@ export class BaseUser {
         this.startTimeInMilliseconds = Date.now();
         this.browserObject = browser;
         ConsoleReporter.trackConsoleMessagesInBrowser(browser);
+
+        const testSpecName = process.env.TEST_SPEC_NAME;
+        TestToAngularModulesMatcher.setGoldenFilePath(
+          `core/tests/test-modules-mapping/acceptance/${testSpecName}.txt`);
+        TestToAngularModulesMatcher.registerPuppeteerBrowser(browser);
+
         this.page = await browser.newPage();
-
-        this.page.on('framenavigated', async (frame) => {
-          TestToAngularModulesMatcher.registerUrl(frame.url());
-        });
-
         if (mobile) {
           // This is the default viewport and user agent settings for iPhone 6.
           await this.page.setViewport({

@@ -27,19 +27,45 @@ import {
 } from '@angular/router';
 import {AngularRouteToModuleGenerator} from './angular-route-to-module-generator';
 
-const COMMON_EXCLUDED_MODULES = [
-  'core/templates/pages/splash-page/splash-page.module.ts',
-  'core/templates/pages/login-page/login-page.module.ts',
-  'core/templates/pages/signup-page/signup-page.module.ts',
-  'core/templates/pages/admin-page/admin-page.module.ts',
-  'core/templates/pages/learner-dashboard-page/learner-dashboard-page.module.ts',
-];
+const COMMON_EXCLUDED_MODULES: Record<string, string[]> = {
+  'core/templates/pages/splash-page/splash-page.module.ts': [
+    'core/tests/test-modules-mapping/lighthouse-accessibility/1.txt',
+    'core/tests/test-modules-mapping/lighthouse-accessibility/2.txt',
+    'core/tests/test-modules-mapping/lighthouse-performance/1.txt',
+    'core/tests/test-modules-mapping/lighthouse-performance/2.txt',
+  ],
+  'core/templates/pages/login-page/login-page.module.ts': [
+    'core/tests/test-modules-mapping/lighthouse-accessibility/1.txt',
+    'core/tests/test-modules-mapping/lighthouse-accessibility/2.txt',
+    'core/tests/test-modules-mapping/lighthouse-performance/1.txt',
+    'core/tests/test-modules-mapping/lighthouse-performance/2.txt',
+  ],
+  'core/templates/pages/signup-page/signup-page.module.ts': [
+    'core/tests/test-modules-mapping/lighthouse-accessibility/1.txt',
+    'core/tests/test-modules-mapping/lighthouse-accessibility/2.txt',
+    'core/tests/test-modules-mapping/lighthouse-performance/1.txt',
+    'core/tests/test-modules-mapping/lighthouse-performance/2.txt',
+  ],
+  'core/templates/pages/admin-page/admin-page.module.ts': [
+    'core/tests/test-modules-mapping/lighthouse-accessibility/1.txt',
+    'core/tests/test-modules-mapping/lighthouse-accessibility/2.txt',
+    'core/tests/test-modules-mapping/lighthouse-performance/1.txt',
+    'core/tests/test-modules-mapping/lighthouse-performance/2.txt',
+  ],
+  'core/templates/pages/learner-dashboard-page/learner-dashboard-page.module.ts': [
+    'core/tests/test-modules-mapping/lighthouse-accessibility/1.txt',
+    'core/tests/test-modules-mapping/lighthouse-accessibility/2.txt',
+    'core/tests/test-modules-mapping/lighthouse-performance/1.txt',
+    'core/tests/test-modules-mapping/lighthouse-performance/2.txt',
+  ],
+}
 
 export class TestToAngularModulesMatcher {
   static angularRouteToModuleMapping: Map<Route, string> =
     new AngularRouteToModuleGenerator().getAngularRouteToModuleMapping();
   static collectedTestAngularModules: string[] = [];
   static collectedTestErrors: string[] = [];
+  static goldenFilePath: string;
 
   private static matchUrl(url: string, route: Route): boolean {
     if (route.path === url) {
@@ -83,6 +109,30 @@ export class TestToAngularModulesMatcher {
     return true;
   }
 
+  /**
+   * Registers a puppeteer browser to be used for getting test's the Angular modules.
+   */
+  public static registerPuppeteerBrowser(browser: any): void {
+    browser.on('targetchanged', async (target) => {
+      const page = await target.page();
+      page.on('framenavigated', async (frame) => {
+        TestToAngularModulesMatcher.registerUrl(frame.url());
+      });
+    });
+  }
+
+  /**
+   * Sets the path to the file containing the mapping of Angular routes to
+   * modules.
+   */
+  public static setGoldenFilePath(goldenFilePath: string): void {
+    TestToAngularModulesMatcher.goldenFilePath = goldenFilePath;
+  }
+
+  /**
+   * Registers a URL and adds the corresponding Angular module to the list of
+   * collected modules.
+   */
   public static registerUrl(url: string): void {
     if (!url.includes('http://localhost:8181/')) {
       return;
@@ -98,8 +148,11 @@ export class TestToAngularModulesMatcher {
         if (
           !TestToAngularModulesMatcher.collectedTestAngularModules.includes(
             module
-          ) &&
-          !COMMON_EXCLUDED_MODULES.includes(module)
+          ) && (
+          !COMMON_EXCLUDED_MODULES[module] ||
+          !COMMON_EXCLUDED_MODULES[module].includes(
+            TestToAngularModulesMatcher.goldenFilePath
+          ))
         ) {
           TestToAngularModulesMatcher.collectedTestAngularModules.push(module);
         }
@@ -116,16 +169,21 @@ export class TestToAngularModulesMatcher {
     }
   }
 
-  public static compareAndOutputModules(goldenFilePath: string): void {
+  /**
+   * Compares the collected Angular modules to the golden file.
+   */
+  public static compareAndOutputModules(): void {
+    if (!TestToAngularModulesMatcher.goldenFilePath) {
+      throw new Error('The golden file path has not been set.');
+    }
     if (TestToAngularModulesMatcher.collectedTestErrors.length > 0) {
       throw new Error(
         TestToAngularModulesMatcher.collectedTestErrors.join('\n')
       );
     }
-
     let goldenFileContent = '';
-    if (fs.existsSync(goldenFilePath)) {
-      goldenFileContent = fs.readFileSync(goldenFilePath, 'utf-8');
+    if (fs.existsSync(TestToAngularModulesMatcher.goldenFilePath)) {
+      goldenFileContent = fs.readFileSync(TestToAngularModulesMatcher.goldenFilePath, 'utf-8');
     }
     const goldenModules = goldenFileContent
       .split('\n')
@@ -136,9 +194,10 @@ export class TestToAngularModulesMatcher {
     const extraModules = goldenModules.filter(
       module => !TestToAngularModulesMatcher.collectedTestAngularModules.includes(module)
     );
-    const goldenFileBasePathWithoutExtension = path.basename(goldenFilePath).split('.txt')[0];
+    const goldenFileBasePathWithoutExtension = path.basename(
+      TestToAngularModulesMatcher.goldenFilePath).split('.txt')[0];
     const generatedGoldenFilePath = path.resolve(
-      path.dirname(goldenFilePath),
+      path.dirname(TestToAngularModulesMatcher.goldenFilePath),
       `${goldenFileBasePathWithoutExtension}-generated.txt`
     );
     fs.mkdirSync(path.dirname(generatedGoldenFilePath), {recursive: true});
@@ -149,13 +208,15 @@ export class TestToAngularModulesMatcher {
     if (missingModules.length) {
       throw new Error(
         'The following Angular modules are missing from the golden file ' + 
-        `at the path ${goldenFilePath}:\n${missingModules.join('\n')}`
+        'at the path ${TestToAngularModulesMatcher.goldenFilePath}:\n' + 
+        missingModules.join('\n')
       );
     }
     if (extraModules.length) {
       throw new Error(
         'The following Angular modules are extra in the golden file ' + 
-        `at the path ${goldenFilePath}:\n${extraModules.join('\n')}`
+        `at the path ${TestToAngularModulesMatcher.goldenFilePath}:\n` +
+        extraModules.join('\n')
       );
     }
   }

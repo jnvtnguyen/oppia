@@ -464,10 +464,12 @@ const main = async function () {
   FirebaseAdmin.initializeApp({projectId: 'dev-project-id'});
   // Change headless to false to see the puppeteer actions.
   const browser = await puppeteer.launch({headless: true});
+  const lighthouseMode = process.env.LIGHTHOUSE_MODE;
+  const lighthouseShard = process.env.LIGHTHOUSE_SHARD;
+  TestToAngularModulesMatcher.setGoldenFilePath(
+    `core/tests/test-modules-mapping/lighthouse-${lighthouseMode}/${lighthouseShard}.txt`);
+  TestToAngularModulesMatcher.registerPuppeteerBrowser(browser);
   const page = await browser.newPage();
-  page.on('framenavigated', async frame => {
-    TestToAngularModulesMatcher.registerUrl(frame.url());
-  });
   await page.setViewport({
     width: 1920,
     height: 1080,
@@ -520,9 +522,7 @@ const main = async function () {
     await recorder.stop();
   }
   await page.close();
-  TestToAngularModulesMatcher.compareAndOutputModules(
-    `core/tests/test-modules-mapping/lighthouse-${process.env.LIGHTHOUSE_MODE}/${process.env.LIGHTHOUSE_SHARD}.txt`
-  );
+  TestToAngularModulesMatcher.compareAndOutputModules();
   process.exit(0);
 };
 
