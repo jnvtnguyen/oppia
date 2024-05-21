@@ -106,7 +106,7 @@ const lighthouseMode = process.env.LIGHTHOUSE_MODE;
 const lighthouseShard = process.env.LIGHTHOUSE_SHARD;
 TestToAngularModulesMatcher.setGoldenFilePath(
   `core/tests/test-modules-mapping/lighthouse-${lighthouseMode}/${lighthouseShard}.txt`);
-for (const url in module.exports.urlShards[lighthouseShard]) {
+for (const url of module.exports.urlShards[lighthouseShard]) {
   TestToAngularModulesMatcher.registerUrl(url);
 }
 TestToAngularModulesMatcher.compareAndOutputModules();

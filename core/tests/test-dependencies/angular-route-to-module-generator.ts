@@ -66,6 +66,24 @@ const MANUAL_ROUTE_TO_MODULE_MAPPING: Map<Route, string> = new Map([
       path: 'story_editor/:story_id',
     },
     'core/templates/pages/story-editor-page/story-editor-page.import.ts'
+  ],
+  [
+    {
+      path: 'contributor-dashboard',
+    },
+    'core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.import.ts'
+  ],
+  [
+    {
+      path: 'skill_editor/:skill_id',
+    },
+    'core/templates/pages/skill-editor-page/skill-editor-page.import.ts'
+  ],
+  [
+    {
+      path: 'learn/:classroom_url_fragment/:topic_url_fragment/story',
+    },
+    'core/templates/pages/topic-viewer-page/topic-viewer-page.import.ts'
   ]
 ]);
 
