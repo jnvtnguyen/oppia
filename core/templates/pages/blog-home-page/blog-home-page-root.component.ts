@@ -52,7 +52,7 @@ export class BlogHomePageRootComponent implements OnDestroy, OnInit {
       })
     );
 
-    this.loaderService.showLoadingScreen('Loading');
+    this.loaderService.showLoadingScreen('Loassding');
     this.userService.canUserEditBlogPosts().then(userCanEditBlogPost => {
       this.accessValidationBackendApiService
         .validateAccessToBlogHomePage()
