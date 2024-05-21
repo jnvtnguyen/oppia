@@ -280,7 +280,6 @@ def get_test_suites_to_modules_mapping_by_type(
     test_suites_to_modules_mapping = {}
     for root, directories, files in os.walk(directory):
         for file_path in files:
-            print(os.path.join(root, file_path))
             test_suites_to_modules_mapping.update(
                 get_test_suites_to_modules_mapping_by_file(
                     root, file_path, test_directory, all_test_suites))
@@ -352,10 +351,10 @@ def collect_ci_test_suites_to_run(
         os.path.join(OPPIA_DIRECTORY, 'core/tests/test-modules-mapping/acceptance'), ALL_ACCEPTANCE_TEST_SUITES)
     
     lighthouse_performance_test_suites_to_modules_mapping = get_test_suites_to_modules_mapping_by_type(
-        os.path.join(OPPIA_DIRECTORY, 'core/tests/test-modules-mapping/lighthouse'), ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES)
+        os.path.join(OPPIA_DIRECTORY, 'core/tests/test-modules-mapping/lighthouse-performance'), ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES)
     
     lighthouse_accessibility_test_suites_to_modules_mapping = get_test_suites_to_modules_mapping_by_type(
-        os.path.join(OPPIA_DIRECTORY, 'core/tests/test-modules-mapping/lighthouse'), ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES)
+        os.path.join(OPPIA_DIRECTORY, 'core/tests/test-modules-mapping/lighthouse-accessibility'), ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES)
     
     for module in modified_modules:
         acceptance_test_suites.extend(
@@ -406,7 +405,8 @@ def main(args: Optional[list[str]] = None) -> None:
     with open(DEPEDENCY_GRAPH_PATH, 'r', encoding='utf-8') as f:
         dependency_graph = json.load(f)
         ci_test_suites_to_run = collect_ci_test_suites_to_run(modified_files, dependency_graph)
-
+        
+        print('Partial CI test suites to run:', ci_test_suites_to_run)
         output_test_suites_to_run_to_github_workflow(
             ENVIRONMENT_E2E_TEST_SUITES_OUTPUT, ci_test_suites_to_run['e2e'])
         output_test_suites_to_run_to_github_workflow(

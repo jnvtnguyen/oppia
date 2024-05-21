@@ -20,10 +20,10 @@ jobs:
       matrix:
         os: [ubuntu-22.04]
     outputs:
-      E2E_TEST_SUITES_TO_RUN: ${{ fromJson(steps.check_test_suites_to_run.outputs.E2E_TEST_SUITES_TO_RUN) }}
-      LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN: ${{ fromJson(steps.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN) }}
-      ACCEPTANCE_TEST_SUITES_TO_RUN: ${{ fromJson(steps.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN) }}
-      LIGHTHOUSE_PAGES_TO_RUN: ${{ fromJson(steps.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN) }}
+      E2E_TEST_SUITES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.E2E_TEST_SUITES_TO_RUN }}
+      LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN }}
+      ACCEPTANCE_TEST_SUITES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN }}
+      LIGHTHOUSE_PAGES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -56,7 +56,7 @@ jobs:
         run: python -m scripts.check_ci_test_suites_to_run --github_head_ref="origin/${{ github.event.pull_request.head.ref }}" --github_base_ref="origin/${{ github.event.pull_request.base.ref }}"
   build:
     needs: check_test_suites_to_run
-    if: ${{ needs.check_test_suites_to_run.outputs.E2E_TESTS_TO_RUN[0] != null || needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN[0] != null || needs.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN[0] != null }}
+    if: ${{ fromJson(needs.check_test_suites_to_run.outputs.E2E_TESTS_TO_RUN)[0] != null || fromJson(needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN)[0] != null || fromJson(needs.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN)[0] != null }}
     runs-on:  ${{ matrix.os }}
     strategy:
       matrix:
@@ -112,7 +112,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        suite: ${{ needs.check_test_suites_to_run.outputs.E2E_TEST_SUITES_TO_RUN }}
+        suite: ${{ fromJson(needs.check_test_suites_to_run.outputs.E2E_TEST_SUITES_TO_RUN) }}
     name: e2e_test (${{ matrix.os }}, ${{ matrix.suite.name }})
     steps:
       - uses: actions/checkout@v3
@@ -219,7 +219,7 @@ jobs:
           webhook-url: ${{ secrets.BUILD_FAILURE_ROOM_WEBHOOK_URL }}
   lighthouse:
     needs: [build, check_test_suites_to_run]
-    if: ${{ needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN[0] != null }}
+    if: ${{ fromJson(needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN)[0] != null }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -314,7 +314,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        suite: ${{ needs.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN }}
+        suite: ${{ fromJson(needs.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN) }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3

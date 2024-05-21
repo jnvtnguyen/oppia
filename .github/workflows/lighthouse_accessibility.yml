@@ -20,8 +20,8 @@ jobs:
       matrix:
         os: [ubuntu-22.04]
     outputs:
-      LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN: ${{ fromJson(steps.check_test_suites_to_run.outputs.LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN) }}
-      LIGHTHOUSE_PAGES_TO_RUN: ${{ fromJson(steps.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN) }}
+      LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN }}
+      LIGHTHOUSE_PAGES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -54,7 +54,7 @@ jobs:
         run: python -m scripts.check_ci_test_suites_to_run --github_head_ref="origin/${{ github.event.pull_request.head.ref }}" --github_base_ref="origin/${{ github.event.pull_request.base.ref }}"
   lighthouse:
     needs: check_test_suites_to_run
-    if: ${{ needs.check_test_suites_to_run.outputs.LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN[0] != null }}
+    if: ${{ fromJson(needs.check_test_suites_to_run.outputs.LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN)[0] != null }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
