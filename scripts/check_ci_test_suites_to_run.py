@@ -340,12 +340,6 @@ def main(args: Optional[list[str]] = None) -> None:
         dependency_graph = json.load(f)
         ci_test_suites_to_run = collect_ci_test_suites_to_run(modified_files, dependency_graph)
 
-        print('CI test suites to run:')
-        print(f'E2E: {ci_test_suites_to_run["e2e"]}')
-        print(f'Acceptance: {ci_test_suites_to_run["acceptance"]}')
-        print(f'Lighthouse performance: {ci_test_suites_to_run["lighthouse_performance"]}')
-        print(f'Lighthouse accessibility: {ci_test_suites_to_run["lighthouse_accessibility"]}')
-
         output_test_suites_to_run_to_github_workflow(
             ENVIRONMENT_E2E_TEST_SUITES_OUTPUT, ci_test_suites_to_run['e2e'])
         output_test_suites_to_run_to_github_workflow(

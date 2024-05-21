@@ -20,9 +20,6 @@ var FirebaseAdmin = require('firebase-admin');
 const process = require('process');
 const puppeteer = require('puppeteer');
 const {PuppeteerScreenRecorder} = require('puppeteer-screen-recorder');
-const {
-  TestToAngularModulesMatcher,
-} = require('../test-dependencies/test-to-angular-modules-matcher');
 
 const ADMIN_URL = 'http://localhost:8181/admin';
 const CREATOR_DASHBOARD_URL = 'http://localhost:8181/creator-dashboard';
@@ -464,11 +461,6 @@ const main = async function () {
   FirebaseAdmin.initializeApp({projectId: 'dev-project-id'});
   // Change headless to false to see the puppeteer actions.
   const browser = await puppeteer.launch({headless: true});
-  const lighthouseMode = process.env.LIGHTHOUSE_MODE;
-  const lighthouseShard = process.env.LIGHTHOUSE_SHARD;
-  TestToAngularModulesMatcher.setGoldenFilePath(
-    `core/tests/test-modules-mapping/lighthouse-${lighthouseMode}/${lighthouseShard}.txt`);
-  TestToAngularModulesMatcher.registerPuppeteerBrowser(browser);
   const page = await browser.newPage();
   await page.setViewport({
     width: 1920,
@@ -522,7 +514,6 @@ const main = async function () {
     await recorder.stop();
   }
   await page.close();
-  TestToAngularModulesMatcher.compareAndOutputModules();
   process.exit(0);
 };
 

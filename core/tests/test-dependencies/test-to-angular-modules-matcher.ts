@@ -208,7 +208,7 @@ export class TestToAngularModulesMatcher {
     if (missingModules.length) {
       throw new Error(
         'The following Angular modules are missing from the golden file ' + 
-        'at the path ${TestToAngularModulesMatcher.goldenFilePath}:\n' + 
+        `at the path ${TestToAngularModulesMatcher.goldenFilePath}:\n` + 
         missingModules.join('\n')
       );
     }
