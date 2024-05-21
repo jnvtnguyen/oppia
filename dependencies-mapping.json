@@ -11,7 +11,9 @@
   ".lighthouserc-accessibility-2.js": [
     ".lighthouserc-base.js"
   ],
-  ".lighthouserc-base.js": [],
+  ".lighthouserc-base.js": [
+    "core/tests/test-dependencies/test-to-angular-modules-matcher.ts"
+  ],
   "puppeteer-login-script.js": [],
   ".github/CODEOWNERS": [],
   ".github/CODE_OF_CONDUCT.md": [],
@@ -10964,9 +10966,7 @@
   "core/tests/wdio.conf.js": [
     "core/tests/webdriverio_utils/WebdriverioConstants.js"
   ],
-  "core/tests/puppeteer/lighthouse_setup.js": [
-    "core/tests/test-dependencies/test-to-angular-modules-matcher.ts"
-  ],
+  "core/tests/puppeteer/lighthouse_setup.js": [],
   "core/tests/puppeteer-acceptance-tests/functions/is-element-clickable.ts": [],
   "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/console-reporter.ts": [],
   "core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/puppeteer-utils.ts": [
