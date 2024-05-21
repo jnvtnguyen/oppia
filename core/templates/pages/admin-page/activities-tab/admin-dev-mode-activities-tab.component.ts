@@ -67,7 +67,7 @@ export class AdminDevModeActivitiesTabComponent implements OnInit {
 
     this.adminBackendApiService.reloadExplorationAsync(explorationId).then(
       () => {
-        this.setStatusMessage.emit('Data reloaded successfully.');
+        this.setStatusMessage.emit('Data reloaded successfully...');
         this.adminTaskManagerService.finishTask();
       },
       errorResponse => {
