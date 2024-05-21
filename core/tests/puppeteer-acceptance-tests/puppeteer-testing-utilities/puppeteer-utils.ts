@@ -94,9 +94,11 @@ export class BaseUser {
         ConsoleReporter.trackConsoleMessagesInBrowser(browser);
 
         const testSpecName = process.env.TEST_SPEC_NAME;
-        TestToAngularModulesMatcher.setGoldenFilePath(
-          `core/tests/test-modules-mapping/acceptance/${testSpecName}.txt`);
-        TestToAngularModulesMatcher.registerPuppeteerBrowser(browser);
+        if (!mobile) {
+          TestToAngularModulesMatcher.setGoldenFilePath(
+            `core/tests/test-modules-mapping/acceptance/${testSpecName}.txt`);
+          TestToAngularModulesMatcher.registerPuppeteerBrowser(browser);
+        }
 
         this.page = await browser.newPage();
         if (mobile) {
