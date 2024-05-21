@@ -41,6 +41,7 @@ ENVIRONMENT_E2E_TEST_SUITES_OUTPUT = 'E2E_TEST_SUITES_TO_RUN'
 ENVIRONMENT_ACCEPTANCE_TEST_SUITES_OUTPUT = 'ACCEPTANCE_TEST_SUITES_TO_RUN'
 ENVIRONMENT_LIGHTHOUSE_PERFORMANCE_TEST_SUITES_OUTPUT = 'LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN'
 ENVIRONMENT_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_OUTPUT = 'LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN'
+ENVIRONMENT_LIGHTHOUSE_PAGES_TO_RUN = 'LIGHTHOUSE_PAGES_TO_RUN'
 
 FILE_DIRECTORY: Final = os.path.abspath(os.path.dirname(__file__))
 OPPIA_DIRECTORY: Final = os.path.join(FILE_DIRECTORY, os.pardir)
@@ -55,6 +56,7 @@ class TestSuitesByTypeMappingDict(TypedDict):
     acceptance: List[TestSuiteDict]
     lighthouse_performance: List[TestSuiteDict]
     lighthouse_accessibility: List[TestSuiteDict]
+    lighthouse_pages: List[str]
     
 ALL_E2E_TEST_SUITES = [
     TestSuiteDict(suite_name='accessibility'),
@@ -136,14 +138,49 @@ ALL_ACCEPTANCE_TEST_SUITES = [
 ]
 
 ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES = [
-    TestSuiteDict(suite_name='1', module_path='.lighthouserc-1.js'),
-    TestSuiteDict(suite_name='2', module_path='.lighthouserc-2.js'),
+    TestSuiteDict(suite_name='lighthouse-performance', module_path='.lighthouserc-performance.js'),
 ]
 
 ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES = [
-    TestSuiteDict(suite_name='1', module_path='.lighthouserc-accessibility-1.js'),
-    TestSuiteDict(suite_name='2', module_path='.lighthouserc-accessibility-2.js'),
+    TestSuiteDict(suite_name='lighthouse-accessiblity', module_path='.lighthouserc-accessibility.js'),
 ]
+
+LIGHTHOUSE_MODIFIED_MODULES_TO_PAGE_NAMES: dict[str, str] = {
+    'core/templates/pages/splash-page/splash-page.module.ts': 'splash',
+    'core/templates/pages/about-page/about-page.module.ts': 'about',
+    'core/templates/pages/about-foundation-page/about-foundation-page.module.ts': 'about-foundation',
+    'core/templates/pages/admin-page/admin-page.module.ts': 'admin',
+    'core/templates/pages/blog-dashboard-page/blog-dashboard-page.module.ts': 'blog-dashboard',
+    'core/templates/pages/library-page/library-page.module.ts': 'community-library',
+    'core/templates/pages/contact-page/contact-page.module.ts': 'contact',
+    'core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.import.ts': 'contributor-dashboard',
+    'core/templates/pages/creator-dashboard-page/creator-dashboard-page.import.ts': 'creator-dashboard',
+    'core/templates/pages/participation-playbook/playbook.module.ts': 'creator-guidelines',
+    'core/templates/pages/delete-account-page/delete-account-page.module.ts': 'delete-account',
+    'core/templates/pages/donate-page/donate-page.module.ts': 'donate',
+    'core/templates/pages/email-dashboard-page/email-dashboard-page.module.ts': 'email-dashboard',
+    'core/templates/pages/get-started-page/get-started-page.module.ts': 'get-started',
+    'core/templates/pages/learner-dashboard-page/learner-dashboard-page.module.ts': 'learner-dashboard',
+    'core/templates/pages/license-page/license.module.ts': 'license',
+    'core/templates/pages/moderator-page/moderator-page.module.ts': 'moderator',
+    'core/templates/pages/preferences-page/preferences-page.module.ts': 'preferences',
+    'core/templates/pages/privacy-page/privacy-page.module.ts': 'privacy-policy',
+    'core/templates/pages/profile-page/profile-page.module.ts': 'profile',
+    'core/templates/pages/signup-page/signup-page.module.ts': 'signup',
+    'core/templates/pages/teach-page/teach-page.module.ts': 'teach',
+    'core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.import.ts': 'topics-and-skills-dashboard',
+    'core/templates/pages/terms-page/terms-page.module.ts': 'terms',
+    'core/templates/pages/thanks-page/thanks-page.module.ts': 'thanks',
+    'core/templates/pages/volunteer-page/volunteer-page.module.ts': 'volunteer',
+    'core/templates/pages/topic-viewer-page/topic-viewer-page.import.ts': 'topic-viewer',
+    'core/templates/pages/story-viewer-page/story-viewer-page.module.ts': 'story-viewer',
+    'core/templates/classroom-page/classroom-page.module.ts': 'classroom',
+    'core/templates/pages/exploration-editor-page/exploration-editor-page.import.ts': 'exploration-editor',
+    'core/templates/pages/exploration-player-page/exploration-player-page.module.ts': 'exploration-player',
+    'core/templates/pages/topic-editor-page/topic-editor-page.import.ts': 'topic-editor',
+    'core/templates/pages/skill-editor-page/skill-editor-page.import.ts': 'skill-editor',
+    'core/templates/pages/story-editor-page/story-editor-page.import.ts': 'story-editor',
+}
 
 def git_diff_name_status(
     left: str, right: str
@@ -171,6 +208,15 @@ def does_diff_include_python_files(diff_files: List[str]) -> bool:
     return False
 
 
+def output_variable_to_github_workflow(
+    output_variable: str,
+    output_value: str
+) -> None:
+    
+    with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as o:
+        print(f'{output_variable}={output_value}', file=o)
+        
+
 def output_test_suites_to_run_to_github_workflow(
     output_variable: str,
     test_suites_to_run: List[TestSuiteDict]
@@ -180,10 +226,24 @@ def output_test_suites_to_run_to_github_workflow(
             'name': test_suite.get('suite_name')
         } for test_suite in test_suites_to_run
     ]
-    test_suites_to_run_count = len(test_suites_to_run)
-    with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as o:
-        print(f'{output_variable}={json.dumps(formatted_test_suites_to_run)}', file=o)
-        print(f'{output_variable}_COUNT={test_suites_to_run_count}', file=o)
+    output_variable_to_github_workflow(
+        output_variable, json.dumps(formatted_test_suites_to_run))
+
+
+def output_lighthouse_pages_to_run_to_github_workflow(
+    lighthouse_pages_to_run: List[str]
+) -> None:
+    formatted_lighthouse_pages_to_run = ','.join(lighthouse_pages_to_run)
+    output_variable_to_github_workflow(
+        ENVIRONMENT_LIGHTHOUSE_PAGES_TO_RUN, json.dumps(formatted_lighthouse_pages_to_run))
+
+
+def get_lighthouse_pages_to_run(modified_modules: List[str]) -> List[str]:
+    lighthouse_pages_to_run = []
+    for module in modified_modules:
+        if module in LIGHTHOUSE_MODIFIED_MODULES_TO_PAGE_NAMES:
+            lighthouse_pages_to_run.append(LIGHTHOUSE_MODIFIED_MODULES_TO_PAGE_NAMES[module])
+    return lighthouse_pages_to_run
         
 
 def get_test_suites_to_modules_mapping_by_file(
@@ -261,6 +321,7 @@ def get_test_suites_affected_by_module(
             
     return distinct_affected_tests
         
+
 def collect_ci_test_suites_to_run(
     modified_files: List[str],
     dependency_graph: dict
@@ -272,7 +333,8 @@ def collect_ci_test_suites_to_run(
                 'e2e': ALL_E2E_TEST_SUITES,
                 'acceptance': ALL_ACCEPTANCE_TEST_SUITES,
                 'lighthouse_performance': ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES,
-                'lighthouse_accessibility': ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES
+                'lighthouse_accessibility': ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES,
+                'lighthouse_pages': list(LIGHTHOUSE_MODIFIED_MODULES_TO_PAGE_NAMES.values())
             }
         file_modules = dependency_graph[file_path]
         for file_module in file_modules:
@@ -290,10 +352,10 @@ def collect_ci_test_suites_to_run(
         os.path.join(OPPIA_DIRECTORY, 'core/tests/test-modules-mapping/acceptance'), ALL_ACCEPTANCE_TEST_SUITES)
     
     lighthouse_performance_test_suites_to_modules_mapping = get_test_suites_to_modules_mapping_by_type(
-        os.path.join(OPPIA_DIRECTORY, 'core/tests/test-modules-mapping/lighthouse-performance'), ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES)
+        os.path.join(OPPIA_DIRECTORY, 'core/tests/test-modules-mapping/lighthouse'), ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES)
     
     lighthouse_accessibility_test_suites_to_modules_mapping = get_test_suites_to_modules_mapping_by_type(
-        os.path.join(OPPIA_DIRECTORY, 'core/tests/test-modules-mapping/lighthouse-accessibility'), ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES)
+        os.path.join(OPPIA_DIRECTORY, 'core/tests/test-modules-mapping/lighthouse'), ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES)
     
     for module in modified_modules:
         acceptance_test_suites.extend(
@@ -305,12 +367,15 @@ def collect_ci_test_suites_to_run(
         lighthouse_accessibility_test_suites.extend(
             get_test_suites_affected_by_module(
                 module, lighthouse_accessibility_test_suites_to_modules_mapping, ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES))
+    
+    lighthouse_pages_to_run = get_lighthouse_pages_to_run(modified_modules)
         
     return {
         'e2e': e2e_test_suites,
         'acceptance': acceptance_test_suites,
         'lighthouse_performance': lighthouse_performance_test_suites,
-        'lighthouse_accessibility': lighthouse_accessibility_test_suites
+        'lighthouse_accessibility': lighthouse_accessibility_test_suites,
+        'lighthouse_pages': lighthouse_pages_to_run
     }
 
 
@@ -332,6 +397,8 @@ def main(args: Optional[list[str]] = None) -> None:
             ENVIRONMENT_LIGHTHOUSE_PERFORMANCE_TEST_SUITES_OUTPUT, ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES),
         output_test_suites_to_run_to_github_workflow(
             ENVIRONMENT_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_OUTPUT, ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES)
+        output_lighthouse_pages_to_run_to_github_workflow(
+            list(LIGHTHOUSE_MODIFIED_MODULES_TO_PAGE_NAMES.values()))
         return
     
     generate_dependency_graph.main()
@@ -348,6 +415,8 @@ def main(args: Optional[list[str]] = None) -> None:
             ENVIRONMENT_LIGHTHOUSE_PERFORMANCE_TEST_SUITES_OUTPUT, ci_test_suites_to_run['lighthouse_performance'])
         output_test_suites_to_run_to_github_workflow(
             ENVIRONMENT_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_OUTPUT, ci_test_suites_to_run['lighthouse_accessibility'])
+        output_lighthouse_pages_to_run_to_github_workflow(
+            ci_test_suites_to_run['lighthouse_pages'])
 
 
 # The 'no coverage' pragma is used as this line is un-testable. This is because

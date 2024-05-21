@@ -40,14 +40,8 @@ SERVER_MODE_PROD: Final = 'dev'
 SERVER_MODE_DEV: Final = 'prod'
 GOOGLE_APP_ENGINE_PORT: Final = 8181
 LIGHTHOUSE_CONFIG_FILENAMES: Final = {
-    LIGHTHOUSE_MODE_PERFORMANCE: {
-        '1': '.lighthouserc-1.js',
-        '2': '.lighthouserc-2.js'
-    },
-    LIGHTHOUSE_MODE_ACCESSIBILITY: {
-        '1': '.lighthouserc-accessibility-1.js',
-        '2': '.lighthouserc-accessibility-2.js'
-    }
+    LIGHTHOUSE_MODE_PERFORMANCE: '.lighthouserc-performance.js',
+    LIGHTHOUSE_MODE_ACCESSIBILITY: '.lighthouserc-accessibility.js'
 }
 APP_YAML_FILENAMES: Final = {
     SERVER_MODE_PROD: 'app.yaml',
@@ -67,16 +61,15 @@ _PARSER.add_argument(
     choices=['accessibility', 'performance'])
 
 _PARSER.add_argument(
-    '--shard', help='Sets the shard for the lighthouse tests',
-    required=True, choices=['1', '2'])
-
-_PARSER.add_argument(
     '--skip_build', help='Sets whether to skip webpack build',
     action='store_true')
 
 _PARSER.add_argument(
     '--record_screen', help='Sets whether LHCI Puppeteer script is recorded',
     action='store_true')
+
+_PARSER.add_argument(
+    '--pages', help='The list of pages to run the Lighthouse checks on')
 
 
 def run_lighthouse_puppeteer_script(record: bool = False) -> None:
@@ -168,20 +161,19 @@ def export_url(line: str) -> None:
         os.environ['skill_id'] = url_parts[4]
 
 
-def run_lighthouse_checks(lighthouse_mode: str, shard: str) -> None:
+def run_lighthouse_checks(lighthouse_mode: str) -> None:
     """Runs the Lighthouse checks through the Lighthouse config.
 
     Args:
         lighthouse_mode: str. Represents whether the lighthouse checks are in
             accessibility mode or performance mode.
-        shard: str. Specifies which shard of the tests should be run.
     """
     lhci_path = os.path.join('node_modules', '@lhci', 'cli', 'src', 'cli.js')
     # The max-old-space-size is a quick fix for node running out of heap memory
     # when executing the performance tests: https://stackoverflow.com/a/59572966
     bash_command = [
         common.NODE_BIN_PATH, lhci_path, 'autorun',
-        '--config=%s' % LIGHTHOUSE_CONFIG_FILENAMES[lighthouse_mode][shard],
+        '--config=%s' % LIGHTHOUSE_CONFIG_FILENAMES[lighthouse_mode],
         '--max-old-space-size=4096'
     ]
 
@@ -213,7 +205,8 @@ def main(args: Optional[List[str]] = None) -> None:
     
     common.compile_test_dependencies()
     os.environ['LIGHTHOUSE_MODE'] = parsed_args.mode
-    os.environ['LIGHTHOUSE_SHARD'] = parsed_args.shard
+    if parsed_args.pages:
+        os.environ['LIGHTHOUSE_PAGES_TO_RUN'] = parsed_args.pages
 
     if parsed_args.mode == LIGHTHOUSE_MODE_ACCESSIBILITY:
         lighthouse_mode = LIGHTHOUSE_MODE_ACCESSIBILITY
@@ -256,7 +249,7 @@ def main(args: Optional[List[str]] = None) -> None:
             env=env))
 
         run_lighthouse_puppeteer_script(parsed_args.record_screen)
-        run_lighthouse_checks(lighthouse_mode, parsed_args.shard)
+        run_lighthouse_checks(lighthouse_mode)
 
 
 if __name__ == '__main__': # pragma: no cover
