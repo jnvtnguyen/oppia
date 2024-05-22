@@ -1,13 +1,27 @@
 {
-  ".lighthouserc-accessibility.js": [
-    ".lighthouserc-accessibility.js"
+  ".lighthouserc-accessibility-1.js": [
+    ".lighthouserc-accessibility-1.js"
+  ],
+  ".lighthouserc-accessibility-2.js": [
+    ".lighthouserc-accessibility-2.js"
   ],
   ".lighthouserc-base.js": [
-    ".lighthouserc-accessibility.js",
-    ".lighthouserc-performance.js"
+    ".lighthouserc-accessibility-1.js",
+    ".lighthouserc-accessibility-2.js",
+    ".lighthouserc-performance-1.js",
+    ".lighthouserc-performance-2.js"
   ],
-  ".lighthouserc-performance.js": [
-    ".lighthouserc-performance.js"
+  ".lighthouserc-performance-1.js": [
+    ".lighthouserc-performance-1.js"
+  ],
+  ".lighthouserc-performance-2.js": [
+    ".lighthouserc-performance-2.js"
+  ],
+  "AUTHORS": [
+    "AUTHORS"
+  ],
+  "CONTRIBUTORS": [
+    "CONTRIBUTORS"
   ],
   "puppeteer-login-script.js": [
     "puppeteer-login-script.js"

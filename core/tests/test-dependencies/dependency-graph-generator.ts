@@ -95,6 +95,8 @@ const SEARCH_FILE_EXTENSIONS = [
   '.md',
   '.css',
   'CODEOWNERS',
+  'AUTHORS',
+  'CONTRIBUTORS'
 ];
 
 export class DependencyExtractor {

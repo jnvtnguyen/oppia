@@ -1,13 +1,21 @@
 {
-  ".lighthouserc-accessibility.js": [
+  ".lighthouserc-accessibility-1.js": [
+    ".lighthouserc-base.js"
+  ],
+  ".lighthouserc-accessibility-2.js": [
     ".lighthouserc-base.js"
   ],
   ".lighthouserc-base.js": [
     "core/tests/test-dependencies/test-to-angular-modules-matcher.ts"
   ],
-  ".lighthouserc-performance.js": [
+  ".lighthouserc-performance-1.js": [
     ".lighthouserc-base.js"
   ],
+  ".lighthouserc-performance-2.js": [
+    ".lighthouserc-base.js"
+  ],
+  "AUTHORS": [],
+  "CONTRIBUTORS": [],
   "puppeteer-login-script.js": [],
   ".github/CODEOWNERS": [],
   ".github/CODE_OF_CONDUCT.md": [],
