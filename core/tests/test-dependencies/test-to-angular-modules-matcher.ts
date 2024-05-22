@@ -29,22 +29,22 @@ import {AngularRouteToModuleGenerator} from './angular-route-to-module-generator
 
 const COMMON_EXCLUDED_MODULES: Record<string, string[]> = {
   'core/templates/pages/splash-page/splash-page.module.ts': [
-    'core/tests/test-modules-mapping/lighthouse-accessibility/1.txt',
-    'core/tests/test-modules-mapping/lighthouse-performance/1.txt',
+    'core/tests/test-modules-mapping/lighthouse-accessibility/lighthouse-accessiblity.txt',
+    'core/tests/test-modules-mapping/lighthouse-performance/lighthouse-performance.txt',
   ],
   'core/templates/pages/login-page/login-page.module.ts': [],
   'core/templates/pages/signup-page/signup-page.module.ts': [
-    'core/tests/test-modules-mapping/lighthouse-accessibility/2.txt',
-    'core/tests/test-modules-mapping/lighthouse-performance/2.txt',
+    'core/tests/test-modules-mapping/lighthouse-accessibility/lighthouse-accessibility.txt',
+    'core/tests/test-modules-mapping/lighthouse-performance/lighthouse-performance.txt',
   ],
   'core/templates/pages/admin-page/admin-page.module.ts': [
-    'core/tests/test-modules-mapping/lighthouse-accessibility/1.txt',
-    'core/tests/test-modules-mapping/lighthouse-performance/1.txt',
+    'core/tests/test-modules-mapping/lighthouse-accessibility/lighthouse-accessibility.txt',
+    'core/tests/test-modules-mapping/lighthouse-performance/lighthouse-performance.txt',
   ],
   'core/templates/pages/learner-dashboard-page/learner-dashboard-page.module.ts':
     [
-      'core/tests/test-modules-mapping/lighthouse-accessibility/1.txt',
-      'core/tests/test-modules-mapping/lighthouse-performance/2.txt',
+      'core/tests/test-modules-mapping/lighthouse-accessibility/lighthouse-accessibility.txt',
+      'core/tests/test-modules-mapping/lighthouse-performance/lighthouse-performance.txt',
     ],
 };
 

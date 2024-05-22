@@ -59,13 +59,22 @@ const PAGE_NAMES_TO_URLS = {
   'story-editor': `http://localhost:8181/story_editor/${process.env.story_id}`,
 };
 
+const lighthouseMode = process.env.LIGHTHOUSE_MODE;
+TestToAngularModulesMatcher.setGoldenFilePath(
+  `core/tests/test-modules-mapping/lighthouse-${lighthouseMode}/lighthouse-${lighthouseMode}.txt`
+);
+for (const url of Object.values(PAGE_NAMES_TO_URLS)) {
+  TestToAngularModulesMatcher.registerUrl(url);
+}
+TestToAngularModulesMatcher.compareAndOutputModules();
+
 const LIGHTHOUSE_PAGES_TO_RUN_ENVIRONMENT_VARIABLE =
   process.env.LIGHTHOUSE_PAGES_TO_RUN;
 const LIGHTHOUSE_PAGES_TO_RUN = LIGHTHOUSE_PAGES_TO_RUN_ENVIRONMENT_VARIABLE
   ? LIGHTHOUSE_PAGES_TO_RUN_ENVIRONMENT_VARIABLE.split(',')
   : [];
 
-const urlsToRun = [];
+let urlsToRun = [];
 if (LIGHTHOUSE_PAGES_TO_RUN.length === 0) {
   urlsToRun = Object.values(PAGE_NAMES_TO_URLS);
 } else {
@@ -120,12 +129,3 @@ module.exports = {
     'categories:accessibility': ['error', {minScore: 1}],
   },
 };
-
-const lighthouseMode = process.env.LIGHTHOUSE_MODE;
-TestToAngularModulesMatcher.setGoldenFilePath(
-  `core/tests/test-modules-mapping/lighthouse-${lighthouseMode}/lighthouse-${lighthouseMode}.txt`
-);
-for (const url of Object.values(PAGE_NAMES_TO_URLS)) {
-  TestToAngularModulesMatcher.registerUrl(url);
-}
-TestToAngularModulesMatcher.compareAndOutputModules();
