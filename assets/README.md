@@ -6,3 +6,4 @@ This folder contains various assets used in Oppia codebase.
 - pages: Attribution message.
 - scripts: Scripts for exploration embeddings & testing.
 - videos: Videos used in various pages on Oppia website.
+- test: testing
