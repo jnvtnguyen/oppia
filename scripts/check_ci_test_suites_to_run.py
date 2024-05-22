@@ -237,7 +237,7 @@ def output_lighthouse_pages_to_run_to_github_workflow(
 ) -> None:
     formatted_lighthouse_pages_to_run = ','.join(lighthouse_pages_to_run)
     output_variable_to_github_workflow(
-        ENVIRONMENT_LIGHTHOUSE_PAGES_TO_RUN, json.dumps(formatted_lighthouse_pages_to_run))
+        ENVIRONMENT_LIGHTHOUSE_PAGES_TO_RUN, formatted_lighthouse_pages_to_run)
 
 
 def get_lighthouse_pages_to_run(modified_modules: List[str]) -> List[str]:

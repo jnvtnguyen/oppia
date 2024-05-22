@@ -58,11 +58,13 @@ const PAGE_NAMES_TO_URLS = {
   'skill-editor': `http://localhost:8181/skill_editor/${process.env.skill_id}`,
   'story-editor': `http://localhost:8181/story_editor/${process.env.story_id}`,
 };
+
 const LIGHTHOUSE_PAGES_TO_RUN_ENVIRONMENT_VARIABLE =
   process.env.LIGHTHOUSE_PAGES_TO_RUN;
 const LIGHTHOUSE_PAGES_TO_RUN = LIGHTHOUSE_PAGES_TO_RUN_ENVIRONMENT_VARIABLE
   ? LIGHTHOUSE_PAGES_TO_RUN_ENVIRONMENT_VARIABLE.split(',')
   : [];
+
 const urlsToRun = [];
 if (LIGHTHOUSE_PAGES_TO_RUN.length === 0) {
   urlsToRun = Object.values(PAGE_NAMES_TO_URLS);
@@ -121,7 +123,7 @@ module.exports = {
 
 const lighthouseMode = process.env.LIGHTHOUSE_MODE;
 TestToAngularModulesMatcher.setGoldenFilePath(
-  `core/tests/test-modules-mapping/lighthouse-${lighthouseMode}.txt`
+  `core/tests/test-modules-mapping/lighthouse-${lighthouseMode}/lighthouse-${lighthouseMode}.txt`
 );
 for (const url of Object.values(PAGE_NAMES_TO_URLS)) {
   TestToAngularModulesMatcher.registerUrl(url);
