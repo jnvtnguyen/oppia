@@ -414,26 +414,34 @@ def collect_ci_test_suites_to_run(
         'lighthouse_pages_to_run': lighthouse_pages_to_run,
     }
 
+    
+def output_all_test_suites_to_run_to_github_workflow() -> None:
+    output_test_suites_to_run_to_github_workflow(
+        ENVIRONMENT_E2E_TEST_SUITES_OUTPUT, ALL_E2E_TEST_SUITES)
+    output_test_suites_to_run_to_github_workflow(
+        ENVIRONMENT_ACCEPTANCE_TEST_SUITES_OUTPUT, ALL_ACCEPTANCE_TEST_SUITES)
+    output_test_suites_to_run_to_github_workflow(
+        ENVIRONMENT_LIGHTHOUSE_PERFORMANCE_TEST_SUITES_OUTPUT, ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES),
+    output_test_suites_to_run_to_github_workflow(
+        ENVIRONMENT_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_OUTPUT, ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES)
+    output_lighthouse_pages_to_run_to_github_workflow(ALL_LIGHTHOUSE_PAGES_TO_RUN)
+
 
 def main(args: Optional[list[str]] = None) -> None:
     """Outputs the test suites to run in the CI."""
     parsed_args = _PARSER.parse_args(args=args)
+
+    if parsed_args.output_all_test_suites:
+        output_all_test_suites_to_run_to_github_workflow()
+        return
 
     modified_files = git_diff_name_status(
         parsed_args.github_base_ref, parsed_args.github_head_ref)
     
     print(f'Modified files: {modified_files}.')
 
-    if does_diff_include_python_files(modified_files) or parsed_args.output_all_test_suites:
-        output_test_suites_to_run_to_github_workflow(
-            ENVIRONMENT_E2E_TEST_SUITES_OUTPUT, ALL_E2E_TEST_SUITES)
-        output_test_suites_to_run_to_github_workflow(
-            ENVIRONMENT_ACCEPTANCE_TEST_SUITES_OUTPUT, ALL_ACCEPTANCE_TEST_SUITES)
-        output_test_suites_to_run_to_github_workflow(
-            ENVIRONMENT_LIGHTHOUSE_PERFORMANCE_TEST_SUITES_OUTPUT, ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES),
-        output_test_suites_to_run_to_github_workflow(
-            ENVIRONMENT_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_OUTPUT, ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES)
-        output_lighthouse_pages_to_run_to_github_workflow(ALL_LIGHTHOUSE_PAGES_TO_RUN)
+    if does_diff_include_python_files(modified_files):
+        output_all_test_suites_to_run_to_github_workflow()
         return
     
     generate_dependency_graph.main()
