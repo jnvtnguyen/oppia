@@ -124,7 +124,7 @@ export class TranslationTabComponent implements OnInit, OnDestroy {
             'translationTabTutorialComplete',
           ],
           stepDefaultPosition: 'bottom',
-          themeColor: '#212f23',
+          themeColor: '#212f22',
         })
         .subscribe(
           () => {

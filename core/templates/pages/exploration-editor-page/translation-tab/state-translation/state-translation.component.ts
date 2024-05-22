@@ -191,7 +191,7 @@ export class StateTranslationComponent implements OnInit, OnDestroy {
         'Switch to translation mode to add a text translation.'
       );
     } else {
-      return 'There is no text available to translate.';
+      return 'There is no text available to translate...';
     }
   }
 
