@@ -21,49 +21,54 @@ const {
 } = require('./core/tests/test-dependencies/test-to-angular-modules-matcher');
 
 const PAGE_NAMES_TO_URLS = {
-  splash: 'http://localhost:8181/',
-  about: 'http://localhost:8181/about',
-  'about-foundation': 'http://localhost:8181/about-foundation',
-  admin: 'http://localhost:8181/admin',
-  'blog-dashboard': 'http://localhost:8181/blog-dashboard',
-  'community-library': 'http://localhost:8181/community-library',
-  contact: 'http://localhost:8181/contact',
-  'contributor-dashboard': 'http://localhost:8181/contributor-dashboard',
-  'creator-dashboard': 'http://localhost:8181/creator-dashboard',
-  'creator-guidelines': 'http://localhost:8181/creator-guidelines',
-  'delete-account': 'http://localhost:8181/delete-account',
-  donate: 'http://localhost:8181/donate',
-  emaildashboard: 'http://localhost:8181/emaildashboard',
-  'get-started': 'http://localhost:8181/get-started',
-  'learner-dashboard': 'http://localhost:8181/learner-dashboard',
-  license: 'http://localhost:8181/license',
-  moderator: 'http://localhost:8181/moderator',
-  preferences: 'http://localhost:8181/preferences',
-  'privacy-policy': 'http://localhost:8181/privacy-policy',
-  profile: 'http://localhost:8181/profile/username1',
-  signup: 'http://localhost:8181/signup?return_url=%2F',
-  teach: 'http://localhost:8181/teach',
-  'topics-and-skills-dashboard':
-    'http://localhost:8181/topics-and-skills-dashboard',
-  terms: 'http://localhost:8181/terms',
-  thanks: 'http://localhost:8181/thanks',
-  volunteer: 'http://localhost:8181/volunteer',
-  'topic-viewer': 'http://localhost:8181/learn/staging/dummy-topic-one/story',
-  'story-viewer':
-    'http://localhost:8181/learn/staging/dummy-topic-one/story/help-jamie-win-arcade',
-  classroom: 'http://localhost:8181/learn/math',
-  'exploration-editor': `http://localhost:8181/create/${process.env.exploration_id}`,
-  'exploration-player': `http://localhost:8181/explore/${process.env.exploration_id}`,
-  'topic-editor': `http://localhost:8181/topic_editor/${process.env.topic_id}`,
-  'skill-editor': `http://localhost:8181/skill_editor/${process.env.skill_id}`,
-  'story-editor': `http://localhost:8181/story_editor/${process.env.story_id}`,
+  1: {
+    splash: 'http://localhost:8181/',
+    about: 'http://localhost:8181/about',
+    'about-foundation': 'http://localhost:8181/about-foundation',
+    admin: 'http://localhost:8181/admin',
+    'blog-dashboard': 'http://localhost:8181/blog-dashboard',
+    'community-library': 'http://localhost:8181/community-library',
+    contact: 'http://localhost:8181/contact',
+    'contributor-dashboard': 'http://localhost:8181/contributor-dashboard',
+    'creator-dashboard': 'http://localhost:8181/creator-dashboard',
+    'creator-guidelines': 'http://localhost:8181/creator-guidelines',
+    'delete-account': 'http://localhost:8181/delete-account',
+    donate: 'http://localhost:8181/donate',
+    'email-dashboard': 'http://localhost:8181/emaildashboard',
+    'get-started': 'http://localhost:8181/get-started',
+    'learner-dashboard': 'http://localhost:8181/learner-dashboard',
+    license: 'http://localhost:8181/license',
+    moderator: 'http://localhost:8181/moderator',
+  },
+  2: {
+    preferences: 'http://localhost:8181/preferences',
+    'privacy-policy': 'http://localhost:8181/privacy-policy',
+    profile: 'http://localhost:8181/profile/username1',
+    signup: 'http://localhost:8181/signup?return_url=%2F',
+    teach: 'http://localhost:8181/teach',
+    'topics-and-skills-dashboard':
+      'http://localhost:8181/topics-and-skills-dashboard',
+    terms: 'http://localhost:8181/terms',
+    thanks: 'http://localhost:8181/thanks',
+    volunteer: 'http://localhost:8181/volunteer',
+    'topic-viewer': 'http://localhost:8181/learn/staging/dummy-topic-one/story',
+    'story-viewer':
+      'http://localhost:8181/learn/staging/dummy-topic-one/story/help-jamie-win-arcade',
+    classroom: 'http://localhost:8181/learn/math',
+    'exploration-editor': `http://localhost:8181/create/${process.env.exploration_id}`,
+    'exploration-player': `http://localhost:8181/explore/${process.env.exploration_id}`,
+    'topic-editor': `http://localhost:8181/topic_editor/${process.env.topic_id}`,
+    'skill-editor': `http://localhost:8181/skill_editor/${process.env.skill_id}`,
+    'story-editor': `http://localhost:8181/story_editor/${process.env.story_id}`,
+  }
 };
 
 const lighthouseMode = process.env.LIGHTHOUSE_MODE;
+const lighthouseShard = process.env.LIGHTHOUSE_SHARD;
 TestToAngularModulesMatcher.setGoldenFilePath(
-  `core/tests/test-modules-mapping/lighthouse-${lighthouseMode}/lighthouse-${lighthouseMode}.txt`
+  `core/tests/test-modules-mapping/lighthouse-${lighthouseMode}/${lighthouseShard}.txt`
 );
-for (const url of Object.values(PAGE_NAMES_TO_URLS)) {
+for (const url of Object.values(PAGE_NAMES_TO_URLS[lighthouseShard])) {
   TestToAngularModulesMatcher.registerUrl(url);
 }
 TestToAngularModulesMatcher.compareAndOutputModules();
@@ -76,13 +81,13 @@ const LIGHTHOUSE_PAGES_TO_RUN = LIGHTHOUSE_PAGES_TO_RUN_ENVIRONMENT_VARIABLE
 
 let urlsToRun = [];
 if (LIGHTHOUSE_PAGES_TO_RUN.length === 0) {
-  urlsToRun = Object.values(PAGE_NAMES_TO_URLS);
+  urlsToRun = Object.values(PAGE_NAMES_TO_URLS[lighthouseShard]);
 } else {
   for (const page of LIGHTHOUSE_PAGES_TO_RUN) {
-    if (!PAGE_NAMES_TO_URLS[page]) {
-      throw new Error(`Invalid page name: ${page}.`);
+    if (!PAGE_NAMES_TO_URLS[lighthouseShard][page]) {
+      throw new Error(`Invalid page name: ${page} in lighthouse shard ${lighthouseShard}.`);
     }
-    urlsToRun.push(PAGE_NAMES_TO_URLS[page]);
+    urlsToRun.push(PAGE_NAMES_TO_URLS[lighthouseShard][page]);
   }
 }
 
