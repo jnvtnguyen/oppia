@@ -86,6 +86,7 @@ const SEARCH_EXCLUSIONS = [
   'webpack.prod.config.ts',
   'webpack.prod.sourcemap.config.ts',
   'angular-template-style-url-replacer.webpack-loader.js',
+  'extensions/**/webdriverio.js'
 ];
 
 // List of file extensions to to include in the search.
@@ -443,11 +444,7 @@ export class DependencyGraphGenerator {
       SEARCH_EXCLUSIONS,
       []
     ).reduce((acc: string[], filePath: string) => {
-      if (
-        !filePath.includes('webdriverio.js')
-      ) {
-        acc.push(path.relative(ROOT_DIRECTORY, filePath));
-      }
+      acc.push(path.relative(ROOT_DIRECTORY, filePath));
       return acc;
     }, []);
 
