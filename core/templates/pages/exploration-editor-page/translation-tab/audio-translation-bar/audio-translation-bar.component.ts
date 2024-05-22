@@ -268,6 +268,7 @@ export class AudioTranslationBarComponent implements OnInit, OnDestroy {
     if (this.unsavedAudioIsPlaying) {
       this.waveSurfer.play();
       this.waveSurfer.on('finish', this.waveSurferOnFinishCb.bind(this));
+      console.log('test')
     } else {
       this.waveSurfer.pause();
     }

@@ -233,7 +233,7 @@ export class PreviewTabComponent implements OnInit, OnDestroy {
             this.explorationInitStateNameService.savedMemento
         ) {
           this.previewWarning =
-            'Preview started from "' + initStateNameForPreview + '"';
+            'Preview started from .."' + initStateNameForPreview + '"';
         } else {
           this.previewWarning = '';
         }
