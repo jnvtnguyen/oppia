@@ -120,6 +120,9 @@ export class AngularRouteToModuleGenerator {
     this.typescriptHost = this.typescriptExtractorUtilities.getTypescriptHost();
   }
 
+  /**
+   * Recursively gets the root expression from a property access expression.
+   */
   private getRootExpressionFromPropertyAccessExpression(
     node: any
   ): ts.PropertyAccessExpression {
@@ -129,6 +132,9 @@ export class AngularRouteToModuleGenerator {
     return node;
   }
 
+  /**
+   * Checks if the route is already present in the map.
+   */
   private isRouteDuplicateInMap(
     route: Route,
     angularRouteToModuleMapping: Map<Route, string>
@@ -141,7 +147,10 @@ export class AngularRouteToModuleGenerator {
     return false;
   }
 
-  private parseRouteObjectToMapValue(
+  /**
+   * Parses a route object node to a map value.
+   */
+  private parseRouteObjectNodeToMapValue(
     node: any,
     routingModuleSourceFile: ts.SourceFile,
     routingModuleFilePath,
@@ -198,7 +207,7 @@ export class AngularRouteToModuleGenerator {
       } else if (propertyName === 'children') {
         for (const child of property.initializer.elements) {
           angularRouteToModuleMapping = new Map([
-            ...this.parseRouteObjectToMapValue(
+            ...this.parseRouteObjectNodeToMapValue(
               child,
               routingModuleSourceFile,
               routingModuleFilePath,
@@ -265,6 +274,9 @@ export class AngularRouteToModuleGenerator {
     return angularRouteToModuleMapping;
   }
 
+  /**
+   * Gets the route elements from a class declaration if it exists.
+   */
   private getRoutesElementsFromClassDeclaration(
     node: ts.ClassDeclaration,
     routingModuleSourceFile: ts.SourceFile
@@ -332,6 +344,9 @@ export class AngularRouteToModuleGenerator {
     return undefined;
   }
 
+  /**
+   * Gets the route elements from a file.
+   */
   private getRoutesElementsFromFile(
     routingModuleSourceFile: ts.SourceFile
   ): ts.NodeArray<ts.Node> | undefined {
@@ -348,6 +363,9 @@ export class AngularRouteToModuleGenerator {
     return routeElements;
   }
 
+  /**
+   * Gets the Angular routes to module mapping from a routing module file.
+   */
   private getAngularRoutesToModuleMappingFromFile(
     filePath: string,
     routingModuleSourceFile: ts.SourceFile,
@@ -361,7 +379,7 @@ export class AngularRouteToModuleGenerator {
     }
     for (const element of routeElements) {
       angularRouteToModuleMapping = new Map([
-        ...this.parseRouteObjectToMapValue(
+        ...this.parseRouteObjectNodeToMapValue(
           element, 
           routingModuleSourceFile, 
           filePath, 
@@ -374,6 +392,9 @@ export class AngularRouteToModuleGenerator {
     return angularRouteToModuleMapping;
   }
 
+  /**
+   * Gets the Angular route to module mapping from all of the root routing modules.
+   */
   public getAngularRouteToModuleMapping(): Map<Route, string> {
     let angularRouteToModuleMapping: Map<Route, string> = new Map([
       ...MANUAL_ROUTE_TO_MODULE_MAPPING,
