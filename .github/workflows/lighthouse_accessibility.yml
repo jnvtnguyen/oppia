@@ -21,6 +21,7 @@ jobs:
         os: [ubuntu-22.04]
     outputs:
       LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN }}
+      LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN_COUNT: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN_COUNT }}
       LIGHTHOUSE_PAGES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN }}
     steps:
       - uses: actions/checkout@v3
@@ -52,9 +53,9 @@ jobs:
       - name: Check test suites to run
         id: check_test_suites_to_run
         run: python -m scripts.check_ci_test_suites_to_run --github_head_ref="origin/${{ github.event.pull_request.head.ref }}" --github_base_ref="origin/${{ github.event.pull_request.base.ref }}"
-  lighthouse:
+  lighthouse_accessibility:
     needs: check_test_suites_to_run
-    if: ${{ fromJson(needs.check_test_suites_to_run.outputs.LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN)[0] != null }}
+    if: ${{ needs.check_test_suites_to_run.outputs.LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN_COUNT != '0' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -103,7 +104,7 @@ jobs:
       - name: Install chrome
         if: startsWith(github.head_ref, 'update-changelog-for-release') == false
         run: python -m scripts.install_chrome_for_ci
-      - name: Run Lighthouse accessibility checks shard
+      - name: Run Lighthouse accessibility checks
         if: startsWith(github.head_ref, 'update-changelog-for-release') == false
         run: python -m scripts.run_lighthouse_tests --mode accessibility --pages ${{ needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN }}
       - name: Uploading generated test to angular modules as an artifact

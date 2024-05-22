@@ -21,8 +21,11 @@ jobs:
         os: [ubuntu-22.04]
     outputs:
       E2E_TEST_SUITES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.E2E_TEST_SUITES_TO_RUN }}
+      E2E_TEST_SUITES_TO_RUN_COUNT: ${{ steps.check_test_suites_to_run.outputs.E2E_TEST_SUITES_TO_RUN_COUNT }}
       LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN }}
+      LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN_COUNT: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN_COUNT }}
       ACCEPTANCE_TEST_SUITES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN }}
+      ACCEPTANCE_TEST_SUITES_TO_RUN_COUNT: ${{ steps.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN_COUNT }}
       LIGHTHOUSE_PAGES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN }}
     steps:
       - uses: actions/checkout@v3
@@ -56,7 +59,7 @@ jobs:
         run: python -m scripts.check_ci_test_suites_to_run --github_head_ref="origin/${{ github.event.pull_request.head.ref }}" --github_base_ref="origin/${{ github.event.pull_request.base.ref }}"
   build:
     needs: check_test_suites_to_run
-    if: ${{ fromJson(needs.check_test_suites_to_run.outputs.E2E_TESTS_TO_RUN)[0] != null || fromJson(needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN)[0] != null || fromJson(needs.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN)[0] != null }}
+    if: ${{ needs.check_test_suites_to_run.outputs.E2E_TEST_SUITES_TO_RUN_COUNT != '0' || needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN_COUNT != '0' || needs.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN_COUNT != '0}}
     runs-on:  ${{ matrix.os }}
     strategy:
       matrix:
@@ -217,9 +220,9 @@ jobs:
         with:
           message: "An E2E test failed on the upstream develop branch."
           webhook-url: ${{ secrets.BUILD_FAILURE_ROOM_WEBHOOK_URL }}
-  lighthouse:
+  lighthouse_performance:
     needs: [build, check_test_suites_to_run]
-    if: ${{ fromJson(needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN)[0] != null }}
+    if: ${{ needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN_COUNT != '0' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -287,7 +290,7 @@ jobs:
       - name: Install chrome
         if: startsWith(github.head_ref, 'update-changelog-for-release') == false
         run: python -m scripts.install_chrome_for_ci
-      - name: Run Lighthouse performance checks shard
+      - name: Run Lighthouse performance checks
         if: startsWith(github.head_ref, 'update-changelog-for-release') == false
         run: python -m scripts.run_lighthouse_tests --mode performance --skip_build --record_screen --pages ${{ needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN }}
       - name: Uploading generated test to angular modules as an artifact

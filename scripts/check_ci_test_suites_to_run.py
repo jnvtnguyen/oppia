@@ -228,6 +228,8 @@ def output_test_suites_to_run_to_github_workflow(
     ]
     output_variable_to_github_workflow(
         output_variable, json.dumps(formatted_test_suites_to_run))
+    output_variable_to_github_workflow(
+        f'{output_variable}_COUNT', len(formatted_test_suites_to_run))
 
 
 def output_lighthouse_pages_to_run_to_github_workflow(
