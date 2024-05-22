@@ -120,27 +120,61 @@ export class AngularRouteToModuleGenerator {
     this.typescriptHost = this.typescriptExtractorUtilities.getTypescriptHost();
   }
 
+  private getRootExpressionFromPropertyAccessExpression(
+    node: any
+  ): ts.PropertyAccessExpression {
+    if (ts.isPropertyAccessExpression(node.expression)) {
+      return this.getRootExpressionFromPropertyAccessExpression(node.expression);
+    }
+    return node;
+  }
+
+  private isRouteDuplicateInMap(
+    route: Route,
+    angularRouteToModuleMapping: Map<Route, string>
+  ): boolean {
+    for (const [existingRoute, _] of angularRouteToModuleMapping) {
+      if (existingRoute.path === route.path) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private parseRouteObjectToMapValue(
     node: any,
     routingModuleSourceFile: ts.SourceFile,
     routingModuleFilePath,
-    parentPath?: string
+    parentPath?: string,
+    parentModulePath?: string
   ): Map<Route, string> {
     let angularRouteToModuleMapping: Map<Route, string> = new Map();
     let constantsClone: any = {...constants};
-    let path: string | undefined;
-    let pathMatch: string | undefined;
-    let module: string | undefined;
+    let routePath: string | undefined = undefined;
+    let pathMatch: string | undefined = undefined;
+    let module: string | undefined = undefined;
+    let component: boolean = false;
 
     // We iterate over the properties of each route.
     for (const property of node.properties) {
       const propertyName = property.name.getText(routingModuleSourceFile);
       if (propertyName === 'path') {
         try {
-          path = this.typescriptExtractorUtilities.evaluateNode(
+          // First try evaluting the path property, if it is evaluable then
+          // we can directly use it as the route path.
+          routePath = this.typescriptExtractorUtilities.evaluateNode(
             property.initializer
           );
         } catch (error) {
+          const rootInitializer = this.getRootExpressionFromPropertyAccessExpression(
+            property.initializer
+          );
+          if (rootInitializer.expression.getText(routingModuleSourceFile) !== 'AppConstants') {
+            throw new Error(
+              `Failed to parse path property from ${routingModuleFilePath}. Please ensure that the 
+                path property is a string literal or a property from the AppConstants object.`
+            );
+          }
           // If we are parsing the path property we need to iterate over the
           // different accessors into the constants object using a stack.
           const stack: string[] = [];
@@ -155,7 +189,7 @@ export class AngularRouteToModuleGenerator {
               constantsClone = constantsClone[accessor];
             }
           }
-          path = constantsClone;
+          routePath = constantsClone;
         }
       } else if (propertyName === 'pathMatch') {
         pathMatch = this.typescriptExtractorUtilities.evaluateNode(
@@ -168,7 +202,8 @@ export class AngularRouteToModuleGenerator {
               child,
               routingModuleSourceFile,
               routingModuleFilePath,
-              parentPath ? `${parentPath}${path}` : path
+              parentPath ? `${parentPath}${routePath}` : routePath,
+              parentModulePath
             ),
             ...angularRouteToModuleMapping,
           ]);
@@ -185,16 +220,156 @@ export class AngularRouteToModuleGenerator {
             );
           module = resolvedModulePath;
         }
+      } else if (propertyName === 'component') {
+        component = true;
       }
     }
-    if (typeof path === 'string' && module) {
+    if (typeof routePath === 'string' && module) {
+      const routeFullPath = parentPath ? `${parentPath}${routePath}` : routePath;
       angularRouteToModuleMapping.set(
         {
-          path: parentPath ? `${parentPath}${path}` : path,
+          path: routeFullPath,
           pathMatch,
         },
         module
       );
+      const fullModulePath = path.join(ROOT_DIRECTORY, module);
+      const moduleSourceFile = this.typescriptHost.getSourceFile(
+        fullModulePath,
+        ts.ScriptTarget.ES2020
+      );
+      if (!moduleSourceFile) {
+        throw new Error(`Failed to load source file: ${fullModulePath}.`);
+      }
+      const moduleRoutes = this.getAngularRoutesToModuleMappingFromFile(
+        fullModulePath,
+        moduleSourceFile,
+        routeFullPath,
+        module
+      );
+      for (const [route, modulePath] of moduleRoutes) {
+        if (!this.isRouteDuplicateInMap(route, angularRouteToModuleMapping)) {
+          angularRouteToModuleMapping.set(route, modulePath);
+        }
+      }
+    }
+    if (component && parentModulePath) {
+      angularRouteToModuleMapping.set(
+        {
+          path: parentPath ? `${parentPath}${routePath}` : routePath,
+          pathMatch,
+        },
+        parentModulePath
+      );
+    }
+    return angularRouteToModuleMapping;
+  }
+
+  private getRoutesElementsFromClassDeclaration(
+    node: ts.ClassDeclaration,
+    routingModuleSourceFile: ts.SourceFile
+  ): ts.NodeArray<ts.Node> | undefined {
+    const decorators = node.decorators;
+    if (!decorators) {
+      return undefined;
+    }
+    for (const decorator of decorators) {
+      if (!ts.isCallExpression(decorator.expression)) {
+        return undefined;
+      }
+      const expression = decorator.expression;
+      if (expression.expression.getText(routingModuleSourceFile) === 'NgModule') {
+        const argument: any = expression.arguments[0];
+        const importsArgument = argument.properties.find(
+          (property: any) =>
+            property.name.getText(routingModuleSourceFile) === 'imports'
+        );
+        const elements = importsArgument.initializer.elements;
+        const routerModuleElement = elements.find(
+          (element: any) => {
+            if (!ts.isCallExpression(element)) {
+              return false;
+            }
+            if (!ts.isPropertyAccessExpression(element.expression)) {
+              return false;
+            }
+            return element.expression.expression.getText(routingModuleSourceFile) ===
+              'RouterModule'
+          }
+        );
+        if (!routerModuleElement) {
+          return undefined;
+        }
+        if (routerModuleElement.expression.name.getText(routingModuleSourceFile) != 'forRoot' &&
+            routerModuleElement.expression.name.getText(routingModuleSourceFile) != 'forChild'
+        ) {
+          return undefined;
+        }
+        const routesArgument = routerModuleElement.arguments[0];
+        // There are two cases, one where the routes are an identifier and the other
+        // where the routes are an array.
+        if (ts.isIdentifier(routesArgument)) {
+          const routesArgumentName = routesArgument.getText(routingModuleSourceFile);
+          let routeElements = undefined;
+          routingModuleSourceFile.forEachChild((child: any) => {
+            if (ts.isVariableStatement(child)) {
+              const declaration: any = child.declarationList.declarations[0];
+              const declarationName = declaration.name.getText(
+                routingModuleSourceFile
+              );
+              if (declarationName === routesArgumentName) {
+                routeElements = declaration.initializer.elements;
+                return;
+              }
+            }
+          });
+          return routeElements;
+        } else if(ts.isArrayLiteralExpression(routesArgument)) {
+          return routesArgument.elements;
+        }
+      }
+    }
+    return undefined;
+  }
+
+  private getRoutesElementsFromFile(
+    routingModuleSourceFile: ts.SourceFile
+  ): ts.NodeArray<ts.Node> | undefined {
+    let routeElements: ts.NodeArray<ts.Node> | undefined = undefined;
+    routingModuleSourceFile.forEachChild((node: any) => {
+      if (ts.isClassDeclaration(node)) {
+        routeElements = this.getRoutesElementsFromClassDeclaration(
+          node,
+          routingModuleSourceFile
+        );
+        return;
+      }
+    });
+    return routeElements;
+  }
+
+  private getAngularRoutesToModuleMappingFromFile(
+    filePath: string,
+    routingModuleSourceFile: ts.SourceFile,
+    parentPath?: string,
+    parentModulePath?: string
+  ): Map<Route, string> {
+    let routeElements = this.getRoutesElementsFromFile(routingModuleSourceFile);
+    let angularRouteToModuleMapping: Map<Route, string> = new Map();
+    if (!routeElements) {
+      return angularRouteToModuleMapping;
+    }
+    for (const element of routeElements) {
+      angularRouteToModuleMapping = new Map([
+        ...this.parseRouteObjectToMapValue(
+          element, 
+          routingModuleSourceFile, 
+          filePath, 
+          parentPath,
+          parentModulePath
+        ),
+        ...angularRouteToModuleMapping,
+      ]);
     }
     return angularRouteToModuleMapping;
   }
@@ -212,31 +387,14 @@ export class AngularRouteToModuleGenerator {
       if (!appRoutingModuleSourceFile) {
         throw new Error(`Failed to load source file: ${routingModuleFilePath}`);
       }
-
-      appRoutingModuleSourceFile.forEachChild((node: any) => {
-        // First we look for the actual routes variable statement.
-        if (ts.isVariableStatement(node)) {
-          const declaration: any = node.declarationList.declarations[0];
-          const declarationName = declaration.name.getText(
-            appRoutingModuleSourceFile
-          );
-          if (declarationName !== 'routes') {
-            return;
-          }
-          // This array contains all the routes defined in the app routing module.
-          const arrayElements = declaration.initializer.elements;
-          for (const element of arrayElements) {
-            angularRouteToModuleMapping = new Map([
-              ...this.parseRouteObjectToMapValue(
-                element,
-                appRoutingModuleSourceFile,
-                routingModuleFilePath
-              ),
-              ...angularRouteToModuleMapping,
-            ]);
-          }
-        }
-      });
+      const routesToModuleMapping = this.getAngularRoutesToModuleMappingFromFile(
+        routingModuleFilePath,
+        appRoutingModuleSourceFile
+      );
+      angularRouteToModuleMapping = new Map([
+        ...routesToModuleMapping,
+        ...angularRouteToModuleMapping,
+      ]);
     }
 
     return angularRouteToModuleMapping;
