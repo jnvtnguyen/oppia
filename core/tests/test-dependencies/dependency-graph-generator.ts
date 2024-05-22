@@ -79,8 +79,6 @@ const SEARCH_EXCLUSIONS = [
   'core/templates/services/UpgradedServices.ts',
   'core/templates/services/angular-services.index.ts',
   'core/templates/utility/hashes.ts',
-  'core/templates/pages/oppia-root',
-  'core/templates/pages/lightweight-oppia-root',
   'webpack.common.config.ts',
   'webpack.common.macros.ts',
   'webpack.dev.config.ts',
@@ -100,11 +98,6 @@ const SEARCH_FILE_EXTENSIONS = [
   'CODEOWNERS',
   'AUTHORS',
   'CONTRIBUTORS'
-];
-
-// List of file extensions to exclude from the search.
-const SEARCH_EXCLUDED_FILE_EXTENSIONS = [
-  '.guard.ts'
 ];
 
 // List of manually mapped dependencies.
@@ -452,7 +445,6 @@ export class DependencyGraphGenerator {
     ).reduce((acc: string[], filePath: string) => {
       if (
         !filePath.includes('webdriverio.js')
-        && !SEARCH_EXCLUDED_FILE_EXTENSIONS.some((extension) => filePath.endsWith(extension))
       ) {
         acc.push(path.relative(ROOT_DIRECTORY, filePath));
       }
@@ -497,6 +489,7 @@ export class DependencyGraphGenerator {
   ): string[] {
     return Object.keys(this.dependenciesMapping).filter(
       key =>
+        (key.includes('puppeteer-acceptance-tests') || !key.endsWith('.spec.ts')) &&
         this.dependenciesMapping[key].includes(depedencyFilePath) &&
         (!ignoreModules ||
           !this.fileAngularInformationsMapping[key].some(
