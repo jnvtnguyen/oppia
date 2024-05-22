@@ -147,8 +147,6 @@ ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES: Final[List[TestSuiteDict]] = [
     TestSuiteDict(suite_name='2', module_path='.lighthouserc-accessibility-2.js'),
 ]
 
-LIGHTHOUSE_SHARDS: Final[List[str]] = ['1', '2']
-
 LIGHTHOUSE_MODIFIED_MODULES_TO_PAGE_NAMES: Final[dict[str, dict[str, str]]] = {
     '1': {
         'core/templates/pages/splash-page/splash-page.module.ts': 'splash',
@@ -225,7 +223,6 @@ def output_variable_to_github_workflow(
     output_variable: str,
     output_value: str
 ) -> None:
-    
     with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as o:
         print(f'{output_variable}={output_value}', file=o)
         
@@ -249,7 +246,7 @@ def output_lighthouse_pages_to_run_to_github_workflow(
     lighthouse_pages_to_run: dict[str, List[str]],
 ) -> None:
     formatted_lighthouse_pages_to_run: dict[str, List[str]] = {}
-    for lighthouse_shard in LIGHTHOUSE_SHARDS:
+    for lighthouse_shard in lighthouse_pages_to_run:
         formatted_lighthouse_pages_to_run[lighthouse_shard] = ','.join(lighthouse_pages_to_run[lighthouse_shard])
     output_variable_to_github_workflow(
         ENVIRONMENT_LIGHTHOUSE_PAGES_TO_RUN_OUTPUT, json.dumps(formatted_lighthouse_pages_to_run))
@@ -257,7 +254,7 @@ def output_lighthouse_pages_to_run_to_github_workflow(
 
 def get_lighthouse_pages_to_run(modified_modules: List[str]) -> dict[str, List[str]]:
     lighthouse_pages_to_run = {}
-    for lighthouse_shard in LIGHTHOUSE_SHARDS:
+    for lighthouse_shard in LIGHTHOUSE_MODIFIED_MODULES_TO_PAGE_NAMES:
         lighthouse_pages_to_run[lighthouse_shard] = []
         for module in modified_modules:
             if module in LIGHTHOUSE_MODIFIED_MODULES_TO_PAGE_NAMES[lighthouse_shard]:
