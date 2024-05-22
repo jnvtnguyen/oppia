@@ -194,8 +194,8 @@ LIGHTHOUSE_MODIFIED_MODULES_TO_PAGE_NAMES: Final[dict[str, dict[str, str]]] = {
 }
 
 ALL_LIGHTHOUSE_PAGES_TO_RUN = {
-    '1': ','.join(LIGHTHOUSE_MODIFIED_MODULES_TO_PAGE_NAMES['1'].values()),
-    '2': ','.join(LIGHTHOUSE_MODIFIED_MODULES_TO_PAGE_NAMES['2'].values())
+    '1': LIGHTHOUSE_MODIFIED_MODULES_TO_PAGE_NAMES['1'].values(),
+    '2': LIGHTHOUSE_MODIFIED_MODULES_TO_PAGE_NAMES['2'].values(),
 }
 
 def git_diff_name_status(
