@@ -488,9 +488,13 @@ export class DependencyGraphGenerator {
    */
   private getRootDepedenciesForFile(
     filePath: string,
+    cache: Record<string, string[]> = {},
     ignoreModules: boolean = true,
     visited: Set<string> = new Set()
   ): string[] {
+    if (cache[filePath]) {
+      return cache[filePath];
+    }
     if (visited.has(filePath)) {
       return [];
     }
@@ -514,7 +518,7 @@ export class DependencyGraphGenerator {
     const rootReferences: string[] = [];
     for (const reference of references) {
       rootReferences.push(
-        ...this.getRootDepedenciesForFile(reference, ignoreModules, visited)
+        ...this.getRootDepedenciesForFile(reference, cache, ignoreModules, visited)
       );
     }
 
@@ -535,16 +539,20 @@ export class DependencyGraphGenerator {
         dependencyExtractor.extractDepedenciesFromFile(filePath);
     }
 
-    fs.writeFileSync(
-      path.resolve(ROOT_DIRECTORY, 'dependencies-mapping.json'),
-      JSON.stringify(this.dependenciesMapping, null, 2)
-    );
-
     for (const filePath of this.files) {
-      this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(filePath);
+      this.dependencyGraph[filePath] = this.getRootDepedenciesForFile(filePath, this.dependencyGraph);
     }
 
-    return this.dependencyGraph;
+    const revisedDependencyGraph: Record<string, string[]> = {};
+    for (const [file, rootFiles] of Object.entries(this.dependencyGraph)) {
+      if (this.angularPageModules.some((module) => rootFiles.includes(module))) {
+        revisedDependencyGraph[file] = this.dependencyGraph[file];
+      } else {
+        revisedDependencyGraph[file] = this.getRootDepedenciesForFile(file, revisedDependencyGraph, false);
+      }
+    }
+
+    return revisedDependencyGraph;
   }
 }
 
