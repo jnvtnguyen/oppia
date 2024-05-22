@@ -22,6 +22,8 @@ jobs:
     outputs:
       LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN }}
       LIGHTHOUSE_PAGES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN }}
+    env:
+      SHOULD_OUTPUT_ALL_TESTS: ${{ github.event_name == 'push' || github.event_name == 'merge_group' }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -55,7 +57,7 @@ jobs:
           python -m scripts.check_ci_test_suites_to_run
             --github_head_ref="origin/${{ github.event.pull_request.head.ref }}"
             --github_base_ref="origin/${{ github.event.pull_request.base.ref }}"
-            ${{ (github.event_name == 'push' || github.event_name == 'merge_group') ?? '--output_all_test_suites' }}
+            ${{ env.SHOULD_OUTPUT_ALL_TESTS && '--output_all_tests' || '' }}
   lighthouse_accessibility:
     needs: check_test_suites_to_run
     runs-on: ${{ matrix.os }}
