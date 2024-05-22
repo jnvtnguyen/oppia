@@ -58,7 +58,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        suite: ${{ needs.check_test_suites_to_run.outputs.LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN }}
+        suite: ${{ fromJson(needs.check_test_suites_to_run.outputs.LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN) }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -105,7 +105,7 @@ jobs:
         run: python -m scripts.install_chrome_for_ci
       - name: Run Lighthouse accessibility checks
         if: startsWith(github.head_ref, 'update-changelog-for-release') == false
-        run: python -m scripts.run_lighthouse_tests --mode accessibility --shard ${{ matrix.suite.name }} --pages ${{ needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN[matrix.suite.name] }}
+        run: python -m scripts.run_lighthouse_tests --mode accessibility --shard ${{ matrix.suite.name }} --pages ${{ fromJson(needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN)[matrix.suite.name] }}
       - name: Uploading generated test to angular modules as an artifact
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
