@@ -80,6 +80,7 @@ const SEARCH_EXCLUSIONS = [
   'core/templates/services/angular-services.index.ts',
   'core/templates/utility/hashes.ts',
   'core/templates/pages/oppia-root',
+  'core/templates/pages/lightweight-oppia-root',
   'webpack.common.config.ts',
   'webpack.common.macros.ts',
   'webpack.dev.config.ts',
