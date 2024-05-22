@@ -57,7 +57,7 @@ export class PreferencesPageRootComponent implements OnDestroy {
         this.setPageTitleAndMetaTags();
       })
     );
-    this.loaderService.showLoadingScreen('Loading');
+    this.loaderService.showLoadingScreen('Loading...');
     this.accessValidationBackendApiService
       .validateCanManageOwnAccount()
       .then(
