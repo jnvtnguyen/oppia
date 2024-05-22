@@ -74,6 +74,7 @@ const SEARCH_EXCLUSIONS = [
   'core/tests/webdriverio',
   'core/tests/webdriverio_desktop',
   'core/tests/webdriverio_utils',
+  'core/tests/wdio.conf.js',
   'core/tests/test-dependencies',
   'core/templates/services/UpgradedServices.ts',
   'core/templates/services/angular-services.index.ts',
@@ -104,6 +105,14 @@ const SEARCH_FILE_EXTENSIONS = [
 const SEARCH_EXCLUDED_FILE_EXTENSIONS = [
   '.guard.ts'
 ];
+
+// List of manually mapped dependencies.
+const MANUALLY_MAPPED_DEPENDENCIES: Record<string, string[]> = {
+  '.lighthouserc-base.js': [
+    'puppeteer-login-script.js',
+    'core/tests/puppeteer/lighthouse_setup.js'
+  ]
+};
 
 export class DependencyExtractor {
   typescriptHost: ts.CompilerHost;
@@ -189,6 +198,11 @@ export class DependencyExtractor {
       if (fileAngularInformation.type === 'component') {
         fileDepedencies.push(fileAngularInformation.templateUrl);
       }
+    }
+
+    // We need to add the manually mapped dependencies.
+    if (MANUALLY_MAPPED_DEPENDENCIES[filePath]) {
+      fileDepedencies.push(...MANUALLY_MAPPED_DEPENDENCIES[filePath]);
     }
 
     return Array.from(new Set(fileDepedencies));
