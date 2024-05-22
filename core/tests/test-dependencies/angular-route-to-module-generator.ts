@@ -51,6 +51,18 @@ const MANUAL_ROUTE_TO_MODULE_MAPPING: Map<Route, string> = new Map([
   ],
   [
     {
+      path: 'emaildashboardresult/:query_id',
+    },
+    'core/templates/pages/email-dashboard-pages/email-dashboard-result-page.import.ts',
+  ],
+  [
+    {
+      path: 'learn/:classroom_url_fragment/:topic_url_fragment/practice/session',
+    },
+    'core/templates/pages/practice-session-page/practice-session-page.import.ts',
+  ],
+  [
+    {
       path: 'topics-and-skills-dashboard',
     },
     'core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.import.ts',
@@ -78,6 +90,18 @@ const MANUAL_ROUTE_TO_MODULE_MAPPING: Map<Route, string> = new Map([
       path: 'skill_editor/:skill_id',
     },
     'core/templates/pages/skill-editor-page/skill-editor-page.import.ts',
+  ],
+  [
+    {
+      path: 'learn/:classroom_url_fragment/:topic_url_fragment/review-test/:story_id',
+    },
+    'core/templates/pages/review-test-page/review-test-page.import.ts',
+  ],
+  [
+    {
+      path: 'learn/:classroom_url_fragment/:topic_url_fragment/revision/:story_id',
+    },
+    'core/templates/pages/subtopic-viewer-page/subtopic-viewer-page.import.ts',
   ],
   [
     {
