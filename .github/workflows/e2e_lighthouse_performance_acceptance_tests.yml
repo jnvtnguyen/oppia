@@ -292,7 +292,7 @@ jobs:
         run: python -m scripts.install_chrome_for_ci
       - name: Run Lighthouse performance checks
         if: startsWith(github.head_ref, 'update-changelog-for-release') == false
-        run: python -m scripts.run_lighthouse_tests --mode performance --shard ${{ matrix.suite.name }} --skip_build --record_screen --pages ${{ fromJson(needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN)[matrix.suite.shard] }}
+        run: python -m scripts.run_lighthouse_tests --mode performance --shard ${{ matrix.suite.name }} --skip_build --record_screen --pages ${{ fromJson(needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN)[matrix.suite.name] }}
       - name: Uploading generated test to angular modules as an artifact
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
