@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /**
- * @fileoverview This script is used to generate a URL to Angular module mapping.
+ * @fileoverview This script is used to generate an Angular route to module mapping.
  */
 
 import path from 'path';

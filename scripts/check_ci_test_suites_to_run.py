@@ -37,6 +37,11 @@ _PARSER.add_argument(
     '--github_base_ref', type=str, required=True,
 )
 
+_PARSER.add_argument(
+    '--output_all_test_suites',
+    action='store_true',
+)
+
 ENVIRONMENT_E2E_TEST_SUITES_OUTPUT = 'E2E_TEST_SUITES_TO_RUN'
 ENVIRONMENT_ACCEPTANCE_TEST_SUITES_OUTPUT = 'ACCEPTANCE_TEST_SUITES_TO_RUN'
 ENVIRONMENT_LIGHTHOUSE_PERFORMANCE_TEST_SUITES_OUTPUT = 'LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN'
@@ -419,7 +424,7 @@ def main(args: Optional[list[str]] = None) -> None:
     
     print(f'Modified files: {modified_files}.')
 
-    if does_diff_include_python_files(modified_files):
+    if does_diff_include_python_files(modified_files) or parsed_args.output_all_test_suites:
         output_test_suites_to_run_to_github_workflow(
             ENVIRONMENT_E2E_TEST_SUITES_OUTPUT, ALL_E2E_TEST_SUITES)
         output_test_suites_to_run_to_github_workflow(

@@ -56,7 +56,11 @@ jobs:
       - uses: ./.github/actions/install-oppia-dependencies
       - name: Check test suites to run
         id: check_test_suites_to_run
-        run: python -m scripts.check_ci_test_suites_to_run --github_head_ref="origin/${{ github.event.pull_request.head.ref }}" --github_base_ref="origin/${{ github.event.pull_request.base.ref }}"
+        run: |
+          python -m scripts.check_ci_test_suites_to_run
+            --github_head_ref="origin/${{ github.event.pull_request.head.ref }}"
+            --github_base_ref="origin/${{ github.event.pull_request.base.ref }}"
+            ${{ (github.event_name == 'push' || github.event_name == 'merge_group') ?? '--output_all_test_suites' }}
   build:
     needs: check_test_suites_to_run
     if: ${{ needs.check_test_suites_to_run.outputs.E2E_TEST_SUITES_TO_RUN_COUNT != 0 || needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PERFORMANCE_TEST_SUITES_TO_RUN_COUNT != 0 || needs.check_test_suites_to_run.outputs.ACCEPTANCE_TEST_SUITES_TO_RUN_COUNT != 0 }}
