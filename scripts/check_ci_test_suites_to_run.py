@@ -308,11 +308,12 @@ def get_test_suites_to_modules_mapping_by_type(
                 
     return test_suites_to_modules_mapping
 
-
+    
 def get_test_suites_affected_by_module(
     module: str,
     test_suites_to_modules_mapping: dict[str, List[str]],
-    all_test_suites: List[TestSuiteDict]
+    all_test_suites: List[TestSuiteDict],
+    current_test_suites: List[TestSuiteDict]
 ) -> List[TestSuiteDict]:
     affected_tests: List[TestSuiteDict] = []
     # If any of the test suites are not in the mapping, we should run them.
@@ -332,7 +333,7 @@ def get_test_suites_affected_by_module(
 
     distinct_affected_tests = []
     for test_suite in affected_tests:
-        if test_suite not in distinct_affected_tests:
+        if test_suite not in distinct_affected_tests and test_suite not in current_test_suites:
             distinct_affected_tests.append(test_suite)
             
     return distinct_affected_tests
@@ -376,17 +377,30 @@ def collect_ci_test_suites_to_run(
     for module in modified_modules:
         acceptance_test_suites.extend(
             get_test_suites_affected_by_module(
-                module, acceptance_test_suites_to_modules_mapping, ALL_ACCEPTANCE_TEST_SUITES))
+                module,
+                acceptance_test_suites_to_modules_mapping,
+                ALL_ACCEPTANCE_TEST_SUITES,
+                acceptance_test_suites
+            )
+        )
         lighthouse_performance_test_suites.extend(
             get_test_suites_affected_by_module(
-                module, lighthouse_performance_test_suites_to_modules_mapping, ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES))
+                module,
+                lighthouse_performance_test_suites_to_modules_mapping,
+                ALL_LIGHTHOUSE_PERFORMANCE_TEST_SUITES,
+                lighthouse_performance_test_suites
+            )
+        )
         lighthouse_accessibility_test_suites.extend(
             get_test_suites_affected_by_module(
-                module, lighthouse_accessibility_test_suites_to_modules_mapping, ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES))
-    
-
+                module,
+                lighthouse_accessibility_test_suites_to_modules_mapping,
+                ALL_LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES,
+                lighthouse_accessibility_test_suites
+            )
+        )
     lighthouse_pages_to_run = get_lighthouse_pages_to_run(modified_modules)
-        
+
     return {
         'e2e': e2e_test_suites,
         'acceptance': acceptance_test_suites,
