@@ -17,19 +17,20 @@
  */
 
 import path from 'path';
-import { Route } from '@angular/router';
+import {Route} from '@angular/router';
 import {
   CallExpression,
   ObjectLiteralExpression,
   SourceFile,
   ts,
-} from "ts-morph";
+} from 'ts-morph';
 import {
   project,
   ROOT_DIRECTORY,
-  getDecorationNodeByTextFromSourceFile,
-  resolveModule,
-  resolveModuleRelativeToRoot
+  getAllDecorationNodesByTextFromSourceFile,
+  resolveModuleRelativeToRoot,
+  AngularDecorators,
+  getValueFromLiteralStringOrBinaryExpression,
 } from './typescript-ast-utilities';
 
 const ROUTING_MODULE_FILE_PATHS = [
@@ -132,7 +133,7 @@ const extendMap = (
     }
   }
   return extendedMap;
-}
+};
 
 /**
  * Gets the path in the route object AST node.
@@ -140,10 +141,14 @@ const extendMap = (
 const getPathFromRouteObjectNode = (
   routeObjectNode: ObjectLiteralExpression
 ): string | undefined => {
-  const pathProperty = routeObjectNode.getPropertyOrThrow('path').asKindOrThrow(
-    ts.SyntaxKind.PropertyAssignment).getInitializerOrThrow();
+  const pathProperty = routeObjectNode
+    .getPropertyOrThrow('path')
+    .asKindOrThrow(ts.SyntaxKind.PropertyAssignment)
+    .getInitializerOrThrow();
   if (pathProperty.isKind(ts.SyntaxKind.PropertyAccessExpression)) {
-    const referenceDefinition = pathProperty.findReferences()[0].getDefinition();
+    const referenceDefinition = pathProperty
+      .findReferences()[0]
+      .getDefinition();
     const displayParts = referenceDefinition.getDisplayParts();
     return displayParts[displayParts.length - 1].getText().slice(1, -1);
   }
@@ -151,7 +156,7 @@ const getPathFromRouteObjectNode = (
     return pathProperty.getLiteralText();
   }
   return undefined;
-}
+};
 
 /**
  * Gets the module in the route object AST node.
@@ -163,24 +168,17 @@ const getModuleFromRouteObjectNode = (
   if (loadChildrenProperty === undefined) {
     return undefined;
   }
-  const loadChildrenInitializer = 
-    loadChildrenProperty.asKindOrThrow(ts.SyntaxKind.PropertyAssignment).
-      getInitializerOrThrow().asKindOrThrow(ts.SyntaxKind.ArrowFunction);
-  const loadChildrenCallArgument = loadChildrenInitializer.getBody().getChildAtIndexIfKindOrThrow(
-    0,
-    ts.SyntaxKind.PropertyAccessExpression
-  ).getChildAtIndexIfKindOrThrow(
-    0,
-    ts.SyntaxKind.CallExpression
-  ).getArguments()[0];
-  if (loadChildrenCallArgument.isKind(ts.SyntaxKind.StringLiteral)) {
-    return loadChildrenCallArgument.getLiteralText();
-  }
-  if (loadChildrenCallArgument.isKind(ts.SyntaxKind.BinaryExpression)) {
-    return eval(loadChildrenCallArgument.getText());
-  }
-  return undefined
-}
+  const loadChildrenInitializer = loadChildrenProperty
+    .asKindOrThrow(ts.SyntaxKind.PropertyAssignment)
+    .getInitializerOrThrow()
+    .asKindOrThrow(ts.SyntaxKind.ArrowFunction);
+  const loadChildrenCallArgument = loadChildrenInitializer
+    .getBody()
+    .getChildAtIndexIfKindOrThrow(0, ts.SyntaxKind.PropertyAccessExpression)
+    .getChildAtIndexIfKindOrThrow(0, ts.SyntaxKind.CallExpression)
+    .getArguments()[0];
+  return getValueFromLiteralStringOrBinaryExpression(loadChildrenCallArgument);
+};
 
 /**
  * Gets the path match property in the route object AST node.
@@ -192,9 +190,12 @@ const getPathMatchFromRouteObjectNode = (
   if (pathMatchProperty === undefined) {
     return undefined;
   }
-  return pathMatchProperty.asKindOrThrow(ts.SyntaxKind.PropertyAssignment).
-    getInitializerOrThrow().asKindOrThrow(ts.SyntaxKind.StringLiteral).getLiteralText();
-}
+  return pathMatchProperty
+    .asKindOrThrow(ts.SyntaxKind.PropertyAssignment)
+    .getInitializerOrThrow()
+    .asKindOrThrow(ts.SyntaxKind.StringLiteral)
+    .getLiteralText();
+};
 
 /**
  * Gets the children property in the route object AST node.
@@ -206,10 +207,12 @@ const getChildrenFromRouteObjectNode = (
   if (childrenProperty === undefined) {
     return undefined;
   }
-  return childrenProperty.asKindOrThrow(ts.SyntaxKind.PropertyAssignment).
-    getInitializerOrThrow().asKindOrThrow(ts.SyntaxKind.ArrayLiteralExpression).
-    getElements() as ObjectLiteralExpression[];
-}
+  return childrenProperty
+    .asKindOrThrow(ts.SyntaxKind.PropertyAssignment)
+    .getInitializerOrThrow()
+    .asKindOrThrow(ts.SyntaxKind.ArrayLiteralExpression)
+    .getElements() as ObjectLiteralExpression[];
+};
 
 /**
  * Converts a route object AST node to a map element.
@@ -244,8 +247,7 @@ const convertRouteNodeToMap = (
   }
   if (module) {
     const containingFile = routeNode.getSourceFile().getFilePath();
-    const resolvedModule = resolveModuleRelativeToRoot(
-      module, containingFile);
+    const resolvedModule = resolveModuleRelativeToRoot(module, containingFile);
     routeToModuleMapping.set(
       {
         path: routePath,
@@ -272,29 +274,39 @@ const convertRouteNodeToMap = (
 const getRouteNodesFromRoutingModuleSourceFile = (
   routingModuleSourceFile: SourceFile
 ): ObjectLiteralExpression[] | undefined => {
-  const angularModuleDecorationNode = getDecorationNodeByTextFromSourceFile(
+  const angularModuleDecorationNode = getAllDecorationNodesByTextFromSourceFile(
     routingModuleSourceFile,
-    'NgModule'
+    AngularDecorators.Module
   );
-  if (angularModuleDecorationNode === undefined) {
+  if (angularModuleDecorationNode.length === 0) {
     throw new Error(
-      `No NgModule decoration was found in the file: ${routingModuleSourceFile.getFilePath()}.`
+      `No Angular Module decoration was found in the file: ${routingModuleSourceFile.getFilePath()}.`
     );
   }
-  const argument = 
-    angularModuleDecorationNode.getArguments()[0] as ObjectLiteralExpression;
-  const importsProperty = argument.getPropertyOrThrow('imports');
+  const angularModuleObjectArgument =
+    angularModuleDecorationNode[0].getArguments()[0];
+  if (
+    !angularModuleObjectArgument.isKind(ts.SyntaxKind.ObjectLiteralExpression)
+  ) {
+    throw new Error(
+      `The Angular Module decoration in the file: ${routingModuleSourceFile.getFilePath()} does not have an object argument.`
+    );
+  }
+  const importsProperty =
+    angularModuleObjectArgument.getPropertyOrThrow('imports');
   const importsArray = importsProperty.getFirstChildByKindOrThrow(
     ts.SyntaxKind.ArrayLiteralExpression
   );
 
-  const routerModuleCallExpression = importsArray.getElements().filter((element) => {
-    return (
-      element.getText().includes('RouterModule.forRoot') ||
-      element.getText().includes('RouterModule.forChild') &&
-      element.getKind() === ts.SyntaxKind.CallExpression
-    )
-  })[0] as CallExpression;
+  const routerModuleCallExpression = importsArray
+    .getElements()
+    .filter(element => {
+      return (
+        element.getText().includes('RouterModule.forRoot') ||
+        (element.getText().includes('RouterModule.forChild') &&
+          element.getKind() === ts.SyntaxKind.CallExpression)
+      );
+    })[0] as CallExpression;
   if (routerModuleCallExpression === undefined) {
     return undefined;
   }
@@ -303,15 +315,16 @@ const getRouteNodesFromRoutingModuleSourceFile = (
     return routesArgument.getElements() as ObjectLiteralExpression[];
   }
   if (routesArgument.isKind(ts.SyntaxKind.Identifier)) {
-    const routesVariable = routingModuleSourceFile.getVariableDeclarationOrThrow(
-      routesArgument.getText()
-    );
-    return routesVariable.getInitializerIfKindOrThrow(
-      ts.SyntaxKind.ArrayLiteralExpression
-    ).getElements() as ObjectLiteralExpression[];
+    const routesVariable =
+      routingModuleSourceFile.getVariableDeclarationOrThrow(
+        routesArgument.getText()
+      );
+    return routesVariable
+      .getInitializerIfKindOrThrow(ts.SyntaxKind.ArrayLiteralExpression)
+      .getElements() as ObjectLiteralExpression[];
   }
   return undefined;
-}
+};
 
 /**
  * Gets the Angular route to module mapping from a routing module file.
@@ -322,7 +335,9 @@ const getRouteToModuleMappingFromRoutingModule = (
   parentRoutingModuleFilePath?: string
 ): Map<Route, string> => {
   let routeToModuleMapping: Map<Route, string> = new Map();
-  const routingModuleSourceFile = project.addSourceFileAtPath(routingModuleFilePath);
+  const routingModuleSourceFile = project.addSourceFileAtPath(
+    routingModuleFilePath
+  );
   const routingModuleRouteNodes = getRouteNodesFromRoutingModuleSourceFile(
     routingModuleSourceFile
   );
@@ -342,22 +357,23 @@ const getRouteToModuleMappingFromRoutingModule = (
   }
 
   return routeToModuleMapping;
-}
+};
 
 /**
  * Gets the full codebase's route to module mapping.
  */
 export const getRouteToModuleMapping = (): Map<Route, string> => {
   let routeToModuleMapping: Map<Route, string> = new Map([
-    ...MANUAL_ROUTE_TO_MODULE_MAPPING
+    ...MANUAL_ROUTE_TO_MODULE_MAPPING,
   ]);
 
   for (const routingModuleFilePath of ROUTING_MODULE_FILE_PATHS) {
-    const routingModuleRouteToModuleMapping = getRouteToModuleMappingFromRoutingModule(
-      routingModuleFilePath
-    );
+    const routingModuleRouteToModuleMapping =
+      getRouteToModuleMappingFromRoutingModule(routingModuleFilePath);
     routeToModuleMapping = extendMap(
-      routeToModuleMapping, routingModuleRouteToModuleMapping)
+      routeToModuleMapping,
+      routingModuleRouteToModuleMapping
+    );
   }
 
   return routeToModuleMapping;
