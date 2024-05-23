@@ -106,6 +106,10 @@ const MANUALLY_MAPPED_DEPENDENCIES: Record<string, string[]> = {
   '.lighthouserc-base.js': [
     'puppeteer-login-script.js',
     'core/tests/puppeteer/lighthouse_setup.js'
+  ],
+  'core/templates/pages/header_css_libs.html': [
+    'core/templates/css/oppia.css',
+    'core/templates/css/oppia-material.css',
   ]
 };
 
@@ -194,12 +198,6 @@ export class DependencyExtractor {
         fileDepedencies.push(fileAngularInformation.templateUrl);
       }
     }
-
-    // We need to add the manually mapped dependencies.
-    if (MANUALLY_MAPPED_DEPENDENCIES[filePath]) {
-      fileDepedencies.push(...MANUALLY_MAPPED_DEPENDENCIES[filePath]);
-    }
-
     return Array.from(new Set(fileDepedencies));
   }
 
@@ -251,23 +249,6 @@ export class DependencyExtractor {
             }
             fileDepedencies.push(resolvedLoadFilePath);
           }
-        }
-        const elementTag = element.tagName;
-        if (elementTag === 'link' || elementTag === 'preload') {
-          const elementHref = element.attribs.href;
-          if (!elementHref.endsWith('.css')) {
-            return;
-          }
-          if (!elementHref.startsWith('/templates/css')) {
-            return;
-          }
-          const fullPath = 'core' + elementHref;
-          if (!fs.existsSync(path.join(ROOT_DIRECTORY, fullPath))) {
-            throw new Error(
-              `The CSS file with path: ${fullPath}, does not exist, occured at ${filePath}.`
-            );
-          }
-          fileDepedencies.push(fullPath);
         }
       });
 
@@ -345,12 +326,19 @@ export class DependencyExtractor {
    */
   public extractDepedenciesFromFile(filePath: string): string[] {
     const fileExtension = path.extname(filePath);
+    const manuallyMappedDepedencies = MANUALLY_MAPPED_DEPENDENCIES[filePath] || [];
     if (fileExtension === '.ts' || fileExtension === '.js') {
-      return this.extractDepedenciesFromTypescriptOrJavascriptFile(filePath);
+      return [
+        ...manuallyMappedDepedencies,
+        ...this.extractDepedenciesFromTypescriptOrJavascriptFile(filePath)
+      ];
     } else if (fileExtension === '.html') {
-      return this.extractDepedenciesFromHTMLFile(filePath);
+      return [
+        ...manuallyMappedDepedencies,
+        ...this.extractDepedenciesFromHTMLFile(filePath)
+      ];
     } else {
-      return [];
+      return manuallyMappedDepedencies;
     }
   }
 

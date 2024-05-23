@@ -30,10 +30,16 @@ const WEBPACK_DEFINED_ALIASES = {
   assets: ['assets'],
   'core/templates': ['core/templates'],
   extensions: ['extensions'],
+  templates: ['core/templates'],
 };
 
 // List of built in node modules.
 const BUILT_IN_NODE_MODULES = ['fs', 'path', 'console', 'child_process'];
+
+// List of third party directories.
+const THIRD_PARTY_DIRECTORIES = [
+  'third_party'
+];
 
 /**
  * Gets the root directory of the project by traversing up the directory tree
@@ -51,12 +57,14 @@ const TYPESCRIPT_CONFIG_PATH = path.resolve(ROOT_DIRECTORY, 'tsconfig.json');
 
 export class TypescriptExtractorUtilities {
   typescriptConfig: any;
+  files: string[];
 
-  constructor() {
+  constructor(files: string[] = []) {
     this.typescriptConfig = ts.readConfigFile(
       TYPESCRIPT_CONFIG_PATH,
       ts.sys.readFile
     ).config;
+    this.files = files;
   }
 
   /**
@@ -141,6 +149,12 @@ export class TypescriptExtractorUtilities {
     modulePath: string,
     relativeFilePath: string
   ): string | undefined {
+    if (modulePath.startsWith('/')) {
+      modulePath = modulePath.substring(1);
+    }
+    if (THIRD_PARTY_DIRECTORIES.some((dir) => modulePath.startsWith(dir))) {
+      return undefined;
+    }
     // If the file is not relative and is a lib, then the module should
     // not be resolved.
     if (
