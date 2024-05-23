@@ -1,0 +1,364 @@
+// Copyright 2024 The Oppia Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview This script is used to generate an Angular route to module mapping.
+ */
+
+import path from 'path';
+import { Route } from '@angular/router';
+import {
+  CallExpression,
+  ObjectLiteralExpression,
+  SourceFile,
+  ts,
+} from "ts-morph";
+import {
+  project,
+  ROOT_DIRECTORY,
+  getDecorationNodeByTextFromSourceFile,
+  resolveModule,
+  resolveModuleRelativeToRoot
+} from './typescript-ast-utilities';
+
+const ROUTING_MODULE_FILE_PATHS = [
+  path.resolve(
+    ROOT_DIRECTORY,
+    'core/templates/pages/oppia-root/routing/app.routing.module.ts'
+  ),
+  path.resolve(
+    ROOT_DIRECTORY,
+    'core/templates/pages/lightweight-oppia-root/routing/app.routing.module.ts'
+  ),
+];
+
+const MANUAL_ROUTE_TO_MODULE_MAPPING: Map<Route, string> = new Map([
+  [
+    {
+      path: 'creator-dashboard',
+    },
+    'core/templates/pages/creator-dashboard-page/creator-dashboard-page.import.ts',
+  ],
+  [
+    {
+      path: 'create/:exploration_id',
+    },
+    'core/templates/pages/exploration-editor-page/exploration-editor-page.import.ts',
+  ],
+  [
+    {
+      path: 'emaildashboardresult/:query_id',
+    },
+    'core/templates/pages/email-dashboard-pages/email-dashboard-result-page.import.ts',
+  ],
+  [
+    {
+      path: 'learn/:classroom_url_fragment/:topic_url_fragment/practice/session',
+    },
+    'core/templates/pages/practice-session-page/practice-session-page.import.ts',
+  ],
+  [
+    {
+      path: 'topics-and-skills-dashboard',
+    },
+    'core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.import.ts',
+  ],
+  [
+    {
+      path: 'topic_editor/:topic_id',
+    },
+    'core/templates/pages/topic-editor-page/topic-editor-page.import.ts',
+  ],
+  [
+    {
+      path: 'story_editor/:story_id',
+    },
+    'core/templates/pages/story-editor-page/story-editor-page.import.ts',
+  ],
+  [
+    {
+      path: 'contributor-dashboard',
+    },
+    'core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.import.ts',
+  ],
+  [
+    {
+      path: 'skill_editor/:skill_id',
+    },
+    'core/templates/pages/skill-editor-page/skill-editor-page.import.ts',
+  ],
+  [
+    {
+      path: 'learn/:classroom_url_fragment/:topic_url_fragment/review-test/:story_id',
+    },
+    'core/templates/pages/review-test-page/review-test-page.import.ts',
+  ],
+  [
+    {
+      path: 'learn/:classroom_url_fragment/:topic_url_fragment/revision/:story_id',
+    },
+    'core/templates/pages/subtopic-viewer-page/subtopic-viewer-page.import.ts',
+  ],
+  [
+    {
+      path: 'learn/:classroom_url_fragment/:topic_url_fragment/story',
+    },
+    'core/templates/pages/topic-viewer-page/topic-viewer-page.import.ts',
+  ],
+]);
+
+/**
+ * Extends two maps and avoids duplicate keys.
+ */
+const extendMap = (
+  map1: Map<Route, string>,
+  map2: Map<Route, string>
+): Map<Route, string> => {
+  const extendedMap = new Map([...map1]);
+  for (const [key, value] of map2) {
+    if (!extendedMap.has(key)) {
+      extendedMap.set(key, value);
+    }
+  }
+  return extendedMap;
+}
+
+/**
+ * Gets the path in the route object AST node.
+ */
+const getPathFromRouteObjectNode = (
+  routeObjectNode: ObjectLiteralExpression
+): string | undefined => {
+  const pathProperty = routeObjectNode.getPropertyOrThrow('path').asKindOrThrow(
+    ts.SyntaxKind.PropertyAssignment).getInitializerOrThrow();
+  if (pathProperty.isKind(ts.SyntaxKind.PropertyAccessExpression)) {
+    const referenceDefinition = pathProperty.findReferences()[0].getDefinition();
+    const displayParts = referenceDefinition.getDisplayParts();
+    return displayParts[displayParts.length - 1].getText().slice(1, -1);
+  }
+  if (pathProperty.isKind(ts.SyntaxKind.StringLiteral)) {
+    return pathProperty.getLiteralText();
+  }
+  return undefined;
+}
+
+/**
+ * Gets the module in the route object AST node.
+ */
+const getModuleFromRouteObjectNode = (
+  routeObjectNode: ObjectLiteralExpression
+): string | undefined => {
+  const loadChildrenProperty = routeObjectNode.getProperty('loadChildren');
+  if (loadChildrenProperty === undefined) {
+    return undefined;
+  }
+  const loadChildrenInitializer = 
+    loadChildrenProperty.asKindOrThrow(ts.SyntaxKind.PropertyAssignment).
+      getInitializerOrThrow().asKindOrThrow(ts.SyntaxKind.ArrowFunction);
+  const loadChildrenCallArgument = loadChildrenInitializer.getBody().getChildAtIndexIfKindOrThrow(
+    0,
+    ts.SyntaxKind.PropertyAccessExpression
+  ).getChildAtIndexIfKindOrThrow(
+    0,
+    ts.SyntaxKind.CallExpression
+  ).getArguments()[0];
+  if (loadChildrenCallArgument.isKind(ts.SyntaxKind.StringLiteral)) {
+    return loadChildrenCallArgument.getLiteralText();
+  }
+  if (loadChildrenCallArgument.isKind(ts.SyntaxKind.BinaryExpression)) {
+    return eval(loadChildrenCallArgument.getText());
+  }
+  return undefined
+}
+
+/**
+ * Gets the path match property in the route object AST node.
+ */
+const getPathMatchFromRouteObjectNode = (
+  routeObjectNode: ObjectLiteralExpression
+): string | undefined => {
+  const pathMatchProperty = routeObjectNode.getProperty('pathMatch');
+  if (pathMatchProperty === undefined) {
+    return undefined;
+  }
+  return pathMatchProperty.asKindOrThrow(ts.SyntaxKind.PropertyAssignment).
+    getInitializerOrThrow().asKindOrThrow(ts.SyntaxKind.StringLiteral).getLiteralText();
+}
+
+/**
+ * Gets the children property in the route object AST node.
+ */
+const getChildrenFromRouteObjectNode = (
+  routeObjectNode: ObjectLiteralExpression
+): ObjectLiteralExpression[] | undefined => {
+  const childrenProperty = routeObjectNode.getProperty('children');
+  if (childrenProperty === undefined) {
+    return undefined;
+  }
+  return childrenProperty.asKindOrThrow(ts.SyntaxKind.PropertyAssignment).
+    getInitializerOrThrow().asKindOrThrow(ts.SyntaxKind.ArrayLiteralExpression).
+    getElements() as ObjectLiteralExpression[];
+}
+
+/**
+ * Converts a route object AST node to a map element.
+ */
+const convertRouteNodeToMap = (
+  routeNode: ObjectLiteralExpression,
+  parentRoutePath?: string,
+  parentRoutingModuleFilePath?: string
+): Map<Route, string> => {
+  let routeToModuleMapping: Map<Route, string> = new Map();
+  const path = getPathFromRouteObjectNode(routeNode);
+  if (path === undefined) {
+    throw new Error('No path was found in the route object.');
+  }
+
+  const module = getModuleFromRouteObjectNode(routeNode);
+  const pathMatch = getPathMatchFromRouteObjectNode(routeNode);
+  const children = getChildrenFromRouteObjectNode(routeNode);
+  const routePath = parentRoutePath ? `${parentRoutePath}/${path}` : path;
+
+  if (children) {
+    for (const child of children) {
+      routeToModuleMapping = extendMap(
+        routeToModuleMapping,
+        convertRouteNodeToMap(
+          child,
+          routePath,
+          parentRoutingModuleFilePath || module
+        )
+      );
+    }
+  }
+  if (module) {
+    const containingFile = routeNode.getSourceFile().getFilePath();
+    const resolvedModule = resolveModuleRelativeToRoot(
+      module, containingFile);
+    routeToModuleMapping.set(
+      {
+        path: routePath,
+        pathMatch: pathMatch,
+      },
+      parentRoutingModuleFilePath || resolvedModule
+    );
+    const childRouteToModuleMapping = getRouteToModuleMappingFromRoutingModule(
+      resolvedModule,
+      routePath,
+      parentRoutingModuleFilePath || resolvedModule
+    );
+    routeToModuleMapping = extendMap(
+      routeToModuleMapping,
+      childRouteToModuleMapping
+    );
+  }
+  return routeToModuleMapping;
+};
+
+/**
+ * Gets the route AST nodes from a routing module file.
+ */
+const getRouteNodesFromRoutingModuleSourceFile = (
+  routingModuleSourceFile: SourceFile
+): ObjectLiteralExpression[] | undefined => {
+  const angularModuleDecorationNode = getDecorationNodeByTextFromSourceFile(
+    routingModuleSourceFile,
+    'NgModule'
+  );
+  if (angularModuleDecorationNode === undefined) {
+    throw new Error(
+      `No NgModule decoration was found in the file: ${routingModuleSourceFile.getFilePath()}.`
+    );
+  }
+  const argument = 
+    angularModuleDecorationNode.getArguments()[0] as ObjectLiteralExpression;
+  const importsProperty = argument.getPropertyOrThrow('imports');
+  const importsArray = importsProperty.getFirstChildByKindOrThrow(
+    ts.SyntaxKind.ArrayLiteralExpression
+  );
+
+  const routerModuleCallExpression = importsArray.getElements().filter((element) => {
+    return (
+      element.getText().includes('RouterModule.forRoot') ||
+      element.getText().includes('RouterModule.forChild') &&
+      element.getKind() === ts.SyntaxKind.CallExpression
+    )
+  })[0] as CallExpression;
+  if (routerModuleCallExpression === undefined) {
+    return undefined;
+  }
+  const routesArgument = routerModuleCallExpression.getArguments()[0];
+  if (routesArgument.isKind(ts.SyntaxKind.ArrayLiteralExpression)) {
+    return routesArgument.getElements() as ObjectLiteralExpression[];
+  }
+  if (routesArgument.isKind(ts.SyntaxKind.Identifier)) {
+    const routesVariable = routingModuleSourceFile.getVariableDeclarationOrThrow(
+      routesArgument.getText()
+    );
+    return routesVariable.getInitializerIfKindOrThrow(
+      ts.SyntaxKind.ArrayLiteralExpression
+    ).getElements() as ObjectLiteralExpression[];
+  }
+  return undefined;
+}
+
+/**
+ * Gets the Angular route to module mapping from a routing module file.
+ */
+const getRouteToModuleMappingFromRoutingModule = (
+  routingModuleFilePath: string,
+  parentRoutePath?: string,
+  parentRoutingModuleFilePath?: string
+): Map<Route, string> => {
+  let routeToModuleMapping: Map<Route, string> = new Map();
+  const routingModuleSourceFile = project.addSourceFileAtPath(routingModuleFilePath);
+  const routingModuleRouteNodes = getRouteNodesFromRoutingModuleSourceFile(
+    routingModuleSourceFile
+  );
+  if (routingModuleRouteNodes === undefined) {
+    return routeToModuleMapping;
+  }
+
+  for (const routeNode of routingModuleRouteNodes) {
+    routeToModuleMapping = extendMap(
+      routeToModuleMapping,
+      convertRouteNodeToMap(
+        routeNode,
+        parentRoutePath,
+        parentRoutingModuleFilePath
+      )
+    );
+  }
+
+  return routeToModuleMapping;
+}
+
+/**
+ * Gets the full codebase's route to module mapping.
+ */
+export const getRouteToModuleMapping = (): Map<Route, string> => {
+  let routeToModuleMapping: Map<Route, string> = new Map([
+    ...MANUAL_ROUTE_TO_MODULE_MAPPING
+  ]);
+
+  for (const routingModuleFilePath of ROUTING_MODULE_FILE_PATHS) {
+    const routingModuleRouteToModuleMapping = getRouteToModuleMappingFromRoutingModule(
+      routingModuleFilePath
+    );
+    routeToModuleMapping = extendMap(
+      routeToModuleMapping, routingModuleRouteToModuleMapping)
+  }
+
+  return routeToModuleMapping;
+};
