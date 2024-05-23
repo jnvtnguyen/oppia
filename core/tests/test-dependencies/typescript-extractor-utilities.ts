@@ -36,11 +36,6 @@ const WEBPACK_DEFINED_ALIASES = {
 // List of built in node modules.
 const BUILT_IN_NODE_MODULES = ['fs', 'path', 'console', 'child_process'];
 
-// List of third party directories.
-const THIRD_PARTY_DIRECTORIES = [
-  'third_party'
-];
-
 /**
  * Gets the root directory of the project by traversing up the directory tree
  * until a 'package.json' file is found.
@@ -149,12 +144,6 @@ export class TypescriptExtractorUtilities {
     modulePath: string,
     relativeFilePath: string
   ): string | undefined {
-    if (modulePath.startsWith('/')) {
-      modulePath = modulePath.substring(1);
-    }
-    if (THIRD_PARTY_DIRECTORIES.some((dir) => modulePath.startsWith(dir))) {
-      return undefined;
-    }
     // If the file is not relative and is a lib, then the module should
     // not be resolved.
     if (
