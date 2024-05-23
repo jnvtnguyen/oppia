@@ -983,3 +983,23 @@ def is_oppia_server_already_running() -> bool:
                 'Exiting.' % port)
             return True
     return False
+
+
+def compile_typescript_test_dependencies() -> None:
+    print('Compiling test dependencies...')
+
+    config_path = 'tsconfig.test-dependencies.json'
+    cmd = ['./node_modules/typescript/bin/tsc', '--project', config_path]
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, encoding='utf-8')
+
+    assert process.stdout is not None
+    error_messages = list(iter(process.stdout.readline, ''))
+    if error_messages:
+        print('\n' + '\n'.join(error_messages))
+        print(
+            '%s Errors found during compilation.\n' % (
+                len([x for x in error_messages]))
+            )
+        sys.exit(1)
+    else:
+        print('Compilation successful!')

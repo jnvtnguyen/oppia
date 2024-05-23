@@ -770,12 +770,13 @@ def managed_acceptance_tests_server(
     puppeteer_acceptance_tests_dir_path = os.path.join(
         common.CURR_DIR, 'core', 'tests', 'puppeteer-acceptance-tests')
     puppeteer_build_dir_path = os.path.join(
-        puppeteer_acceptance_tests_dir_path, 'build')
+        puppeteer_acceptance_tests_dir_path, 'build', 'core', 'tests', 'puppeteer-acceptance-tests')
     spec_dir_path = os.path.join(
         puppeteer_build_dir_path, 'spec')
     jasmine_config_file_path = os.path.join(
         puppeteer_acceptance_tests_dir_path, 'jasmine.json')
 
+    os.environ['TEST_SPEC_NAME'] = suite_name
     suite_name_with_extension = '%s.spec.js' % suite_name
 
     acceptance_tests_args = [

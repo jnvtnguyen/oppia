@@ -41,8 +41,8 @@ SERVER_MODE_DEV: Final = 'prod'
 GOOGLE_APP_ENGINE_PORT: Final = 8181
 LIGHTHOUSE_CONFIG_FILENAMES: Final = {
     LIGHTHOUSE_MODE_PERFORMANCE: {
-        '1': '.lighthouserc-1.js',
-        '2': '.lighthouserc-2.js'
+        '1': '.lighthouserc-performance-1.js',
+        '2': '.lighthouserc-performance-2.js'
     },
     LIGHTHOUSE_MODE_ACCESSIBILITY: {
         '1': '.lighthouserc-accessibility-1.js',
@@ -77,6 +77,9 @@ _PARSER.add_argument(
 _PARSER.add_argument(
     '--record_screen', help='Sets whether LHCI Puppeteer script is recorded',
     action='store_true')
+
+_PARSER.add_argument(
+    '--pages', help='The list of pages to run the Lighthouse checks on')
 
 
 def run_lighthouse_puppeteer_script(record: bool = False) -> None:
@@ -145,7 +148,7 @@ def run_webpack_compilation() -> None:
     if not os.path.isdir(webpack_bundles_dir_name):
         print('Failed to complete webpack compilation, exiting...')
         sys.exit(1)
-
+        
 
 def export_url(line: str) -> None:
     """Exports the entity ID in the given line to an environment variable, if
@@ -210,6 +213,12 @@ def main(args: Optional[List[str]] = None) -> None:
 
     # Verify if Chrome is installed.
     common.setup_chrome_bin_env_variable()
+    
+    common.compile_typescript_test_dependencies()
+    os.environ['LIGHTHOUSE_MODE'] = parsed_args.mode
+    os.environ['LIGHTHOUSE_SHARD'] = parsed_args.shard
+    if parsed_args.pages:
+        os.environ['LIGHTHOUSE_PAGES_TO_RUN'] = parsed_args.pages
 
     if parsed_args.mode == LIGHTHOUSE_MODE_ACCESSIBILITY:
         lighthouse_mode = LIGHTHOUSE_MODE_ACCESSIBILITY

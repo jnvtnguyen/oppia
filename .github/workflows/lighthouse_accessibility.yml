@@ -5,19 +5,66 @@ on:
   push:
     branches:
       - develop
+      - gsoc-planning
       - release-*
   pull_request:
     branches:
       - develop
+      - gsoc-planning
       - release-*
 
 jobs:
-  lighthouse:
+  check_test_suites_to_run:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        shard: [1, 2]
+    outputs:
+      LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN }}
+      LIGHTHOUSE_PAGES_TO_RUN: ${{ steps.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN }}
+    env:
+      SHOULD_OUTPUT_ALL_TESTS: ${{ github.event_name == 'push' || github.event_name == 'merge_group' }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.8.15'
+          architecture: 'x64'
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements.in
+            requirements.txt
+            requirements_dev.in
+            requirements_dev.txt
+      - uses: ./.github/actions/merge
+      - name: Cache node modules
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: /home/runner/work/oppia/yarn_cache
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - uses: ./.github/actions/install-oppia-dependencies
+      - name: Check test suites to run
+        id: check_test_suites_to_run
+        run: >
+          python -m scripts.check_ci_test_suites_to_run
+          --github_head_ref="origin/${{ github.event.pull_request.head.ref }}"
+          --github_base_ref="origin/${{ github.event.pull_request.base.ref }}"
+          ${{ env.SHOULD_OUTPUT_ALL_TESTS && '--output_all_test_suites' || '' }}
+  lighthouse_accessibility:
+    needs: check_test_suites_to_run
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04]
+        suite: ${{ fromJson(needs.check_test_suites_to_run.outputs.LIGHTHOUSE_ACCESSIBILITY_TEST_SUITES_TO_RUN) }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -62,9 +109,15 @@ jobs:
       - name: Install chrome
         if: startsWith(github.head_ref, 'update-changelog-for-release') == false
         run: python -m scripts.install_chrome_for_ci
-      - name: Run Lighthouse accessibility checks shard
+      - name: Run Lighthouse accessibility checks
         if: startsWith(github.head_ref, 'update-changelog-for-release') == false
-        run: python -m scripts.run_lighthouse_tests --mode accessibility --shard ${{ matrix.shard }}
+        run: python -m scripts.run_lighthouse_tests --mode accessibility --shard ${{ matrix.suite.name }} --pages ${{ fromJson(needs.check_test_suites_to_run.outputs.LIGHTHOUSE_PAGES_TO_RUN)[matrix.suite.name] }}
+      - name: Uploading generated test to angular modules as an artifact
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: generated-test-to-angular-modules
+          path: /home/runner/work/oppia/oppia/core/tests/test-modules-mapping/lighthouse-accessibility-generated.txt
       - name: Report failure if failed on oppia/oppia develop branch
         if: ${{ failure() && github.event_name == 'push' && github.repository == 'oppia/oppia' && github.ref == 'refs/heads/develop'}}
         uses: ./.github/actions/send-webhook-notification

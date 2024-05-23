@@ -20,6 +20,7 @@ import puppeteer, {Page, Browser, Viewport, ElementHandle} from 'puppeteer';
 import testConstants from './test-constants';
 import isElementClickable from '../functions/is-element-clickable';
 import {ConsoleReporter} from './console-reporter';
+import {TestToAngularModulesMatcher} from '../../test-dependencies/test-to-angular-modules-matcher';
 
 const VIEWPORT_WIDTH_BREAKPOINTS = testConstants.ViewportWidthBreakpoints;
 
@@ -70,6 +71,7 @@ export class BaseUser {
 
     const headless = process.env.HEADLESS === 'true';
     const mobile = process.env.MOBILE === 'true';
+    const testSpecName = process.env.TEST_SPEC_NAME;
     /**
      * Here we are disabling the site isolation trials because it is causing
      * tests to fail while running in non headless mode (see
@@ -91,8 +93,14 @@ export class BaseUser {
         this.startTimeInMilliseconds = Date.now();
         this.browserObject = browser;
         ConsoleReporter.trackConsoleMessagesInBrowser(browser);
-        this.page = await browser.newPage();
 
+        if (!mobile) {
+          TestToAngularModulesMatcher.setGoldenFilePath(
+            `core/tests/test-modules-mapping/acceptance/${testSpecName}.txt`);
+          TestToAngularModulesMatcher.registerPuppeteerBrowser(browser);
+        }
+
+        this.page = await browser.newPage();
         if (mobile) {
           // This is the default viewport and user agent settings for iPhone 6.
           await this.page.setViewport({
