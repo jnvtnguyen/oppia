@@ -67,6 +67,7 @@ const FILE_EXCLUSIONS = [
   'types',
   'typings',
   'scripts',
+  'assets/scripts',
   'core/tests/build_sources',
   'core/tests/data',
   'core/tests/load_tests',
@@ -114,6 +115,7 @@ const MANUALLY_MAPPED_DEPENDENCIES: Record<string, string[]> = {
 
 const TYPESCRIPT_JAVASCRIPT_EXTENSION = /.*\.(js|ts)$/;
 const HTML_EXTENSION = /.*\.html$/;
+const FRONTEND_TEST_FILES = /^(?!puppeteer-acceptance-tests).*\.spec\.ts/$;
 
 /**
  * Gets all the module imports that are called using require or import in the
@@ -496,7 +498,7 @@ class DependencyGraphGenerator {
   ): string[] {
     return Object.keys(this.dependencyMapping).filter(
       file => {
-        if (file.endsWith('.spec.ts') && !file.includes('puppeteer-acceptance-tests')) {
+        if (FRONTEND_TEST_FILES.test(file)) {
           return false;
         }
 
