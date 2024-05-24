@@ -228,11 +228,27 @@ const getAngularInformationsFromSourceFile = (
           .asKindOrThrow(ts.SyntaxKind.StringLiteral)
           .getLiteralValue()
       : undefined;
-    if (type === 'directive' || type === 'pipe') {
+    if (type === 'directive') {
       return {
         type,
         className,
         selector,
+      };
+    }
+
+    const nameProperty = objectArgument.getProperty('name');
+    const name = nameProperty
+      ? nameProperty
+          .asKindOrThrow(ts.SyntaxKind.PropertyAssignment)
+          .getInitializerOrThrow()
+          .asKindOrThrow(ts.SyntaxKind.StringLiteral)
+          .getLiteralValue()
+      : undefined;
+    if (type === 'pipe') {
+      return {
+        type,
+        className,
+        selector: name,
       };
     }
 
