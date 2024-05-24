@@ -471,6 +471,9 @@ const getDependencyMappingFromFiles = (
   }, {});
 };
 
+/**
+ * Class to generate a dependency graph of the files given.
+ */
 class DependencyGraphGenerator {
   files: string[];
   dependencyMapping: Record<string, string[]>;
@@ -548,7 +551,7 @@ class DependencyGraphGenerator {
   }
 
   /**
-   * Generates the dependency graph of the Oppia codebase.
+   * Generates the dependency graph from the files.
    */
   public generateDependencyGraph(): Record<string, string[]> {
     const dependencyGraph: Record<string, string[]> = {};

@@ -33,6 +33,7 @@ import {
   getValueFromLiteralStringOrBinaryExpression,
 } from './typescript-ast-utilities';
 
+// List of routing module file paths.
 const ROUTING_MODULE_FILE_PATHS = [
   path.resolve(
     ROOT_DIRECTORY,
@@ -44,6 +45,7 @@ const ROUTING_MODULE_FILE_PATHS = [
   ),
 ];
 
+// List of routes that are not defined in routing modules.
 const MANUAL_ROUTE_TO_MODULE_MAPPING: Map<Route, string> = new Map([
   [
     {
@@ -119,6 +121,7 @@ const MANUAL_ROUTE_TO_MODULE_MAPPING: Map<Route, string> = new Map([
   ],
 ]);
 
+// List of page modules which aren't scraped from routing modules.
 const MANUAL_PAGE_MODULES = [
   'core/templates/pages/error-pages/error-page.import.ts',
   'core/templates/pages/maintenance-page/maintenance-page.import.ts',

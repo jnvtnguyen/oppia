@@ -95,7 +95,7 @@ const fallbackResolveModule = (
     if (fs.existsSync(location)) {
       return {
         resolvedFileName: location,
-        extension: '.ts',
+        extension: path.extname(location)
       };
     }
   }
