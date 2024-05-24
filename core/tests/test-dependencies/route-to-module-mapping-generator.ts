@@ -119,8 +119,13 @@ const MANUAL_ROUTE_TO_MODULE_MAPPING: Map<Route, string> = new Map([
   ],
 ]);
 
+const MANUAL_PAGE_MODULES = [
+  'core/templates/pages/error-pages/error-page.import.ts',
+  'core/templates/pages/maintenance-page/maintenance-page.import.ts',
+];
+
 /**
- * Extends two maps and avoids duplicate keys.
+ * Extends two maps while avoiding duplicates.
  */
 const extendMap = (
   map1: Map<Route, string>,
@@ -377,4 +382,15 @@ export const getRouteToModuleMapping = (): Map<Route, string> => {
   }
 
   return routeToModuleMapping;
+};
+
+/**
+ * Gets all of the page modules in the codebase.
+ */
+export const getPageModules = (): string[] => {
+  const routeToModuleMapping = getRouteToModuleMapping();
+  return [
+    ...routeToModuleMapping.values(),
+    ...MANUAL_PAGE_MODULES
+  ]
 };

@@ -25,6 +25,10 @@ type ResolvedModuleWithFailedLookupLocations =
     failedLookupLocations: string[];
   };
 
+/**
+ * Gets the root directory of the project by traversing up the directory tree
+ * until a package.json file is found.
+ */
 export const ROOT_DIRECTORY = (() => {
   let current = __dirname;
   while (!fs.existsSync(path.join(current, 'package.json'))) {
@@ -103,7 +107,7 @@ const fallbackResolveModule = (
 /**
  * Resolves a module path with Webpack resolution.
  */
-export const resolveModuleUsingWebpack = (
+const resolveModuleUsingWebpack = (
   modulePath: string,
   containingFile: string
 ): ts.ResolvedModuleFull => {
@@ -189,6 +193,9 @@ export const getAllDecorationNodesByTextFromSourceFile = (
     });
 };
 
+/**
+ * Gets the value from a literal string or binary expression node.
+ */
 export const getValueFromLiteralStringOrBinaryExpression = (
   node: Node
 ): string | undefined => {

@@ -31,6 +31,7 @@ import {
   getDecorationNodeText,
   getValueFromLiteralStringOrBinaryExpression,
 } from './typescript-ast-utilities';
+import {getPageModules} from './route-to-module-mapping-generator';
 
 type BaseAngularInformation = {
   className: string;
@@ -100,15 +101,19 @@ const FILE_EXTENSIONS = [
   'CONTRIBUTORS',
 ];
 
+const MANUALLY_MAPPED_DEPENDENCIES: Record<string, string[]> = {
+  '.lighthouserc-base.js': [
+    'puppeteer-login-script.js',
+    'core/tests/puppeteer/lighthouse_setup.js'
+  ],
+  'core/templates/pages/header_css_libs.html': [
+    'core/templates/css/oppia.css',
+    'core/templates/css/oppia-material.css',
+  ]
+};
+
 const TYPESCRIPT_JAVASCRIPT_EXTENSION = /.*\.(js|ts)$/;
 const HTML_EXTENSION = /.*\.html$/;
-
-const files = ts.sys
-  .readDirectory(ROOT_DIRECTORY, FILE_EXTENSIONS, FILE_EXCLUSIONS, [])
-  .reduce((acc: string[], filePath: string) => {
-    acc.push(getRelativePathToRootDirectory(filePath));
-    return acc;
-  }, []);
 
 /**
  * Gets all the module imports that are called using require or import in the
@@ -138,8 +143,8 @@ const getCallExpressionModuleImportsFromSourceFile = (
       getValueFromLiteralStringOrBinaryExpression(moduleSpecifier);
     if (!moduleSpecifierValue) {
       throw new Error(
-        `No module specifier value found in require or import call in ' + 
-        '${callExpression.getText()} at ${sourceFile.getFilePath()}`
+        'The module specifier could not be evaluated in the require or import call in' +
+        `${callExpression.getText()} at ${sourceFile.getFilePath()}`
       );
     }
     return resolveModuleRelativeToRoot(
@@ -176,7 +181,7 @@ const getAngularInformationsFromSourceFile = (
   sourceFile: SourceFile
 ): AngularInformation[] => {
   const decorationNodes: Decorator[] = [];
-  for (const decorator in AngularDecorators) {
+  for (const decorator of Object.values(AngularDecorators)) {
     decorationNodes.push(
       ...getAllDecorationNodesByTextFromSourceFile(sourceFile, decorator)
     );
@@ -256,14 +261,18 @@ const getAngularInformationsFromSourceFile = (
  */
 const getFileToAngularInformationsFromFiles = (
   files: string[]
-): Map<string, AngularInformation[]> => {
+): Record<string, AngularInformation[]> => {
   return files.reduce((acc, file) => {
+    if (file.endsWith('.spec.ts')) {
+      acc[file] = [];
+      return acc;
+    }
     const sourceFile = project.addSourceFileAtPath(file);
     const angularInformations =
       getAngularInformationsFromSourceFile(sourceFile);
-    acc.set(file, angularInformations);
+    acc[file] = angularInformations;
     return acc;
-  }, new Map<string, AngularInformation[]>());
+  }, {});
 };
 
 /**
@@ -281,7 +290,7 @@ const isPipeSelectorPresentInText = (
  */
 const getAngularDependenciesFromHtmlFile = (
   file: string,
-  fileToAngularInformations: Map<string, AngularInformation[]>
+  fileToAngularInformations: Record<string, AngularInformation[]>
 ): string[] => {
   const content = fs.readFileSync(file, 'utf-8');
   const $ = cheerio.load(content);
@@ -304,7 +313,7 @@ const getAngularDependenciesFromHtmlFile = (
   for (const [
     dependencyFile,
     dependencyAngularInformations,
-  ] of fileToAngularInformations) {
+  ] of Object.entries(fileToAngularInformations)) {
     for (const dependencyAngularInformation of dependencyAngularInformations) {
       if (
         dependencyAngularInformation.type === 'module' ||
@@ -343,6 +352,9 @@ const getAngularDependenciesFromHtmlFile = (
   return dependencies;
 };
 
+/**
+ * Gets all the load dependencies from a HTML file.
+ */
 const getLoadDependenciesFromHtmlFile = (file: string): string[] => {
   const content = fs.readFileSync(file, 'utf-8');
   const $ = cheerio.load(content);
@@ -376,7 +388,7 @@ const getLoadDependenciesFromHtmlFile = (file: string): string[] => {
  */
 const getDependenciesFromHtmlFile = (
   file: string,
-  fileToAngularInformations: Map<string, AngularInformation[]>
+  fileToAngularInformations: Record<string, AngularInformation[]>
 ): string[] => {
   return Array.from(
     new Set([
@@ -391,13 +403,13 @@ const getDependenciesFromHtmlFile = (
  */
 const getDependenciesFromTypeScriptOrJavaScriptFile = (
   file: string,
-  fileToAngularInformations: Map<string, AngularInformation[]>
+  fileToAngularInformations: Record<string, AngularInformation[]>
 ): string[] => {
   const sourceFile = project.addSourceFileAtPath(file);
   const dependencies: string[] = [];
   dependencies.push(...getModuleImportsFromSourceFile(sourceFile));
 
-  const angularInformations = fileToAngularInformations.get(file) || [];
+  const angularInformations = fileToAngularInformations[file];
   angularInformations.forEach(angularInformation => {
     if (
       angularInformation.type === 'component' &&
@@ -421,25 +433,138 @@ const getDependenciesFromTypeScriptOrJavaScriptFile = (
  * Gets the dependency mapping from the given files.
  */
 const getDependencyMappingFromFiles = (
-  files: string[]
-): Map<string, string[]> => {
-  const fileToAngularInformations =
-    getFileToAngularInformationsFromFiles(files);
-
+  files: string[],
+  fileToAngularInformations: Record<string, AngularInformation[]>
+): Record<string, string[]> => {
   return files.reduce((acc, file) => {
+    acc[file] = MANUALLY_MAPPED_DEPENDENCIES[file] || [];
     if (TYPESCRIPT_JAVASCRIPT_EXTENSION.test(file)) {
       const dependencies = getDependenciesFromTypeScriptOrJavaScriptFile(
         file,
         fileToAngularInformations
       );
-      acc.set(file, dependencies);
+      acc[file].push(...dependencies);
     } else if (HTML_EXTENSION.test(file)) {
       const dependencies = getDependenciesFromHtmlFile(
         file,
         fileToAngularInformations
       );
-      acc.set(file, dependencies);
+      acc[file].push(...dependencies);
     }
     return acc;
-  }, new Map<string, string[]>());
+  }, {});
 };
+
+class DependencyGraphGenerator {
+  files: string[];
+  dependencyMapping: Record<string, string[]>;
+  fileToAngularInformations: Record<string, AngularInformation[]>;
+  pageModules: string[];
+
+  constructor(files: string[]) {
+    this.files = files;
+    this.fileToAngularInformations = getFileToAngularInformationsFromFiles(files);
+    this.dependencyMapping = getDependencyMappingFromFiles(files, this.fileToAngularInformations);
+    this.pageModules = getPageModules();
+  }
+
+  /**
+   * Gets the files that depend on the given dependency.
+   */
+  private getFilesWithDependency(
+    dependency: string,
+    ignoreModules: boolean = true
+  ): string[] {
+    return Object.keys(this.dependencyMapping).filter(
+      file => {
+        if (file.endsWith('.spec.ts') && !file.includes('puppeteer-acceptance-tests')) {
+          return false;
+        }
+
+        const dependencies = this.dependencyMapping[file];
+        const fileIsModule = this.fileToAngularInformations[file].some(
+          angularInformation => angularInformation.type === 'module'
+        );
+
+        return (
+          dependencies.includes(dependency) &&
+          (!ignoreModules || !fileIsModule)
+        );
+      }
+    );
+  }
+
+  /**
+   * Finds the root dependencies for the given file.
+   */
+  private getRootDependenciesOfFile(
+    file: string,
+    cache: Record<string, string[]> = {},
+    ignoreModules: boolean = true,
+    visited: Set<string> = new Set()
+  ): string[] {
+    if (cache[file]) {
+      return cache[file];
+    }
+    if (visited.has(file)) {
+      return [];
+    }
+    visited.add(file);
+
+    let references = this.getFilesWithDependency(file, ignoreModules);
+    if (references.length === 0 || this.pageModules.includes(file)) {
+      return [file];
+    }
+
+    const roots: string[] = [];
+    for (const reference of references) {
+      roots.push(
+        ...this.getRootDependenciesOfFile(
+          reference,
+          cache,
+          ignoreModules, 
+          visited
+        )
+      );
+    }
+
+    return Array.from(new Set(roots));
+  }
+
+  /**
+   * Generates the dependency graph of the Oppia codebase.
+   */
+  public generateDependencyGraph(): Record<string, string[]> {
+    const dependencyGraph: Record<string, string[]> = {};
+
+    for (const file of this.files) {
+      dependencyGraph[file] = this.getRootDependenciesOfFile(file, dependencyGraph);
+    }
+
+    const modulizedDependencyGraph: Record<string, string[]> = {};
+    for (const [file, dependencies] of Object.entries(dependencyGraph)) {
+      const modulizedDependencies: string[] = [];
+      for (const dependency of dependencies) {
+        modulizedDependencies.push(
+          ...this.getRootDependenciesOfFile(dependency, modulizedDependencyGraph, false)
+        );
+      }
+      modulizedDependencyGraph[file] = Array.from(new Set(modulizedDependencies));
+    }
+
+    return modulizedDependencyGraph;
+  }
+}
+
+const files = ts.sys
+  .readDirectory(ROOT_DIRECTORY, FILE_EXTENSIONS, FILE_EXCLUSIONS, [])
+  .reduce((acc: string[], filePath: string) => {
+    acc.push(getRelativePathToRootDirectory(filePath));
+    return acc;
+  }, []);
+
+const dependencyGraph = new DependencyGraphGenerator(files).generateDependencyGraph();
+fs.writeFileSync(
+  path.resolve(ROOT_DIRECTORY, 'dependency-graph.json'),
+  JSON.stringify(dependencyGraph, null, 2)
+);
