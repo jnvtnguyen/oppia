@@ -52,7 +52,7 @@ export enum AngularDecorators {
 const NODE_TYPE_ROOTS = ['fs', 'console', 'path', 'child_process'];
 
 /**
- * Checks if a file is a node module.
+ * Checks if a module is a node module.
  */
 export const isNodeModule = (modulePath: string): boolean => {
   return modulePath.includes('node_modules');
@@ -95,7 +95,7 @@ const fallbackResolveModule = (
     if (fs.existsSync(location)) {
       return {
         resolvedFileName: location,
-        extension: path.extname(location)
+        extension: path.extname(location),
       };
     }
   }

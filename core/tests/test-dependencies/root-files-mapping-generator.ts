@@ -13,7 +13,8 @@
 // limitations under the License.
 
 /**
- * @fileoverview Script to generate the dependency graph of the Oppia codebase.
+ * @fileoverview Script to generate a files to root files mapping for the
+ * Oppia codebase.
  */
 
 import path from 'path';
@@ -33,24 +34,24 @@ import {
 } from './typescript-ast-utilities';
 import {getPageModules} from './route-to-module-mapping-generator';
 
-type BaseAngularInformation = {
+interface BaseAngularInformation {
   className: string;
-};
+}
 
-type AngularModuleInformation = BaseAngularInformation & {
+interface AngularModuleInformation extends BaseAngularInformation {
   type: 'module';
-};
+}
 
-type AngularComponentInformation = BaseAngularInformation & {
+interface AngularComponentInformation extends BaseAngularInformation {
   type: 'component';
   selector?: string;
   templateFilePath?: string;
-};
+}
 
-type AngularDirectiveOrPipeInformation = BaseAngularInformation & {
+interface AngularDirectiveOrPipeInformation extends BaseAngularInformation {
   type: 'directive' | 'pipe';
   selector?: string;
-};
+}
 
 type AngularInformation =
   | AngularModuleInformation
@@ -73,10 +74,6 @@ const FILE_EXCLUSIONS = [
   'core/tests/load_tests',
   'core/tests/release_sources',
   'core/tests/services_sources',
-  'core/tests/webdriverio',
-  'core/tests/webdriverio_desktop',
-  'core/tests/webdriverio_utils',
-  'core/tests/wdio.conf.js',
   'core/tests/test-dependencies',
   'core/templates/services/UpgradedServices.ts',
   'core/templates/services/angular-services.index.ts',
@@ -88,7 +85,6 @@ const FILE_EXCLUSIONS = [
   'webpack.prod.config.ts',
   'webpack.prod.sourcemap.config.ts',
   'angular-template-style-url-replacer.webpack-loader.js',
-  'extensions/**/webdriverio.js',
 ];
 
 const FILE_EXTENSIONS = [
@@ -105,17 +101,19 @@ const FILE_EXTENSIONS = [
 const MANUALLY_MAPPED_DEPENDENCIES: Record<string, string[]> = {
   '.lighthouserc-base.js': [
     'puppeteer-login-script.js',
-    'core/tests/puppeteer/lighthouse_setup.js'
+    'core/tests/puppeteer/lighthouse_setup.js',
   ],
   'core/templates/pages/header_css_libs.html': [
     'core/templates/css/oppia.css',
     'core/templates/css/oppia-material.css',
-  ]
+  ],
+  'core/templates/pages/oppia-root/index.ts': [
+    'core/templates/pages/oppia-root/oppia-root.mainpage.html',
+  ],
+  'core/templates/pages/lightweight-oppia-root/index.ts': [
+    'core/templates/pages/lightweight-oppia-root/lightweight-oppia-root.mainpage.html',
+  ],
 };
-
-const TYPESCRIPT_JAVASCRIPT_EXTENSION = /.*\.(js|ts)$/;
-const HTML_EXTENSION = /.*\.html$/;
-const FRONTEND_TEST_FILES = /^(?!puppeteer-acceptance-tests).*\.spec\.ts/$;
 
 /**
  * Gets all the module imports that are called using require or import in the
@@ -146,7 +144,7 @@ const getCallExpressionModuleImportsFromSourceFile = (
     if (!moduleSpecifierValue) {
       throw new Error(
         'The module specifier could not be evaluated in the require or import call in' +
-        `${callExpression.getText()} at ${sourceFile.getFilePath()}`
+          `${callExpression.getText()} at ${sourceFile.getFilePath()}`
       );
     }
     return resolveModuleRelativeToRoot(
@@ -328,10 +326,9 @@ const getAngularDependenciesFromHtmlFile = (
     });
 
   const dependencies: string[] = [];
-  for (const [
-    dependencyFile,
-    dependencyAngularInformations,
-  ] of Object.entries(fileToAngularInformations)) {
+  for (const [dependencyFile, dependencyAngularInformations] of Object.entries(
+    fileToAngularInformations
+  )) {
     for (const dependencyAngularInformation of dependencyAngularInformations) {
       if (
         dependencyAngularInformation.type === 'module' ||
@@ -456,13 +453,13 @@ const getDependencyMappingFromFiles = (
 ): Record<string, string[]> => {
   return files.reduce((acc, file) => {
     acc[file] = MANUALLY_MAPPED_DEPENDENCIES[file] || [];
-    if (TYPESCRIPT_JAVASCRIPT_EXTENSION.test(file)) {
+    if (file.endsWith('.ts') || file.endsWith('.js')) {
       const dependencies = getDependenciesFromTypeScriptOrJavaScriptFile(
         file,
         fileToAngularInformations
       );
       acc[file].push(...dependencies);
-    } else if (HTML_EXTENSION.test(file)) {
+    } else if (file.endsWith('.html')) {
       const dependencies = getDependenciesFromHtmlFile(
         file,
         fileToAngularInformations
@@ -474,19 +471,34 @@ const getDependencyMappingFromFiles = (
 };
 
 /**
- * Class to generate a dependency graph of the files given.
+ * Class to generate a file to root files mapping of the files given.
  */
-class DependencyGraphGenerator {
+class RootFilesMappingGenerator {
   files: string[];
   dependencyMapping: Record<string, string[]>;
   fileToAngularInformations: Record<string, AngularInformation[]>;
   pageModules: string[];
+  referenceCache: Record<string, string[]> = {};
 
   constructor(files: string[]) {
     this.files = files;
-    this.fileToAngularInformations = getFileToAngularInformationsFromFiles(files);
-    this.dependencyMapping = getDependencyMappingFromFiles(files, this.fileToAngularInformations);
+    this.fileToAngularInformations =
+      getFileToAngularInformationsFromFiles(files);
+    this.dependencyMapping = getDependencyMappingFromFiles(
+      files,
+      this.fileToAngularInformations
+    );
     this.pageModules = getPageModules();
+  }
+
+  /**
+   * Checks if the given file is an Angular module.
+   */
+  private isFileAngularModule(file: string): boolean {
+    const angularInformations = this.fileToAngularInformations[file];
+    return angularInformations.some(
+      angularInformation => angularInformation.type === 'module'
+    );
   }
 
   /**
@@ -496,29 +508,37 @@ class DependencyGraphGenerator {
     dependency: string,
     ignoreModules: boolean = true
   ): string[] {
-    return Object.keys(this.dependencyMapping).filter(
-      file => {
-        if (FRONTEND_TEST_FILES.test(file)) {
+    let references: string[] = [];
+
+    if (this.referenceCache[dependency]) {
+      references = this.referenceCache[dependency];
+    } else {
+      references = Object.keys(this.dependencyMapping).filter(file => {
+        if (
+          file.endsWith('.spec.ts') &&
+          !file.includes('puppeteer-acceptance-tests')
+        ) {
           return false;
         }
 
         const dependencies = this.dependencyMapping[file];
-        const fileIsModule = this.fileToAngularInformations[file].some(
-          angularInformation => angularInformation.type === 'module'
-        );
+        return dependencies.includes(dependency);
+      });
+      this.referenceCache[dependency] = references;
+    }
 
-        return (
-          dependencies.includes(dependency) &&
-          (!ignoreModules || !fileIsModule)
-        );
+    return references.filter((reference: string) => {
+      if (ignoreModules) {
+        return !this.isFileAngularModule(reference);
       }
-    );
+      return true;
+    });
   }
 
   /**
    * Finds the root dependencies for the given file.
    */
-  private getRootDependenciesOfFile(
+  private getRootFilesOfFile(
     file: string,
     cache: Record<string, string[]> = {},
     ignoreModules: boolean = true,
@@ -540,12 +560,7 @@ class DependencyGraphGenerator {
     const roots: string[] = [];
     for (const reference of references) {
       roots.push(
-        ...this.getRootDependenciesOfFile(
-          reference,
-          cache,
-          ignoreModules, 
-          visited
-        )
+        ...this.getRootFilesOfFile(reference, cache, ignoreModules, visited)
       );
     }
 
@@ -555,25 +570,25 @@ class DependencyGraphGenerator {
   /**
    * Generates the dependency graph from the files.
    */
-  public generateDependencyGraph(): Record<string, string[]> {
-    const dependencyGraph: Record<string, string[]> = {};
+  public generateRootFilesMapping(): Record<string, string[]> {
+    const rootFilesMapping: Record<string, string[]> = {};
 
     for (const file of this.files) {
-      dependencyGraph[file] = this.getRootDependenciesOfFile(file, dependencyGraph);
+      rootFilesMapping[file] = this.getRootFilesOfFile(file, rootFilesMapping);
     }
 
-    const modulizedDependencyGraph: Record<string, string[]> = {};
-    for (const [file, dependencies] of Object.entries(dependencyGraph)) {
-      const modulizedDependencies: string[] = [];
-      for (const dependency of dependencies) {
-        modulizedDependencies.push(
-          ...this.getRootDependenciesOfFile(dependency, modulizedDependencyGraph, false)
+    const modulizedRootFilesMapping: Record<string, string[]> = {};
+    for (const [file, rootFiles] of Object.entries(rootFilesMapping)) {
+      const modulizedRootFiles: string[] = [];
+      for (const rootFile of rootFiles) {
+        modulizedRootFiles.push(
+          ...this.getRootFilesOfFile(rootFile, modulizedRootFilesMapping, false)
         );
       }
-      modulizedDependencyGraph[file] = Array.from(new Set(modulizedDependencies));
+      modulizedRootFilesMapping[file] = Array.from(new Set(modulizedRootFiles));
     }
 
-    return modulizedDependencyGraph;
+    return modulizedRootFilesMapping;
   }
 }
 
@@ -584,8 +599,10 @@ const files = ts.sys
     return acc;
   }, []);
 
-const dependencyGraph = new DependencyGraphGenerator(files).generateDependencyGraph();
+const rootFilesMapping = new RootFilesMappingGenerator(
+  files
+).generateRootFilesMapping();
 fs.writeFileSync(
-  path.resolve(ROOT_DIRECTORY, 'dependency-graph.json'),
-  JSON.stringify(dependencyGraph, null, 2)
+  path.resolve(ROOT_DIRECTORY, 'root-files-mapping.json'),
+  JSON.stringify(rootFilesMapping, null, 2)
 );

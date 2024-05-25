@@ -160,10 +160,7 @@ const getPathFromRouteObjectNode = (
     const displayParts = referenceDefinition.getDisplayParts();
     return displayParts[displayParts.length - 1].getText().slice(1, -1);
   }
-  if (pathProperty.isKind(ts.SyntaxKind.StringLiteral)) {
-    return pathProperty.getLiteralText();
-  }
-  return undefined;
+  return getValueFromLiteralStringOrBinaryExpression(pathProperty);
 };
 
 /**
@@ -305,7 +302,6 @@ const getRouteNodesFromRoutingModuleSourceFile = (
   const importsArray = importsProperty.getFirstChildByKindOrThrow(
     ts.SyntaxKind.ArrayLiteralExpression
   );
-
   const routerModuleCallExpression = importsArray
     .getElements()
     .filter(element => {
@@ -392,8 +388,5 @@ export const getRouteToModuleMapping = (): Map<Route, string> => {
  */
 export const getPageModules = (): string[] => {
   const routeToModuleMapping = getRouteToModuleMapping();
-  return [
-    ...routeToModuleMapping.values(),
-    ...MANUAL_PAGE_MODULES
-  ]
+  return [...routeToModuleMapping.values(), ...MANUAL_PAGE_MODULES];
 };

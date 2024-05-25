@@ -12,22 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A script to generate a dependency graph of the Oppia codebase."""
+"""A script to generate a mapping of files and their root files."""
 
 from __future__ import annotations
 
-import subprocess
 import os
+import subprocess
 
 from scripts import common
 
 
 def main() -> None:
+    """Generates a mapping of files and their root files.""" 
+    
     common.compile_typescript_test_dependencies()
-    print('Generating dependency graph...')
-    dependency_graph_generator_path = os.path.join(
-        'core', 'tests', 'test-dependencies', 'dependency-graph-generator.js') 
-    cmd = [common.NODE_BIN_PATH, dependency_graph_generator_path]
+    print('Generating root files mapping...')
+    root_files_mapping_generator_path = os.path.join(
+        'core', 'tests', 'test-dependencies', 'root-files-mapping-generator.js')
+    cmd = [common.NODE_BIN_PATH, root_files_mapping_generator_path]
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -38,7 +40,7 @@ def main() -> None:
         raise Exception(stderr)
 
     print(encoded_stdout.decode('utf-8'))
-    print('Dependency graph generated successfully!')
+    print('Root files mapping generated successfully!')
 
 
 # The 'no coverage' pragma is used as this line is un-testable. This is because
