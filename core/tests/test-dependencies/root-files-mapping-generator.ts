@@ -75,6 +75,7 @@ const FILE_EXCLUSIONS = [
   'core/tests/release_sources',
   'core/tests/services_sources',
   'core/tests/test-dependencies',
+  'core/templates/tests',
   'core/templates/services/UpgradedServices.ts',
   'core/templates/services/angular-services.index.ts',
   'core/templates/utility/hashes.ts',
@@ -103,6 +104,8 @@ const MANUALLY_MAPPED_DEPENDENCIES: Record<string, string[]> = {
     'puppeteer-login-script.js',
     'core/tests/puppeteer/lighthouse_setup.js',
   ],
+  'core/tests/puppeteer-acceptance-tests/puppeteer-testing-utilities/puppeteer-utils.ts':
+    ['core/tests/puppeteer-acceptance-tests/spec/helpers/reporter.ts'],
   'core/templates/pages/header_css_libs.html': [
     'core/templates/css/oppia.css',
     'core/templates/css/oppia-material.css',
@@ -113,7 +116,145 @@ const MANUALLY_MAPPED_DEPENDENCIES: Record<string, string[]> = {
   'core/templates/pages/lightweight-oppia-root/index.ts': [
     'core/templates/pages/lightweight-oppia-root/lightweight-oppia-root.mainpage.html',
   ],
+  'core/templates/pages/error-pages/error-iframed-page/error-iframed-page.import.ts':
+    [
+      'core/templates/pages/error-pages/error-iframed-page/error-iframed.mainpage.html',
+    ],
 };
+
+const VALID_ROOT_FILES: string[] = [
+  'AUTHORS',
+  'CONTRIBUTORS',
+  '.github/CODEOWNERS',
+  '.github/CODE_OF_CONDUCT.md',
+  '.github/CONTRIBUTING.md',
+  '.github/PULL_REQUEST_TEMPLATE.md',
+  '.github/README.md',
+  '.github/SECURITY.md',
+  '.github/ISSUE_TEMPLATE/4_server_error_template.md',
+  '.github/workflows/README.md',
+  'assets/README.md',
+  'extensions/visualizations/visualizationsRequires.ts',
+  'extensions/interactions/interactionsQuestionsRequires.ts',
+  'core/templates/AppSpec.ts',
+  'extensions/value_generators/valueGeneratorsRequires.ts',
+  'extensions/objects/objectComponentsRequires.ts',
+  'extensions/objects/objectComponentsRequiresForPlayers.ts',
+  'core/templates/domain/exploration/ExplorationMetadataObjectFactorySpec.ts',
+  'core/templates/domain/exploration/ExplorationObjectFactorySpec.ts',
+  'core/templates/components/concept-card/concept-card-modal.template.html',
+  'extensions/rich_text_components/richTextComponentsRequires.ts',
+  'core/templates/domain/exploration/LostChangeObjectFactorySpec.ts',
+  'core/templates/domain/question/QuestionObjectFactorySpec.ts',
+  'core/templates/domain/skill/SkillObjectFactorySpec.ts',
+  'core/templates/domain/exploration/StatesObjectFactorySpec.ts',
+  'core/templates/domain/state/StateObjectFactorySpec.ts',
+  'core/templates/domain/collection/search-explorations-backend-api.service.ts',
+  'core/templates/pages/topics-and-skills-dashboard-page/topics-and-skills-dashboard-page.constants.ajs.ts',
+  'core/templates/domain/exploration/InteractionObjectFactorySpec.ts',
+  'core/templates/domain/exploration/SolutionObjectFactorySpec.ts',
+  'core/templates/services/services.constants.ajs.ts',
+  'core/README.md',
+  'core/templates/karma.module.ts',
+  'core/templates/directives/mathjax-bind.directive.ts',
+  'core/templates/components/skills-mastery-list/skills-mastery-list-concept-card-modal.controller.ts',
+  'core/templates/components/common-layout-directives/common-elements/confirmation-modal.template.html',
+  'core/templates/components/common-layout-directives/navigation-bars/side-navigation-bar.component.css',
+  'core/templates/components/forms/validators/README.md',
+  'core/templates/components/forms/validators/is-float.filter.ts',
+  'core/templates/components/question-directives/question-player/question-player.constants.ajs.ts',
+  'core/templates/components/question-directives/questions-list/questions-list.constants.ajs.ts',
+  'core/templates/components/skills-mastery-list/skills-mastery-list.constants.ajs.ts',
+  'core/templates/components/state-editor/state-editor.constants.ajs.ts',
+  'core/templates/components/state-editor/state-editor-properties-services/state-written-translations.service.ts',
+  'core/templates/components/summary-tile/collection-summary-tile.constants.ajs.ts',
+  'core/templates/css/README.md',
+  'core/templates/domain/classroom/classroom-domain.constants.ajs.ts',
+  'core/templates/domain/collection/collection-domain.constants.ajs.ts',
+  'core/templates/domain/exploration/OutcomeObjectFactorySpec.ts',
+  'core/templates/domain/exploration/ParamChangeObjectFactorySpec.ts',
+  'core/templates/domain/exploration/ParamChangesObjectFactorySpec.ts',
+  'core/templates/domain/exploration/ParamSpecObjectFactorySpec.ts',
+  'core/templates/domain/exploration/ParamSpecsObjectFactorySpec.ts',
+  'core/templates/domain/exploration/ParamTypeObjectFactorySpec.ts',
+  'core/templates/domain/exploration/SubtitledUnicodeObjectFactorySpec.ts',
+  'core/templates/domain/statistics/learner-answer-details.model.ts',
+  'core/templates/domain/exploration/TranslatedContentObjectFactorySpec.ts',
+  'core/templates/domain/exploration/WrittenTranslationObjectFactorySpec.ts',
+  'core/templates/domain/exploration/WrittenTranslationsObjectFactorySpec.ts',
+  'core/templates/domain/feedback_thread/FeedbackThreadObjectFactorySpec.ts',
+  'core/templates/domain/objects/NumberWithUnitsObjectFactorySpec.ts',
+  'core/templates/domain/objects/UnitsObjectFactorySpec.ts',
+  'core/templates/domain/objects/objects-domain.constants.ajs.ts',
+  'core/templates/domain/question/question-domain.constants.ajs.ts',
+  'core/templates/domain/skill/MisconceptionObjectFactorySpec.ts',
+  'core/templates/domain/skill/skill-domain.constants.ajs.ts',
+  'core/templates/domain/state/state-version-history.model.ts',
+  'core/templates/domain/statistics/statistics-domain.constants.ajs.ts',
+  'core/templates/domain/story/story-domain.constants.ajs.ts',
+  'core/templates/domain/story_viewer/story-viewer-domain.constants.ajs.ts',
+  'core/templates/domain/topic/topic-domain.constants.ajs.ts',
+  'core/templates/domain/topic_viewer/topic-viewer-domain.constants.ajs.ts',
+  'core/templates/domain/topics_and_skills_dashboard/topics-and-skills-dashboard-domain.constants.ajs.ts',
+  'core/templates/domain/utilities/classifier-file.model.ts',
+  'core/templates/domain/voiceover/voiceover-domain.constants.ajs.ts',
+  'core/templates/filters/string-utility-filters/capitalize.filter.ts',
+  'core/templates/filters/string-utility-filters/convert-to-plain-text.filter.ts',
+  'core/templates/pages/interaction-specs.constants.ajs.ts',
+  'core/templates/pages/about-page/about-page.constants.ajs.ts',
+  'core/templates/pages/admin-page/admin-page.constants.ajs.ts',
+  'core/templates/pages/contributor-dashboard-admin-page/contributor-dashboard-admin-page.constants.ajs.ts',
+  'core/templates/pages/contributor-dashboard-page/contributor-dashboard-page.constants.ajs.ts',
+  'core/templates/pages/creator-dashboard-page/creator-dashboard-page.constants.ajs.ts',
+  'core/templates/pages/exploration-editor-page/exploration-editor-page.constants.ajs.ts',
+  'core/templates/pages/exploration-editor-page/editor-tab/graph-directives/state-graph-visualization.directive.html',
+  'core/templates/pages/exploration-editor-page/statistics-tab/templates/playthrough-modal.template.html',
+  'core/templates/pages/exploration-player-page/new-lesson-player/README.md',
+  'core/templates/pages/exploration-player-page/new-lesson-player/lesson-player-page.constants.ts',
+  'core/templates/pages/landing-pages/topic-landing-page/topic-landing-page.constants.ajs.ts',
+  'core/templates/pages/learner-dashboard-page/learner-dashboard-page.constants.ajs.ts',
+  'core/templates/pages/learner-group-pages/learner-group-pages.constants.ajs.ts',
+  'core/templates/pages/practice-session-page/practice-session-page.constants.ajs.ts',
+  'core/templates/pages/release-coordinator-page/release-coordinator-page.constants.ajs.ts',
+  'core/templates/pages/review-test-page/review-test-page.constants.ajs.ts',
+  'core/templates/pages/skill-editor-page/skill-editor-page.constants.ajs.ts',
+  'core/templates/pages/story-editor-page/story-editor-page.constants.ajs.ts',
+  'core/templates/pages/topic-editor-page/topic-editor-page.constants.ajs.ts',
+  'core/templates/services/nested-directives-recursion-timeout-prevention.service.ts',
+  'extensions/classifiers/python-program.tokenizer.ts',
+  'core/templates/third-party-imports/select2.import.ts',
+  'core/tests/karma.conf.ts',
+  'core/tests/protractor-browserstack.conf.js',
+  'core/tests/wdio.conf.js',
+  'data/README.md',
+  'data/voiceovers/README.md',
+  'extensions/README.md',
+  'extensions/ckeditor_plugins/pre/plugin.js',
+  'extensions/classifiers/README.md',
+  'extensions/classifiers/classifiers-extension.constants.ajs.ts',
+  'extensions/classifiers/winnowing-preprocessing.service.ts',
+  'extensions/interactions/interactions-extension.constants.ajs.ts',
+  'extensions/interactions/AlgebraicExpressionInput/directives/algebraic-expression-input-short-response.component.html',
+  'extensions/objects/templates/svg-editor.constants.ajs.ts',
+  'extensions/rich_text_components/README.md',
+];
+const RUN_ALL_TESTS_ROOT_FILES: string[] = [
+  'core/templates/pages/oppia-root/index.ts',
+  'core/templates/pages/lightweight-oppia-root/index.ts',
+  'src/main.ts',
+  'src/index.html',
+  'src/index.prod.html',
+  'src/environments/environment.prod.ts',
+  'src/environments/environment.ts',
+  'extensions/extensions.module.ts',
+  'core/templates/services/ngb-modal.service.ts',
+  'core/templates/directives/angular-html-bind.directive.ts',
+];
+
+const CI_TEST_SUITES_DIRECTORY = path.resolve(
+  ROOT_DIRECTORY,
+  'core/tests/ci-test-suites-config'
+);
 
 /**
  * Gets all the module imports that are called using require or import in the
@@ -502,6 +643,15 @@ class RootFilesMappingGenerator {
   }
 
   /**
+   * Checks if a file is a frontend test file.
+   */
+  private isFrontendTestFile(file: string): boolean {
+    return (
+      file.endsWith('.spec.ts') && !file.includes('puppeteer-acceptance-tests')
+    );
+  }
+
+  /**
    * Gets the files that depend on the given dependency.
    */
   private getFilesWithDependency(
@@ -514,10 +664,7 @@ class RootFilesMappingGenerator {
       references = this.referenceCache[dependency];
     } else {
       references = Object.keys(this.dependencyMapping).filter(file => {
-        if (
-          file.endsWith('.spec.ts') &&
-          !file.includes('puppeteer-acceptance-tests')
-        ) {
+        if (this.isFrontendTestFile(file)) {
           return false;
         }
 
@@ -568,7 +715,54 @@ class RootFilesMappingGenerator {
   }
 
   /**
-   * Generates the dependency graph from the files.
+   * Gets the modules that are part of the CI test suites.
+   */
+  private getCITestSuiteModules(): string[] {
+    const ciTestSuiteModules: string[] = [];
+    const ciTestSuiteConfigFiles = fs
+      .readdirSync(CI_TEST_SUITES_DIRECTORY)
+      .map(file => path.join(CI_TEST_SUITES_DIRECTORY, file));
+    for (const ciTestSuiteConfig of ciTestSuiteConfigFiles) {
+      const config = JSON.parse(fs.readFileSync(ciTestSuiteConfig, 'utf-8'));
+      const suites = config.suites;
+      for (const suite of suites) {
+        ciTestSuiteModules.push(suite.module);
+      }
+    }
+    return ciTestSuiteModules;
+  }
+
+  /**
+   * Validates the root files mapping.
+   */
+  private validateRootFilesMapping(
+    rootFilesMapping: Record<string, string[]>
+  ): void {
+    const rootFiles = Array.from(
+      new Set(Object.values(rootFilesMapping).flat())
+    );
+    const invalidRootFiles = rootFiles.filter((rootFile: string) => {
+      if (this.isFrontendTestFile(rootFile)) {
+        return false;
+      }
+
+      return ![
+        ...VALID_ROOT_FILES,
+        ...RUN_ALL_TESTS_ROOT_FILES,
+        ...this.pageModules,
+        ...this.getCITestSuiteModules(),
+      ].includes(rootFile);
+    });
+    if (invalidRootFiles.length > 0) {
+      throw new Error(
+        'The following invalid root files were found when generating ' +
+          `the root files mapping:\n${invalidRootFiles.join('\n')}`
+      );
+    }
+  }
+
+  /**
+   * Generates the root files mapping.
    */
   public generateRootFilesMapping(): Record<string, string[]> {
     const rootFilesMapping: Record<string, string[]> = {};
@@ -587,6 +781,8 @@ class RootFilesMappingGenerator {
       }
       modulizedRootFilesMapping[file] = Array.from(new Set(modulizedRootFiles));
     }
+
+    this.validateRootFilesMapping(modulizedRootFilesMapping);
 
     return modulizedRootFilesMapping;
   }

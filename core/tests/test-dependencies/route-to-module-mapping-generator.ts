@@ -125,6 +125,8 @@ const MANUAL_ROUTE_TO_MODULE_MAPPING: Map<Route, string> = new Map([
 const MANUAL_PAGE_MODULES = [
   'core/templates/pages/error-pages/error-page.import.ts',
   'core/templates/pages/maintenance-page/maintenance-page.import.ts',
+  'core/templates/pages/email-dashboard-pages/email-dashboard-result.import.ts',
+  'core/templates/pages/error-pages/error-iframed-page/error-iframed-page.import.ts',
 ];
 
 /**
