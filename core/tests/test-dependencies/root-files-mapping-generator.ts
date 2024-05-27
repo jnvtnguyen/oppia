@@ -385,7 +385,7 @@ const getAngularDependenciesFromHtmlFile = (
 };
 
 /**
- * Gets all the load dependencies from a HTML file.
+ * Gets the load dependencies from a HTML file.
  */
 const getLoadDependenciesFromHtmlFile = (file: string): string[] => {
   const content = fs.readFileSync(file, 'utf-8');
