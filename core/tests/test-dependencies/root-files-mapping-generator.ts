@@ -27,7 +27,7 @@ import {
   AngularDecorators,
   getRelativePathToRootDirectory,
   isNodeModule,
-  getAllDecorationNodesByTextFromSourceFile,
+  getDecorationNodesByTextFromSourceFile,
   resolveModuleRelativeToRoot,
   getDecorationNodeText,
   getValueFromLiteralStringOrBinaryExpression,
@@ -152,7 +152,7 @@ const getCallExpressionModuleImportsFromSourceFile = (
     const moduleSpecifier = callExpression.getArguments()[0];
     if (!moduleSpecifier) {
       throw new Error(
-        `No module specifier found in require or import call in ` +
+        'No module specifier found in require or import call in ' +
           `${sourceFile.getFilePath()} with ${callExpression.getText()}`
       );
     }
@@ -200,7 +200,7 @@ const getAngularInformationsFromSourceFile = (
   const decorationNodes: Decorator[] = [];
   for (const decorator of Object.values(AngularDecorators)) {
     decorationNodes.push(
-      ...getAllDecorationNodesByTextFromSourceFile(sourceFile, decorator)
+      ...getDecorationNodesByTextFromSourceFile(sourceFile, decorator)
     );
   }
 
@@ -591,21 +591,22 @@ class RootFilesMappingGenerator {
   }
 
   /**
-   * Gets the modules that are part of the CI test suites.
+   * Gets the modules that correspond with the test suites.
    */
-  private getCITestSuiteModules(): string[] {
-    const ciTestSuiteModules: string[] = [];
-    const ciTestSuiteConfigFiles = fs
+  private getTestSuiteModules(): string[] {
+    const testSuiteModules: string[] = [];
+    const testSuiteConfigFiles = fs
       .readdirSync(CI_TEST_SUITE_CONFIGS_DIRECTORY)
+      .filter((file: string) => file.endsWith('.json'))
       .map(file => path.join(CI_TEST_SUITE_CONFIGS_DIRECTORY, file));
-    for (const ciTestSuiteConfig of ciTestSuiteConfigFiles) {
-      const config = JSON.parse(fs.readFileSync(ciTestSuiteConfig, 'utf-8'));
+    for (const testSuiteConfig of testSuiteConfigFiles) {
+      const config = JSON.parse(fs.readFileSync(testSuiteConfig, 'utf-8'));
       const suites = config.suites;
       for (const suite of suites) {
-        ciTestSuiteModules.push(suite.module);
+        testSuiteModules.push(suite.module);
       }
     }
-    return ciTestSuiteModules;
+    return testSuiteModules;
   }
 
   /**
@@ -614,7 +615,7 @@ class RootFilesMappingGenerator {
   private getValidRootFiles(): string[] {
     const validRootFiles: string[] = [
       ...this.pageModules,
-      ...this.getCITestSuiteModules(),
+      ...this.getTestSuiteModules(),
     ];
     const rootFilesConfig = JSON.parse(
       fs.readFileSync(ROOT_FILES_CONFIG_FILE, 'utf-8')

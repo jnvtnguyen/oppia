@@ -20,11 +20,6 @@ import path from 'path';
 import fs from 'fs';
 import {Decorator, Node, Project, SourceFile, ts} from 'ts-morph';
 
-type ResolvedModuleWithFailedLookupLocations =
-  ts.ResolvedModuleWithFailedLookupLocations & {
-    failedLookupLocations: string[];
-  };
-
 /**
  * Gets the root directory of the project by traversing up the directory tree
  * until a package.json file is found.
@@ -49,6 +44,14 @@ export enum AngularDecorators {
   Module = 'NgModule',
 }
 
+type ResolvedModuleWithFailedLookupLocations =
+  ts.ResolvedModuleWithFailedLookupLocations & {
+    failedLookupLocations: string[];
+  };
+
+/**
+ * List of types that are defined in node.
+ */
 const NODE_TYPE_ROOTS = ['fs', 'console', 'path', 'child_process'];
 
 /**
@@ -181,7 +184,7 @@ export const getDecorationNodeText = (decorator: Decorator): string => {
 /**
  * Gets all decoration nodes by text from a source file.
  */
-export const getAllDecorationNodesByTextFromSourceFile = (
+export const getDecorationNodesByTextFromSourceFile = (
   sourceFile: SourceFile,
   text: string
 ): Decorator[] => {
