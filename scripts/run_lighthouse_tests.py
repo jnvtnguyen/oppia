@@ -207,6 +207,7 @@ def run_lighthouse_checks(lighthouse_mode: str, shard: str) -> None:
         bash_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     if process.returncode == 0:
+        print(stdout.decode('utf-8'))
         print('Lighthouse checks completed successfully.')
     else:
         print('Return code: %s' % process.returncode)
