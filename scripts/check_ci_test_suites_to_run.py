@@ -65,7 +65,7 @@ class LighthouseTestSuiteDict(GenericTestSuiteDict):
     pages_to_run: List[str]
 
 
-class TestSuiteConfigsDict(TypedDict):
+class TestSuitesByTypeDict(TypedDict):
     """A dictionary representing all of the test suites of each test type."""
 
     e2e: List[GenericTestSuiteDict]
@@ -208,40 +208,19 @@ def output_variable_to_github_workflow(
         print(f'{output_variable}={output_value}', file=o)
 
 
-def output_all_test_suites_to_run_to_github_workflow() -> None:
-    """Outputs all test suites to run to the GitHub workflow."""
-    test_suite_configs = get_test_suite_configs()
-    test_suites_to_run = create_ci_test_suites_to_run_dict(
-        e2e=create_ci_test_suites_dict(
-            test_suite_configs['e2e']
-        ),
-        acceptance=create_ci_test_suites_dict(
-            test_suite_configs['acceptance']
-        ),
-        lighthouse_performance=create_ci_test_suites_dict(
-            test_suite_configs['lighthouse_performance']
-        ),
-        lighthouse_accessibility=create_ci_test_suites_dict(
-            test_suite_configs['lighthouse_accessibility']
-        )
-    )
-    output_variable_to_github_workflow(
-        GITHUB_OUTPUT_TEST_SUITES_TO_RUN, json.dumps(test_suites_to_run))
-
-
-def get_test_suites_config(
-    test_suite_config_file_path: str
+def get_test_suites_from_config(
+    test_suites_config_file_path: str
 ) -> List[GenericTestSuiteDict]:
-    """Gets the test suites from a test type configuration file.
+    """Gets the test suites from a configuration file.
 
     Args:
-        test_suite_config_file_path: str. The path to the test suite
+        test_suites_config_file_path: str. The path to the test suites
             configuration file.
 
     Returns:
-        list(dict). The test suites from the test type configuration file.
+        list(dict). The test suites from the configuration file.
     """
-    with open(test_suite_config_file_path, 'r', encoding='utf-8') as f:
+    with open(test_suites_config_file_path, 'r', encoding='utf-8') as f:
         suites: List[GenericTestSuiteDict] = json.load(f)['suites']
         return suites
 
@@ -282,32 +261,32 @@ def get_lighthouse_pages_config() -> dict[str, List[LighthousePageDict]]:
     return lighthouse_pages_config
 
 
-def get_test_suite_configs() -> TestSuiteConfigsDict:
-    """Gets the test suite configurations for each test type.
+def get_test_suites_by_type() -> TestSuitesByTypeDict:
+    """Gets the test suites configurations for each test type.
 
     Returns:
-        dict. The test suite configurations for each test type.
+        dict. The test suites configurations for each test type.
     """
 
-    e2e_test_suites = get_test_suites_config(
+    e2e_test_suites = get_test_suites_from_config(
         os.path.join(
             CI_TEST_SUITE_CONFIGS_DIRECTORY,
             'e2e.json'
         )
     )
-    acceptance_test_suites = get_test_suites_config(
+    acceptance_test_suites = get_test_suites_from_config(
         os.path.join(
             CI_TEST_SUITE_CONFIGS_DIRECTORY,
             'acceptance.json'
         )
     )
-    lighthouse_accessibility_test_suites = get_test_suites_config(
+    lighthouse_accessibility_test_suites = get_test_suites_from_config(
         os.path.join(
             CI_TEST_SUITE_CONFIGS_DIRECTORY,
             'lighthouse-accessibility.json'
         )
     )
-    lighthouse_performance_test_suites = get_test_suites_config(
+    lighthouse_performance_test_suites = get_test_suites_from_config(
         os.path.join(
             CI_TEST_SUITE_CONFIGS_DIRECTORY,
             'lighthouse-performance.json'
@@ -344,6 +323,27 @@ def get_test_suite_configs() -> TestSuiteConfigsDict:
         'lighthouse_performance': 
             lighthouse_performance_test_suites_with_pages
     }
+
+
+def output_all_test_suites_to_run_to_github_workflow() -> None:
+    """Outputs all test suites to run to the GitHub workflow."""
+    test_suites_by_type = get_test_suites_by_type()
+    test_suites_to_run = create_ci_test_suites_to_run_dict(
+        e2e=create_ci_test_suites_dict(
+            test_suites_by_type['e2e']
+        ),
+        acceptance=create_ci_test_suites_dict(
+            test_suites_by_type['acceptance']
+        ),
+        lighthouse_performance=create_ci_test_suites_dict(
+            test_suites_by_type['lighthouse_performance']
+        ),
+        lighthouse_accessibility=create_ci_test_suites_dict(
+            test_suites_by_type['lighthouse_accessibility']
+        )
+    )
+    output_variable_to_github_workflow(
+        GITHUB_OUTPUT_TEST_SUITES_TO_RUN, json.dumps(test_suites_to_run))
 
 
 def get_test_suite_by_name_from_list(
@@ -499,27 +499,27 @@ def get_test_suites_affected_by_root_file(
     )
 
 
-def get_lighthouse_pages_to_run(
+def get_affected_lighthouse_pages(
     suite_name: str,
     modified_root_files: List[str]
 ) -> List[str]:
-    """Gets the Lighthouse pages to run.
+    """Gets the affected Lighthouse pages by a list of modified root files.
 
     Args:
         suite_name: str. The name of the Lighthouse test suite.
         modified_root_files: list(str). The list of modified root files.
 
     Returns:
-        list(str). The Lighthouse pages to run.
+        list(str). The affected Lighthouse pages.
     """
     lighthouse_pages_config = get_lighthouse_pages_config()
-    lighthouse_pages_to_run: List[LighthousePageDict] = []
+    affected_lighthouse_pages: List[LighthousePageDict] = []
     for modified_root_file in modified_root_files:
         for lighthouse_page in lighthouse_pages_config[suite_name]:
             if modified_root_file == lighthouse_page['page_module']:
-                lighthouse_pages_to_run.append(lighthouse_page)
+                affected_lighthouse_pages.append(lighthouse_page)
 
-    return get_lighthouse_page_names(lighthouse_pages_to_run)
+    return get_lighthouse_page_names(affected_lighthouse_pages)
 
 
 def get_ci_test_suites_to_run(
@@ -544,14 +544,14 @@ def get_ci_test_suites_to_run(
             if root_file not in modified_root_files:
                 modified_root_files.append(root_file)
 
-    ci_test_suites_configs = get_test_suite_configs()
+    test_suites_by_type = get_test_suites_by_type()
 
     acceptance_test_suites_to_module_mapping = get_test_suites_to_module_mapping_from_directory( # pylint: disable=line-too-long
         os.path.join(
             TEST_MODULES_MAPPING_DIRECTORY,
             'acceptance'
         ),
-        ci_test_suites_configs['acceptance']
+        test_suites_by_type['acceptance']
     )
 
     lighthouse_accessibility_test_suites_to_module_mapping = get_test_suites_to_module_mapping_from_directory( # pylint: disable=line-too-long
@@ -559,7 +559,7 @@ def get_ci_test_suites_to_run(
             TEST_MODULES_MAPPING_DIRECTORY,
             'lighthouse-accessibility'
         ),
-        ci_test_suites_configs['lighthouse_accessibility']
+        test_suites_by_type['lighthouse_accessibility']
     )
 
     lighthouse_performance_test_suites_to_module_mapping = get_test_suites_to_module_mapping_from_directory( # pylint: disable=line-too-long
@@ -567,12 +567,12 @@ def get_ci_test_suites_to_run(
             TEST_MODULES_MAPPING_DIRECTORY,
             'lighthouse-performance'
         ),
-        ci_test_suites_configs['lighthouse_performance']
+        test_suites_by_type['lighthouse_performance']
     )
 
-    acceptance_test_suites: List[GenericTestSuiteDict]
+    acceptance_test_suites: List[GenericTestSuiteDict] = []
     lighthouse_accessibility_test_suites: List[GenericTestSuiteDict] = []
-    lighthouse_performance_test_suites: List[GenericTestSuiteDict]
+    lighthouse_performance_test_suites: List[GenericTestSuiteDict] = []
 
     for root_file in modified_root_files:
         acceptance_test_suites = extend_test_suites_without_duplicates(
@@ -580,7 +580,7 @@ def get_ci_test_suites_to_run(
             get_test_suites_affected_by_root_file(
                 root_file,
                 acceptance_test_suites_to_module_mapping,
-                ci_test_suites_configs['acceptance']
+                test_suites_by_type['acceptance']
             )
         )
 
@@ -589,7 +589,7 @@ def get_ci_test_suites_to_run(
             get_test_suites_affected_by_root_file(
                 root_file,
                 lighthouse_accessibility_test_suites_to_module_mapping,
-                ci_test_suites_configs['lighthouse_accessibility']
+                test_suites_by_type['lighthouse_accessibility']
             )
         )
 
@@ -598,7 +598,7 @@ def get_ci_test_suites_to_run(
             get_test_suites_affected_by_root_file(
                 root_file,
                 lighthouse_performance_test_suites_to_module_mapping,
-                ci_test_suites_configs['lighthouse_performance']
+                test_suites_by_type['lighthouse_performance']
             )
         )
 
@@ -609,7 +609,7 @@ def get_ci_test_suites_to_run(
         lighthouse_accessibility_test_suites_with_pages.append({
             'name': lighthouse_test_suite['name'],
             'module': lighthouse_test_suite['module'],
-            'pages_to_run': get_lighthouse_pages_to_run(
+            'pages_to_run': get_affected_lighthouse_pages(
                 lighthouse_test_suite['name'],
                 modified_root_files
             )
@@ -619,15 +619,17 @@ def get_ci_test_suites_to_run(
         lighthouse_performance_test_suites_with_pages.append({
             'name': lighthouse_test_suite['name'],
             'module': lighthouse_test_suite['module'],
-            'pages_to_run': get_lighthouse_pages_to_run(
+            'pages_to_run': get_affected_lighthouse_pages(
                 lighthouse_test_suite['name'],
                 modified_root_files
             )
         })
 
     return create_ci_test_suites_to_run_dict(
-        e2e=create_ci_test_suites_dict(ci_test_suites_configs['e2e']),
-        acceptance=create_ci_test_suites_dict(acceptance_test_suites),
+        e2e=create_ci_test_suites_dict(test_suites_by_type['e2e']),
+        acceptance=create_ci_test_suites_dict(
+            acceptance_test_suites
+        ),
         lighthouse_performance=create_ci_test_suites_dict(
             lighthouse_performance_test_suites_with_pages
         ),
