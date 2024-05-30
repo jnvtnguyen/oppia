@@ -90,9 +90,18 @@ class CITestSuitesToRunDict(TypedDict):
     lighthouse_accessibility: CITestSuitesDict
 
 
+class RootFilesConfigDict(TypedDict):
+    """A dictionary representing the root files configuration."""
+
+    valid_root_files: List[str]
+    run_all_tests_root_files: List[str]
+
+
 GITHUB_OUTPUT_TEST_SUITES_TO_RUN: Final = 'TEST_SUITES_TO_RUN'
-ROOT_FILES_MAPPING_FILEPATH: Final = 'root-files-mapping.json'
-LIGHTHOUSE_PAGES_CONFIG_FILEPATH: Final = os.path.join(
+ROOT_FILES_MAPPING_FILE_PATH: Final = 'root-files-mapping.json'
+ROOT_FILES_CONFIG_FILE_PATH: Final = os.path.join(
+    'core', 'tests', 'root-files-config.json')
+LIGHTHOUSE_PAGES_CONFIG_FILE_PATH: Final = os.path.join(
     'core', 'tests', 'lighthouse-pages.json')
 CI_TEST_SUITE_CONFIGS_DIRECTORY: Final = os.path.join(
     'core', 'tests', 'ci-test-suite-configs')
@@ -194,6 +203,20 @@ def does_files_include_python(files: List[str]) -> bool:
     return False
 
 
+def get_root_files_config() -> RootFilesConfigDict:
+    """Gets the root files configuration.
+
+    Returns:
+        dict. The root files configuration.
+    """
+    with open(ROOT_FILES_CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+        return {
+            'valid_root_files': config['VALID_ROOT_FILES'],
+            'run_all_tests_root_files': config['RUN_ALL_TESTS_ROOT_FILES']
+        }
+
+
 def output_variable_to_github_workflow(
     output_variable: str,
     output_value: str
@@ -206,6 +229,50 @@ def output_variable_to_github_workflow(
     """
     with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as o:
         print(f'{output_variable}={output_value}', file=o)
+
+
+def format_test_suites_for_github_output(
+    test_suites: CITestSuitesDict
+) -> dict:
+    """Formats the test suites for GitHub output.
+
+    Args:
+        test_suites: dict. The test suites to format.
+
+    Returns:
+        dict. The formatted test suites.
+    """
+    formatted_suites = []
+    for test_suite in test_suites['suites']:
+        test_suite.pop('module')
+        formatted_suites.append(test_suite)
+    return {
+        'suites': formatted_suites,
+        'count': test_suites['count']
+    }
+
+
+def format_test_suites_to_run_for_github_output(
+    test_suites_to_run: CITestSuitesToRunDict
+) -> str:
+    """Formats the test suites to run and converts it to JSON
+    for GitHub output.
+
+    Args:
+        test_suites_to_run: dict. The test suites to run.
+
+    Returns:
+        dict. The formatted test suites to run.
+    """
+    return json.dumps({
+        'e2e': format_test_suites_for_github_output(test_suites_to_run['e2e']),
+        'acceptance': format_test_suites_for_github_output(
+            test_suites_to_run['acceptance']),
+        'lighthouse_performance': format_test_suites_for_github_output(
+            test_suites_to_run['lighthouse_performance']),
+        'lighthouse_accessibility': format_test_suites_for_github_output(
+            test_suites_to_run['lighthouse_accessibility'])
+    })
 
 
 def get_test_suites_from_config(
@@ -246,7 +313,7 @@ def get_lighthouse_pages_config() -> dict[str, List[LighthousePageDict]]:
         dict(str, list(dict)). The Lighthouse pages configuration.
     """
     lighthouse_pages_config: dict[str, List[LighthousePageDict]] = {}
-    with open(LIGHTHOUSE_PAGES_CONFIG_FILEPATH, 'r', encoding='utf-8') as f:
+    with open(LIGHTHOUSE_PAGES_CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
         shards: dict[
             str,
             dict[str, LighthousePageDict]
@@ -343,7 +410,9 @@ def output_all_test_suites_to_run_to_github_workflow() -> None:
         )
     )
     output_variable_to_github_workflow(
-        GITHUB_OUTPUT_TEST_SUITES_TO_RUN, json.dumps(test_suites_to_run))
+        GITHUB_OUTPUT_TEST_SUITES_TO_RUN,
+        format_test_suites_to_run_for_github_output(test_suites_to_run)
+    )
 
 
 def get_test_suite_by_name_from_list(
@@ -455,7 +524,7 @@ def extend_test_suites_without_duplicates(
         list(dict). The list of test suites extended without duplicates.
     """
     for test_suite in test_suites_to_extend:
-        if test_suite not in test_suites_to_extend:
+        if test_suite not in test_suites:
             test_suites.append(test_suite)
     return test_suites
 
@@ -488,9 +557,10 @@ def get_test_suites_affected_by_root_file(
             test_suites,
             test_suite_name
         )
-        if test_suite_by_name is None:
-            continue
-        if root_file in test_suite_modules or root_file == test_suite_by_name['module']: # pylint: disable=line-too-long
+        if test_suite_by_name is not None and (
+            root_file in test_suite_modules or
+            root_file == test_suite_by_name['module']
+        ):
             test_suites_affected.append(test_suite_by_name)
 
     return extend_test_suites_without_duplicates(
@@ -543,6 +613,11 @@ def get_ci_test_suites_to_run(
         for root_file in root_files_mapping[file]:
             if root_file not in modified_root_files:
                 modified_root_files.append(root_file)
+
+    root_files_config = get_root_files_config()
+    for modified_root_file in modified_root_files:
+        if modified_root_file in root_files_config['run_all_tests_root_files']:
+            return None
 
     test_suites_by_type = get_test_suites_by_type()
 
@@ -656,7 +731,7 @@ def main(args: Optional[list[str]] = None) -> None:
 
     # generate_root_files_mapping.main()
 
-    with open(ROOT_FILES_MAPPING_FILEPATH, 'r', encoding='utf-8') as f:
+    with open(ROOT_FILES_MAPPING_FILE_PATH, 'r', encoding='utf-8') as f:
         root_files_mapping = json.load(f)
         ci_test_suites_to_run = get_ci_test_suites_to_run(
             changed_files, root_files_mapping)
@@ -666,4 +741,6 @@ def main(args: Optional[list[str]] = None) -> None:
             return
 
         output_variable_to_github_workflow(
-            GITHUB_OUTPUT_TEST_SUITES_TO_RUN, json.dumps(ci_test_suites_to_run))
+            GITHUB_OUTPUT_TEST_SUITES_TO_RUN,
+            format_test_suites_to_run_for_github_output(ci_test_suites_to_run)
+        )

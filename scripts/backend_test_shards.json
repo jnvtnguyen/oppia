@@ -357,6 +357,7 @@
         "scripts.run_custom_eslint_tests_test",
         "scripts.run_presubmit_checks_test",
         "scripts.run_tests_test",
+        "scripts.check_ci_test_suites_to_run_test",
         "core.controllers.collection_viewer_test",
         "core.domain.rating_services_test",
         "core.domain.classifier_services_test",
