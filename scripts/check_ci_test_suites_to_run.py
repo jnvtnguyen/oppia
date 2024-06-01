@@ -106,7 +106,7 @@ LIGHTHOUSE_PAGES_CONFIG_FILE_PATH: Final = os.path.join(
 CI_TEST_SUITE_CONFIGS_DIRECTORY: Final = os.path.join(
     'core', 'tests', 'ci-test-suite-configs')
 TEST_MODULES_MAPPING_DIRECTORY: Final = os.path.join(
-    'core', 'tests', 'test-modules-mapping')
+    'core', 'tests', 'test-modules-mappings')
 
 
 def create_ci_test_suites_dict(

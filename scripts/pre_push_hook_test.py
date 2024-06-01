@@ -84,13 +84,6 @@ class PrePushHookTests(test_utils.GenericTestBase):
             unused_diff_files: List[pre_push_hook.FileDiff]
         ) -> bool:
             return self.does_diff_include_ts_files
-
-        self.does_diff_include_ci_config_or_js_files = False
-        def mock_does_diff_include_ci_config_or_js_files(
-            unused_diff_files: List[pre_push_hook.FileDiff]
-        ) -> bool:
-            return self.does_diff_include_ci_config_or_js_files
-
         def mock_check_backend_python_library_for_inconsistencies() -> None:
             return
 
@@ -120,10 +113,6 @@ class PrePushHookTests(test_utils.GenericTestBase):
         self.ts_swap = self.swap(
             pre_push_hook, 'does_diff_include_ts_files',
             mock_does_diff_include_ts_files)
-        self.ci_config_or_js_files_swap = self.swap(
-            pre_push_hook,
-            'does_diff_include_ci_config_or_js_files',
-            mock_does_diff_include_ci_config_or_js_files)
 
     def test_start_subprocess_for_result(self) -> None:
         with self.popen_swap:
@@ -654,16 +643,6 @@ class PrePushHookTests(test_utils.GenericTestBase):
             pre_push_hook.does_diff_include_ts_files(
                 [b'file1.html', b'file2.yml', b'file3.js']))
 
-    def test_does_diff_include_ci_config_or_js_files(self) -> None:
-        self.assertTrue(
-            pre_push_hook.does_diff_include_ci_config_or_js_files(
-                [b'file1.js', b'protractor.conf.js', b'e2e_dummy.yml']))
-
-    def test_does_diff_include_ci_config_or_js_files_fail(self) -> None:
-        self.assertFalse(
-            pre_push_hook.does_diff_include_ci_config_or_js_files(
-                [b'file1.ts', b'file2.ts', b'file3.html']))
-
     def test_repo_in_dirty_state(self) -> None:
         def mock_has_uncommitted_files() -> bool:
             return True
@@ -811,29 +790,6 @@ class PrePushHookTests(test_utils.GenericTestBase):
                                     pre_push_hook.main(args=[])
         self.assertTrue(
             'Push aborted due to failing frontend tests.' in self.print_arr)
-
-    def test_invalid_ci_e2e_test_suites_failure(self) -> None:
-        self.does_diff_include_ci_config_or_js_files = True
-
-        def mock_run_script_and_get_returncode(script: List[str]) -> int:
-            if script == pre_push_hook.CI_PROTRACTOR_CHECK_CMDS:
-                return 1
-            return 0
-        run_script_and_get_returncode_swap = self.swap(
-            pre_push_hook, 'run_script_and_get_returncode',
-            mock_run_script_and_get_returncode)
-        with self.get_remote_name_swap, self.get_refs_swap, self.print_swap:
-            with self.collect_files_swap, self.uncommitted_files_swap:
-                with self.check_output_swap, self.start_linter_swap:
-                    with run_script_and_get_returncode_swap:
-                        with self.ci_config_or_js_files_swap:
-                            with self.execute_mypy_checks_swap:
-                                with self.assertRaisesRegex(SystemExit, '1'):
-                                    with self.swap_check_backend_python_libs:
-                                        pre_push_hook.main(args=[])
-        self.assertTrue(
-            'Push aborted due to failing e2e test configuration check.'
-            in self.print_arr)
 
     def test_main_with_install_arg(self) -> None:
         check_function_calls = {
