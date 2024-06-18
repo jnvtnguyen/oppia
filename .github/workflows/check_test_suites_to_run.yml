@@ -58,6 +58,3 @@ jobs:
           python -m scripts.check_ci_test_suites_to_run
           --github_head_ref="origin/${{ github.event.pull_request.head.ref }}"
           --github_base_ref="origin/${{ github.event.pull_request.base.ref }}"
-          ${{ $SHOULD_OUTPUT_ALL_TESTS && '--output_all_test_suites' || '' }}
-        env:
-          SHOULD_OUTPUT_ALL_TESTS: ${{ github.event_name == 'push' || github.event_name == 'merge_group' }}
