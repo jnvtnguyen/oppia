@@ -13,7 +13,7 @@ on:
 
 jobs:
   check_test_suites_to_run:
-    - uses: ./.github/workflows/check_test_suites_to_run.yml
+    uses: ./.github/workflows/check_test_suites_to_run.yml
   lighthouse:
     runs-on: ${{ matrix.os }}
     strategy:
