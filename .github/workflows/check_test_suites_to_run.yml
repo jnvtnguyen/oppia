@@ -3,7 +3,7 @@ on:
   workflow_call:
     outputs:
       test_suites_to_run: 
-        value: ${{ fromJson(jobs.check_test_suites_to_run.outputs.test_suites_to_run) }}
+        value: ${{ jobs.check_test_suites_to_run.outputs.test_suites_to_run }}
 
 jobs:
   check_test_suites_to_run:

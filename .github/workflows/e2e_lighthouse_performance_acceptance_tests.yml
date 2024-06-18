@@ -16,9 +16,9 @@ jobs:
     uses: ./.github/workflows/check_test_suites_to_run.yml
   build:
     needs: check_test_suites_to_run
-    if: ${{ needs.check_test_suites_to_run.outputs.test_suites_to_run.e2e.count > 0 ||
-            needs.check_test_suites_to_run.outputs.test_suites_to_run.lighthouse_performance.count > 0 ||
-            needs.check_test_suites_to_run.outputs.test_suites_to_run.acceptance.count > 0 }}
+    if: ${{ fromJson(needs.check_test_suites_to_run.outputs.test_suites_to_run).e2e.count > 0 ||
+            fromJson(needs.check_test_suites_to_run.outputs.test_suites_to_run).lighthouse_performance.count > 0 ||
+            fromJson(needs.check_test_suites_to_run.outputs.test_suites_to_run).acceptance.count > 0 }}
     runs-on:  ${{ matrix.os }}
     strategy:
       matrix:
@@ -70,11 +70,12 @@ jobs:
           retention-days: 1
   e2e_test:
     needs: [check_test_suites_to_run, build]
+    if: ${{ fromJson(needs.check_test_suites_to_run.outputs.test_suites_to_run).e2e.count > 0 }}
     runs-on:  ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        suite: ${{ needs.check_test_suites_to_run.outputs.test_suites_to_run.e2e.suites }}
+        suite: ${{ fromJson(needs.check_test_suites_to_run.outputs.test_suites_to_run).e2e.suites }}
     name: e2e_test (${{ matrix.os }}, ${{ matrix.suite.name }})
     steps:
       - uses: actions/checkout@v3
@@ -181,11 +182,12 @@ jobs:
           webhook-url: ${{ secrets.BUILD_FAILURE_ROOM_WEBHOOK_URL }}
   lighthouse_performance:
     needs: [check_test_suites_to_run, build]
+    if: ${{ fromJson(needs.check_test_suites_to_run.outputs.test_suites_to_run).lighthouse_performance.count > 0 }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        suite: ${{ needs.check_test_suites_to_run.outputs.test_suites_to_run.lighthouse_performance.suites }}
+        suite: ${{ fromJson(needs.check_test_suites_to_run.outputs.test_suites_to_run).lighthouse_performance.suites }}
     name: lighthouse_performance (${{ matrix.os }}, ${{ matrix.suite.name }})
     steps:
       - uses: actions/checkout@v3
@@ -266,11 +268,12 @@ jobs:
           webhook-url: ${{ secrets.BUILD_FAILURE_ROOM_WEBHOOK_URL }}
   acceptance_test:
       needs: [check_test_suites_to_run, build]
+      if: ${{ fromJson(needs.check_test_suites_to_run.outputs.test_suites_to_run).acceptance.count > 0 }}
       runs-on:  ${{ matrix.os }}
       strategy:
         matrix:
           os: [ubuntu-22.04]
-          suite: ${{ needs.check_test_suites_to_run.outputs.test_suites_to_run.acceptance.suites }}
+          suite: ${{ fromJson(needs.check_test_suites_to_run.outputs.test_suites_to_run).acceptance.suites }}
       steps:
         - uses: actions/checkout@v3
         - uses: actions/setup-python@v3
