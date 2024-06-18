@@ -24,6 +24,7 @@ import tempfile
 from core.tests import test_utils
 from scripts import check_ci_test_suites_to_run
 from scripts import generate_root_files_mapping
+from typing import List, Sequence
 
 
 LIGHTHOUSE_PAGES_CONFIG = {
@@ -70,10 +71,53 @@ LIGHTHOUSE_PAGES_CONFIG = {
     'contact': {
         'url': 'http://localhost:8181/contact',
         'page_module': 'contact-page.module.ts'
+    },
+    'donate': {
+        'url': 'http://localhost:8181/donate',
+        'page_module': 'donate-page.module.ts'
+    },
+    'get-started': {
+        'url': 'http://localhost:8181/get-started',
+        'page_module': 'get-started-page.module.ts'
+    },
+    'teach': {
+        'url': 'http://localhost:8181/teach',
+        'page_module': 'teach-page.module.ts'
+    },
+    'thanks': {
+        'url': 'http://localhost:8181/thanks',
+        'page_module': 'thanks-page.module.ts'
+    },
+    'volunteer': {
+        'url': 'http://localhost:8181/volunteer',
+        'page_module': 'volunteer-page.module.ts'
     }
 }
 
-LIGHTHOUSE_PAGES = [
+LIGHTHOUSE_PAGES_FOR_SUITES = {
+    '1': [
+        'splash',
+        'about',
+        'terms',
+        'privacy-policy',
+        'exploration-player',
+        'exploration-editor',
+        'blog-admin',
+        'blog-editor',
+        'community',
+        'login',
+        'contact',
+        'donate',
+        'get-started',
+        'teach'
+    ],
+    '2': [
+        'thanks',
+        'volunteer'
+    ]
+}
+
+LIGHTHOUSE_PAGES: List[check_ci_test_suites_to_run.LighthousePageDict] = [
     {
         'name': name,
         'url': page['url'],
@@ -253,27 +297,47 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
         self.github_output_file_path = os.path.join(
             self.tempdir.name, 'github-output.json')
         os.environ['GITHUB_OUTPUT'] = self.github_output_file_path
-        
-        def mock_generate_root_files_mapping(*args) -> None:
+
+        def mock_generate_root_files_mapping() -> None:
+            """Mocks the main function of generate_root_files_mapping script."""
             pass
 
         self.generate_root_files_mapping_swap = self.swap(
-            generate_root_files_mapping, 'main', mock_generate_root_files_mapping)
+            generate_root_files_mapping, 'main',
+            mock_generate_root_files_mapping)
 
         self.all_test_suites = {
             'acceptance': {
                 'suites': [
-                    {'name': 'blog-admin/assign-roles'},
-                    {'name': 'blog-editor/publish'},
-                    {'name': 'exploration-player/view-exploration'}
+                    {
+                        'name': 'blog-admin/assign-roles',
+                        'module': 'blog-admin/assign-roles.spec.ts'
+                    },
+                    {
+                        'name': 'blog-editor/publish',
+                        'module': 'blog-editor/publish.spec.ts'
+                    },
+                    {
+                        'name': 'exploration-player/view-exploration',
+                        'module': 'exploration-player/view-exploration.spec.ts'
+                    }
                 ],
                 'count': 3
             },
             'e2e': {
                 'suites': [
-                    {'name': 'accessibility'},
-                    {'name': 'additionalEditorFeatures'},
-                    {'name': 'additionalEditorFeaturesModals'}
+                    {
+                        'name': 'accessibility',
+                        'module': 'accessibility.js'
+                    },
+                    {
+                        'name': 'additionalEditorFeatures',
+                        'module': 'additionalEditorFeatures.js'
+                    },
+                    {
+                        'name': 'additionalEditorFeaturesModals',
+                        'module': 'additionalEditorFeaturesModals.js'
+                    }
                 ],
                 'count': 3
             },
@@ -281,24 +345,13 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
                 'suites': [
                     {
                         'name': '1',
-                        'pages_to_run': [
-                            'splash',
-                            'about',
-                            'terms',
-                            'privacy-policy',
-                            'exploration-player',
-                            'exploration-editor',
-                            'blog-admin',
-                            'blog-editor',
-                            'community'
-                        ]
+                        'module': '.lighthouserc-accessibility.js',
+                        'pages_to_run': LIGHTHOUSE_PAGES_FOR_SUITES['1']
                     },
                     {
                         'name': '2',
-                        'pages_to_run': [
-                            'login',
-                            'contact'
-                        ]
+                        'module': '.lighthouserc-accessibility.js',
+                        'pages_to_run': LIGHTHOUSE_PAGES_FOR_SUITES['2']
                     }
                 ],
                 'count': 2
@@ -307,24 +360,13 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
                 'suites': [
                     {
                         'name': '1',
-                        'pages_to_run': [
-                            'splash',
-                            'about',
-                            'terms',
-                            'privacy-policy',
-                            'exploration-player',
-                            'exploration-editor',
-                            'blog-admin',
-                            'blog-editor',
-                            'community'
-                        ]
+                        'module': '.lighthouserc-performance.js',
+                        'pages_to_run': LIGHTHOUSE_PAGES_FOR_SUITES['1']
                     },
                     {
                         'name': '2',
-                        'pages_to_run': [
-                            'login',
-                            'contact'
-                        ]
+                        'module': '.lighthouserc-performance.js',
+                        'pages_to_run': LIGHTHOUSE_PAGES_FOR_SUITES['2']
                     }
                 ],
                 'count': 2
@@ -336,15 +378,17 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
         self.tempdir.cleanup()
 
     def test_extend_test_suites_without_duplicates(self) -> None:
-        test_suites = [
-            {'name': 'suite1'},
-            {'name': 'suite2'},
-            {'name': 'suite3'}
+        test_suites: List[check_ci_test_suites_to_run.GenericTestSuiteDict] = [
+            {'name': 'suite1', 'module': 'module1'},
+            {'name': 'suite2', 'module': 'module2'},
+            {'name': 'suite3', 'module': 'module3'}
         ]
-        test_suites_to_add = [
-            {'name': 'suite2'},
-            {'name': 'suite3'},
-            {'name': 'suite4'}
+        test_suites_to_add: List[
+            check_ci_test_suites_to_run.GenericTestSuiteDict
+        ] = [
+            {'name': 'suite2', 'module': 'module2'},
+            {'name': 'suite3', 'module': 'module3'},
+            {'name': 'suite4', 'module': 'module4'}
         ]
         extended_test_suites = (
             check_ci_test_suites_to_run.extend_test_suites_without_duplicates(
@@ -354,17 +398,23 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
         self.assertEqual(
             extended_test_suites,
             [
-                {'name': 'suite1'},
-                {'name': 'suite2'},
-                {'name': 'suite3'},
-                {'name': 'suite4'}
+                {'name': 'suite1', 'module': 'module1'},
+                {'name': 'suite2', 'module': 'module2'},
+                {'name': 'suite3', 'module': 'module3'},
+                {'name': 'suite4', 'module': 'module4'}
             ]
         )
 
-    def get_test_suites_to_run_from_github_output(self) -> dict:
+    def get_test_suites_to_run_from_github_output(
+        self
+    ) -> Sequence[check_ci_test_suites_to_run.GenericTestSuiteDict]:
         """Get the test suites to run from the GitHub output file."""
         with open(self.github_output_file_path, 'r', encoding='utf-8') as f:
-            return json.loads(f.read().split('=')[1])
+            test_suites_json = f.read().split('=')[1]
+            test_suites: Sequence[
+                check_ci_test_suites_to_run.GenericTestSuiteDict
+            ] = json.loads(test_suites_json)
+            return test_suites
 
     def test_get_git_diff_name_status_files_without_error(self) -> None:
         class MockSubprocessPopen:
@@ -381,7 +431,9 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
                     b''
                 )
 
-        def mock_popen(*args, **kwargs) -> MockSubprocessPopen: # pylint: disable=unused-argument
+        def mock_popen(
+            cmd_tokens: List[str], stdout: int, stderr: int # pylint: disable=unused-argument
+        ) -> MockSubprocessPopen:
             return MockSubprocessPopen()
 
         swap_popen = self.swap(
@@ -414,7 +466,9 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
                     b'fatal: not a valid git branch\n'
                 )
 
-        def mock_popen(*args, **kwargs) -> MockSubprocessPopen: # pylint: disable=unused-argument
+        def mock_popen(
+            cmd_tokens: List[str], stdout: int, stderr: int # pylint: disable=unused-argument
+        ) -> MockSubprocessPopen:
             return MockSubprocessPopen()
 
         swap_popen = self.swap(
@@ -450,8 +504,12 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
                 LIGHTHOUSE_PAGES
             )
 
-    def test_partition_lighthouse_pages_into_test_suites_with_one_shard_output(self) -> None:
-        lighthouse_pages = [
+    def test_partition_lighthouse_pages_into_test_suites_one_shard_output(
+        self
+    ) -> None:
+        lighthouse_pages: List[
+            check_ci_test_suites_to_run.LighthousePageDict
+        ] = [
             {
                 'name': 'splash',
                 'url': 'http://localhost:8181/',
@@ -480,10 +538,11 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
         ]
 
         self.assertEqual(
-            check_ci_test_suites_to_run.partition_lighthouse_pages_into_test_suites(
-                'performance.js',
-                lighthouse_pages
-            ),
+            check_ci_test_suites_to_run
+                .partition_lighthouse_pages_into_test_suites(
+                    'performance.js',
+                    lighthouse_pages
+                ),
             [
                 {
                     'name': '1',
@@ -499,35 +558,25 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
             ]
         )
 
-    def test_partition_lighthouse_pages_into_test_suites_with_multiple_shards_output(self) -> None:
+    def test_partition_lighthouse_pages_into_test_suites_multiple_shards_output(
+        self
+    ) -> None:
         self.assertEqual(
-            check_ci_test_suites_to_run.partition_lighthouse_pages_into_test_suites(
-                'performance.js',
-                LIGHTHOUSE_PAGES
-            ),
+            check_ci_test_suites_to_run
+                .partition_lighthouse_pages_into_test_suites(
+                    'performance.js',
+                    LIGHTHOUSE_PAGES
+                ),
             [
                 {
                     'name': '1',
                     'module': 'performance.js',
-                    'pages_to_run': [
-                        'splash',
-                        'about',
-                        'terms',
-                        'privacy-policy',
-                        'exploration-player',
-                        'exploration-editor',
-                        'blog-admin',
-                        'blog-editor',
-                        'community'
-                    ]
+                    'pages_to_run': LIGHTHOUSE_PAGES_FOR_SUITES['1']
                 },
                 {
                     'name': '2',
                     'module': 'performance.js',
-                    'pages_to_run': [
-                        'login',
-                        'contact'
-                    ]
+                    'pages_to_run': LIGHTHOUSE_PAGES_FOR_SUITES['2']
                 }
             ]
         )
@@ -673,7 +722,10 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
                                 'e2e': self.all_test_suites['e2e'],
                                 'acceptance': {
                                     'suites': [
-                                        {'name': 'exploration-player/view-exploration'} # pylint: disable=line-too-long
+                                        {
+                                            'name': 'exploration-player/view-exploration', # pylint: disable=line-too-long
+                                            'module': 'exploration-player/view-exploration.spec.ts' # pylint: disable=line-too-long
+                                        }
                                     ],
                                     'count': 1
                                 },
@@ -681,6 +733,7 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
                                     'suites': [
                                         {
                                             'name': '1',
+                                            'module': '.lighthouserc-accessibility.js', # pylint: disable=line-too-long
                                             'pages_to_run': [
                                                 'splash',
                                                 'about',
@@ -695,6 +748,7 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
                                     'suites': [
                                         {
                                             'name': '1',
+                                            'module': '.lighthouserc-performance.js', # pylint: disable=line-too-long
                                             'pages_to_run': [
                                                 'splash',
                                                 'about',
@@ -731,7 +785,10 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
                                 'e2e': self.all_test_suites['e2e'],
                                 'acceptance': {
                                     'suites': [
-                                        {'name': 'exploration-player/view-exploration'} # pylint: disable=line-too-long
+                                        {
+                                            'name': 'exploration-player/view-exploration', # pylint: disable=line-too-long
+                                            'module': 'exploration-player/view-exploration.spec.ts' # pylint: disable=line-too-long
+                                        }
                                     ],
                                     'count': 1
                                 },
@@ -792,7 +849,10 @@ class CheckCITestSuitesToRunTests(test_utils.GenericTestBase):
                                 'e2e': self.all_test_suites['e2e'],
                                 'acceptance': {
                                     'suites': [
-                                        {'name': 'blog-admin/create-blog-post'}
+                                        {
+                                            'name': 'blog-admin/create-blog-post', # pylint: disable=line-too-long
+                                            'module': 'blog-admin/create-blog-post.spec.ts' # pylint: disable=line-too-long
+                                        }
                                     ],
                                     'count': 1
                                 },

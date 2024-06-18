@@ -21,9 +21,9 @@ import json
 import os
 import subprocess
 
-from typing import Final, List, Optional, Sequence, TypedDict
-
 from scripts import generate_root_files_mapping
+
+from typing import Final, List, Optional, Sequence, TypedDict
 
 _PARSER: Final = argparse.ArgumentParser(
     description="""
@@ -108,7 +108,7 @@ CI_TEST_SUITE_CONFIGS_DIRECTORY: Final = os.path.join(
 TEST_MODULES_MAPPING_DIRECTORY: Final = os.path.join(
     'core', 'tests', 'test-modules-mappings')
 
-LIGHTHOUSE_PAGES_PER_SHARD: Final = 9
+LIGHTHOUSE_PAGES_PER_SHARD: Final = 14
 LIGHTHOUSE_ACCESSIBILITY_MODULE: Final = '.lighthouserc-accessibility.js'
 LIGHTHOUSE_PERFORMANCE_MODULE: Final = '.lighthouserc-performance.js'
 
@@ -235,27 +235,6 @@ def output_variable_to_github_workflow(
         print(f'{output_variable}={output_value}', file=o)
 
 
-def format_test_suites_for_github_output(
-    test_suites: CITestSuitesDict
-) -> dict:
-    """Formats the test suites for GitHub output.
-
-    Args:
-        test_suites: dict. The test suites to format.
-
-    Returns:
-        dict. The formatted test suites.
-    """
-    formatted_suites = []
-    for test_suite in test_suites['suites']:
-        test_suite.pop('module')
-        formatted_suites.append(test_suite)
-    return {
-        'suites': formatted_suites,
-        'count': test_suites['count']
-    }
-
-
 def format_test_suites_to_run_for_github_output(
     test_suites_to_run: CITestSuitesToRunDict
 ) -> str:
@@ -269,13 +248,12 @@ def format_test_suites_to_run_for_github_output(
         dict. The formatted test suites to run.
     """
     return json.dumps({
-        'e2e': format_test_suites_for_github_output(test_suites_to_run['e2e']),
-        'acceptance': format_test_suites_for_github_output(
-            test_suites_to_run['acceptance']),
-        'lighthouse_performance': format_test_suites_for_github_output(
-            test_suites_to_run['lighthouse_performance']),
-        'lighthouse_accessibility': format_test_suites_for_github_output(
-            test_suites_to_run['lighthouse_accessibility'])
+        'e2e': test_suites_to_run['e2e'],
+        'acceptance': test_suites_to_run['acceptance'],
+        'lighthouse_performance':
+            test_suites_to_run['lighthouse_performance'],
+        'lighthouse_accessibility':
+            test_suites_to_run['lighthouse_accessibility'],
     })
 
 
@@ -304,8 +282,7 @@ def get_lighthouse_pages_from_config() -> List[LighthousePageDict]:
     """
     lighthouse_pages: List[LighthousePageDict] = []
     with open(LIGHTHOUSE_PAGES_CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
-        pages: List[LighthousePageDict] = json.load(f).items()
-        for name, page in pages:
+        for name, page in json.load(f).items():
             lighthouse_pages.append({
                 'name': name,
                 'url': page['url'],
@@ -320,8 +297,9 @@ def partition_lighthouse_pages_into_test_suites(
     lighthouse_pages: List[LighthousePageDict]
 ) -> List[LighthouseTestSuiteDict]:
     """Partitions the Lighthouse pages into test suites.
-    
+
     Args:
+        lighthouse_module: str. The Lighthouse module.
         lighthouse_pages: list(dict). The list of Lighthouse pages.
 
     Returns:
@@ -329,7 +307,7 @@ def partition_lighthouse_pages_into_test_suites(
     """
     lighthouse_test_suites: List[LighthouseTestSuiteDict] = []
     current_lighthouse_test_suite: LighthouseTestSuiteDict | None = None
-    for i in range(0, len(lighthouse_pages)):
+    for i, page in enumerate(lighthouse_pages):
         if i % LIGHTHOUSE_PAGES_PER_SHARD == 0:
             if current_lighthouse_test_suite:
                 lighthouse_test_suites.append(current_lighthouse_test_suite)
@@ -340,11 +318,13 @@ def partition_lighthouse_pages_into_test_suites(
                 'module': lighthouse_module,
                 'pages_to_run': []
             }
-        current_lighthouse_test_suite['pages_to_run'].append(
-            lighthouse_pages[i]['name'])
+        if current_lighthouse_test_suite:
+            current_lighthouse_test_suite['pages_to_run'].append(
+                page['name'])
     if current_lighthouse_test_suite:
         lighthouse_test_suites.append(current_lighthouse_test_suite)
     return lighthouse_test_suites
+
 
 def get_all_test_suites_by_type() -> TestSuitesByTypeDict:
     """Gets the test suites configurations for each test type.
@@ -365,7 +345,7 @@ def get_all_test_suites_by_type() -> TestSuitesByTypeDict:
             'acceptance.json'
         )
     )
-    
+
     lighthouse_accessibility_test_suites = (
         partition_lighthouse_pages_into_test_suites(
             LIGHTHOUSE_ACCESSIBILITY_MODULE,
@@ -568,14 +548,14 @@ def get_test_suites_affected_by_root_file(
 
 def get_affected_lighthouse_pages(
     modified_root_files: List[str]
-) -> List[str]:
+) -> List[LighthousePageDict]:
     """Gets the affected Lighthouse pages by a list of modified root files.
 
     Args:
         modified_root_files: list(str). The list of modified root files.
 
     Returns:
-        list(str). The affected Lighthouse pages.
+        list(dict). The affected Lighthouse pages.
     """
     lighthouse_pages = get_lighthouse_pages_from_config()
     affected_lighthouse_pages: List[LighthousePageDict] = []
