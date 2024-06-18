@@ -20,6 +20,7 @@ jobs:
       matrix:
         os: [ubuntu-22.04]
         suite: ${{ needs.check_test_suites_to_run.outputs.test_suites_to_run.lighthouse_accessibility.suites }}
+    name: lighthouse_accessibility (${{ matrix.os }}, ${{ matrix.suite.name }})
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
