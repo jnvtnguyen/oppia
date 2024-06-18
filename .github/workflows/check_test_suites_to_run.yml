@@ -28,30 +28,7 @@ jobs:
             requirements.txt
             requirements_dev.in
             requirements_dev.txt
-      - name: Cache node modules
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: /home/runner/work/oppia/yarn_cache
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - name: Check Yarn Cache
-        run: |
-          cd ..
-          echo 'cachefolder "yarn_cache"' > .yarnrc
-          yarn cache list
-          rm .yarnrc
-          cd -
-      - name: Install third party
-        run: python -m scripts.install_third_party_libs
-        shell: bash
-      - name: Check Yarn Cache
-        run: yarn cache list
-        shell: bash
+      - uses: ./.github/actions/install-oppia-dependencies
       - name: Check test suites to run
         id: check_test_suites_to_run
         run: >
