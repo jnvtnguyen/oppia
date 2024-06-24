@@ -6,10 +6,12 @@ on:
     branches:
       - develop
       - release-*
+      - m1-testing
   pull_request:
     branches:
       - develop
       - release-*
+      - m1-testing
 
 jobs:
   check_test_suites_to_run:
