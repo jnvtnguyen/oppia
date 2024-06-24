@@ -12,6 +12,14 @@ on:
       - release-*
 
 jobs:
+  dump:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
   check_test_suites_to_run:
     uses: ./.github/workflows/check_test_suites_to_run.yml
     with:
