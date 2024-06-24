@@ -6,10 +6,12 @@ on:
     branches:
       - develop
       - release-*
+      - partial-testing
   pull_request:
     branches:
       - develop
       - release-*
+      - partial-testing
 
 jobs:
   check_test_suites_to_run:
