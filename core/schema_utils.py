@@ -120,7 +120,7 @@ def normalize_against_schema(
         AssertionError. The validation for schema validators fails.
     """
     # Here we use type Any because 'normalized_obj' can be of type int, str,
-    # Dict, List and other types too.
+    # Dict, List and other types too. TEST
     normalized_obj: Any = None
 
     if schema[SCHEMA_KEY_TYPE] == SCHEMA_TYPE_WEAK_MULTIPLE:
