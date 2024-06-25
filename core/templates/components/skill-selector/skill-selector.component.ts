@@ -128,7 +128,7 @@ export class SkillSelectorComponent implements OnInit {
     }
     if (!isAnySubTopicChecked) {
       // If no subtopics are checked in the subtop filter, we have
-      // to display all the skills from checked topics.
+      // to display all the skills from checked topics. TEST
       let isAnyTopicChecked: boolean = false;
       for (var i = 0; i < this.topicFilterList.length; i++) {
         if (this.topicFilterList[i].checked) {
