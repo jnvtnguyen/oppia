@@ -4,6 +4,7 @@ var path = require('path');
 var fs = require('fs');
 var childProcess = require('child_process');
 var Constants = require('./webdriverio_utils/WebdriverioConstants');
+var TestToModulesMatcher = require('./test-dependencies/test-to-modules-matcher').TestToModulesMatcher;
 var DOWNLOAD_PATH = path.resolve(__dirname, Constants.DOWNLOAD_PATH);
 var args = process.argv;
 
@@ -356,13 +357,18 @@ exports.config = {
 
     // Navigate to the splash page so that tests can begin on an Angular page.
     browser.url('http://localhost:8181');
-  },
+ },
   /**
     * Function to be executed before a test (in Mocha/Jasmine only)
     * @param {Object} test    test object
     * @param {Object} context scope object the test was executed with
     */
   beforeTest: function(test, context) {
+    const puppeteerBrowser = browser.getPuppeteer();
+    TestToModulesMatcher.setGoldenFilePath(
+      `core/tests/test-module-mappings/e2e/${test.fullName}.txt`
+    );
+    TestToModulesMatcher.registerPuppeteerBrowser(puppeteerBrowser);
     if (process.env.GITHUB_ACTIONS &&
       // eslint-disable-next-line eqeqeq
       process.env.VIDEO_RECORDING_IS_ENABLED == 1) {
@@ -443,5 +449,7 @@ exports.config = {
       // Save screenshot.
       await browser.saveScreenshot(filePath);
     }
+
+    TestToModulesMatcher.compareCollectedModulesWithGoldenFile();
   },
 };
