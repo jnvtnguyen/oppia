@@ -4,7 +4,7 @@ var path = require('path');
 var fs = require('fs');
 var childProcess = require('child_process');
 var Constants = require('./webdriverio_utils/WebdriverioConstants');
-var TestToModulesMatcher = require('./test-dependencies/test-to-modules-matcher');
+var TestToModulesMatcher = require('./test-dependencies/test-to-modules-matcher').TestToModulesMatcher;
 var DOWNLOAD_PATH = path.resolve(__dirname, Constants.DOWNLOAD_PATH);
 var args = process.argv;
 
