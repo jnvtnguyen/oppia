@@ -33,8 +33,10 @@ from core.constants import constants  # isort:skip
 from scripts import build  # isort:skip
 from scripts import install_third_party_libs  # isort:skip
 from scripts import servers  # isort:skip
+from scripts import run_typescript_checks # isort:skip
 
 MAX_RETRY_COUNT: Final = 3
+TEST_DEPENDENCIES_TSCONFIG_FILEPATH: Final = 'tsconfig.test-dependencies.json'
 
 _PARSER: Final = argparse.ArgumentParser(
     description="""
@@ -118,6 +120,8 @@ def run_tests(args: argparse.Namespace) -> Tuple[List[bytes], int]:
     if common.is_oppia_server_already_running():
         sys.exit(1)
 
+    run_typescript_checks.compile_and_check_typescript(
+        TEST_DEPENDENCIES_TSCONFIG_FILEPATH)
     install_third_party_libraries(args.skip_install)
 
     with contextlib.ExitStack() as stack:
