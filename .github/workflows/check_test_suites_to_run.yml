@@ -14,7 +14,7 @@ jobs:
     outputs:
       test_suites_to_run: ${{ steps.check_test_suites_to_run.outputs.test_suites_to_run }}
     env:
-      SHOULD_OUTPUT_ALL_TESTS: ${{ github.event_name != 'pull_request' || vars.RUN_SUITES_ON_CHANGED_FILES == 'false' }}
+      SHOULD_OUTPUT_ALL_TESTS: true
     steps:
       - uses: actions/checkout@v4
         with:
