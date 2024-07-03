@@ -384,7 +384,7 @@ jobs:
       - uses: ./.github/actions/check-workflow-status
         id: check_workflow_status
         with:
-          jobs: ${{ toJson(needs) }}
+          jobs: ${{ toJson(needs) }} | jq 'with_entries(.value != del(.outputs))'
       - name: Fail if workflow status is failure
         if: ${{ steps.check_workflow_status.outputs.WORKFLOW_STATUS == 'failure' }}
         run: exit 1
