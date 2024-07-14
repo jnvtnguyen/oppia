@@ -175,6 +175,7 @@ export class TestToModulesMatcher {
       if (!page) {
         return;
       }
+      await page.setRequestInterception(true);
       page.on('request', async request => {
         const url = request.url();
         var parentFrame = request.frame();
