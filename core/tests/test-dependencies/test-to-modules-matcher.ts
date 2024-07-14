@@ -186,7 +186,6 @@ export class TestToModulesMatcher {
           console.log('NAVIGATION REQUEST URL:', url);
         }
         console.log('REQUEST URL:', url);
-        request.continue();
       });
       page.on('framenavigated', async (frame: Frame) => {
         const url = frame.url();
