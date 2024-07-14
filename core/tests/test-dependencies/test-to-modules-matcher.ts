@@ -177,7 +177,15 @@ export class TestToModulesMatcher {
       }
       page.on('request', async request => {
         const url = request.url();
+        var parentFrame = request.frame();
+        if (!parentFrame) {
+          return;
+        }
+        if (request.isNavigationRequest() && parentFrame === null) {
+          console.log('NAVIGATION REQUEST URL:', url);
+        }
         console.log('REQUEST URL:', url);
+        request.continue();
       });
       page.on('framenavigated', async (frame: Frame) => {
         const url = frame.url();
