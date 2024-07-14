@@ -186,6 +186,8 @@ export class TestToModulesMatcher {
           console.log('NAVIGATION REQUEST URL:', url);
         }
         console.log('REQUEST URL:', url);
+        if (request.interceptResolutionState().action === 'already-handled') return;
+        request.continue();
       });
       page.on('framenavigated', async (frame: Frame) => {
         const url = frame.url();
