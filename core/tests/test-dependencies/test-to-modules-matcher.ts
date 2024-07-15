@@ -176,17 +176,17 @@ export class TestToModulesMatcher {
         return;
       }
       page.on('framenavigated', async (frame: Frame) => {
-        const url = frame.url();
-        console.log('FRAME NAVIGATED:', url);
-        TestToModulesMatcher.registerUrl(url);
-      });
-      page.on('frameattached', async (frame: Frame) => {
-        const url = frame.url();
-        console.log('FRAME ATTACHED:', url);
-      });
-      page.on('framedetached', async (frame: Frame) => {
-        const url = frame.url();
-        console.log('FRAME DETACHED:', url);
+        const frames = [
+          ...frame.childFrames(),
+          frame,
+          frame.parentFrame()
+        ]
+        console.log(frame.url());
+        for (const frame of frames) {
+          if (!frame) continue;
+          console.log(frame.url());
+          TestToModulesMatcher.registerUrl(frame.url());
+        }
       });
     });
   }
