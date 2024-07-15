@@ -175,24 +175,18 @@ export class TestToModulesMatcher {
       if (!page) {
         return;
       }
-      await page.setRequestInterception(true);
-      page.on('request', async request => {
-        const url = request.url();
-        var parentFrame = request.frame();
-        if (!parentFrame) {
-          return;
-        }
-        if (request.isNavigationRequest() && parentFrame === null) {
-          console.log('NAVIGATION REQUEST URL:', url);
-        }
-        console.log('REQUEST URL:', url);
-        if (request.interceptResolutionState().action === 'already-handled') return;
-        request.continue();
-      });
       page.on('framenavigated', async (frame: Frame) => {
         const url = frame.url();
-        console.log(url);
+        console.log('FRAME NAVIGATED:', url);
         TestToModulesMatcher.registerUrl(url);
+      });
+      page.on('frameattached', async (frame: Frame) => {
+        const url = frame.url();
+        console.log('FRAME ATTACHED:', url);
+      });
+      page.on('framedetached', async (frame: Frame) => {
+        const url = frame.url();
+        console.log('FRAME DETACHED:', url);
       });
     });
   }
