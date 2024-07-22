@@ -85,6 +85,8 @@ export class AndroidPageComponent implements OnInit, OnDestroy {
 
   @ViewChild('feature4') featureRef4!: ElementRef<Element>;
 
+  @ViewChild('feature5') featureRef5!: ElementRef<Element>;
+
   featuresShown = 0;
   androidUpdatesSectionIsSeen = false;
   featuresMainTextIsSeen = false;
