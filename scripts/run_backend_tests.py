@@ -72,6 +72,7 @@ install_third_party_libs.main()
 from . import common  # isort:skip  pylint: disable=wrong-import-position, wrong-import-order
 from . import concurrent_task_utils  # isort:skip  pylint: disable=wrong-import-position, wrong-import-order
 from . import servers  # isort:skip  pylint: disable=wrong-import-position, wrong-import-order
+from . import git_changes_utils  # isort:skip  pylint: disable=wrong-import-position, wrong-import-order
 
 TEST_RUNNER_PATH: Final = os.path.join(
     os.getcwd(), 'core', 'tests', 'gae_suite.py'
@@ -433,27 +434,38 @@ def main(args: Optional[List[str]] = None) -> None:
             stack.enter_context(
                 servers.managed_cloud_datastore_emulator(clear_datastore=True))
             stack.enter_context(servers.managed_redis_server())
-        if parsed_args.test_target:
-            # Check if target either ends with '_test' which means a path to
-            # a test file has been provided or has '_test.' in it which means
-            # a path to a particular test class or a method in a test file has
-            # been provided. If the path provided does not exist, error is
-            # raised when we try to execute the tests.
-            if (
-                parsed_args.test_target.endswith('_test')
-                or '_test.' in parsed_args.test_target
-            ):
-                all_test_targets = [parsed_args.test_target]
-            else:
-                print('')
-                print('------------------------------------------------------')
-                print(
-                    'WARNING : test_target flag should point to the test file.')
-                print('------------------------------------------------------')
-                print('')
-                time.sleep(3)
-                print('Redirecting to its corresponding test file...')
-                all_test_targets = [parsed_args.test_target + '_test']
+        if parsed_args.test_targets:
+            all_test_targets = []
+            test_targets = parsed_args.test_targets.split(',')
+            for test_target in test_targets:
+                if '/' in test_target:
+                    raise Exception(
+                        'The delimiter in each test_target should be a dot (.)')
+                # Check if target either ends with '_test' which means a path to
+                # a test file has been provided or has '_test.' in it which
+                # means a path to a particular test class or a method in a test
+                # file has been provided. If the path provided does not exist,
+                # error is raised when we try to execute the tests.
+                if (
+                    test_target.endswith('_test')
+                    or '_test.' in test_target
+                ):
+                    all_test_targets.append(test_target)
+                else:
+                    print('')
+                    print(
+                        '-----------------------------------------------'
+                        '-------')
+                    print(
+                        'WARNING : test_target flag should point to the '
+                        'test file.')
+                    print(
+                        '-----------------------------------------------'
+                        '-------')
+                    print('')
+                    time.sleep(3)
+                    print('Redirecting to its corresponding test file...')
+                    all_test_targets.append(test_target + '_test')
         elif parsed_args.test_shard:
             validation_error = check_shards_match_tests(
                 include_load_tests=True)
@@ -461,6 +473,30 @@ def main(args: Optional[List[str]] = None) -> None:
                 raise Exception(validation_error)
             all_test_targets = get_all_test_targets_from_shard(
                 parsed_args.test_shard)
+        elif parsed_args.run_on_changed_files:
+            remote = git_changes_utils.get_local_git_repository_remote_name()
+            if not remote:
+                sys.exit('Error: No remote repository found.')
+            refs = git_changes_utils.get_refs()
+            collected_files = git_changes_utils.get_changed_files(
+                refs, remote.decode('utf-8'))
+            test_targets_from_changed_files = set()
+            for _, (_, acmrt_files) in collected_files.items():
+                if not acmrt_files:
+                    continue
+
+                test_targets_from_changed_files.update(
+                    git_changes_utils.get_python_dot_test_files_from_diff(
+                        acmrt_files
+                    )
+                )
+            staged_files = git_changes_utils.get_staged_acmrt_files()
+            test_targets_from_changed_files.update(
+                git_changes_utils.get_python_dot_test_files_from_diff(
+                    staged_files
+                )
+            )
+            all_test_targets = list(test_targets_from_changed_files)
         else:
             include_load_tests = not parsed_args.exclude_load_tests
             all_test_targets = get_all_test_targets_from_path(
