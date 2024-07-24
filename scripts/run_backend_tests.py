@@ -104,7 +104,7 @@ and --test_shard should be specified.
 
 _EXCLUSIVE_GROUP: Final = _PARSER.add_mutually_exclusive_group()
 _EXCLUSIVE_GROUP.add_argument(
-    '--test_target',
+    '--test_targets',
     help='optional dotted module name of the test(s) to run',
     type=str)
 _EXCLUSIVE_GROUP.add_argument(
