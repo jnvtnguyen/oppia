@@ -335,8 +335,10 @@ def get_js_or_ts_files_from_diff(diff_files: List[bytes]) -> List[str]:
 
 def get_python_dot_test_files_from_diff(diff_files: List[bytes]) -> Set[str]:
     """Returns the list of Python test files from the diff in dot format.
+
     Args:
         diff_files: list(bytes). List of files changed.
+
     Returns:
         list(str). List of Python test files in dot format.
     """
