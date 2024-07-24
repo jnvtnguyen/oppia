@@ -32,6 +32,7 @@ from core import utils
 from core.tests import test_utils
 from scripts import common
 from scripts import concurrent_task_utils
+from scripts import git_changes_utils
 from scripts import install_third_party_libs
 from scripts import servers
 
@@ -894,3 +895,17 @@ class RunBackendTestsTests(test_utils.GenericTestBase):
 
         self.assertIn('Task result', results[0].messages)
         self.assertEqual(len(results[0].messages), 1)
+
+    def test_backend_tests_with_run_on_changed_files_no_remote(self) -> None:
+        with self.swap_install_third_party_libs:
+            from scripts import run_backend_tests
+        def mock_get_remote_name() -> bytes:
+            return b''
+        get_remote_name_swap = self.swap(
+            git_changes_utils, 'get_local_git_repository_remote_name',
+            mock_get_remote_name)
+
+        with get_remote_name_swap, self.assertRaisesRegex(
+            SystemExit, 'Error: No remote repository found.'
+        ):
+            run_backend_tests.main(args=['--run_on_changed_files'])
