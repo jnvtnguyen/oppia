@@ -120,7 +120,7 @@ def git_diff_name_status(
     if left == '':
         raise ValueError('Error: left should not be an empty string.')
     if right == '':
-        raise ValueError('Error: right should not be an empty string.')
+        raise ValueError('Error: right should not be an empty string. test ')
     if left and right:
         git_cmd.extend([left, right])
         # Append -- to avoid conflicts between branch and directory name.

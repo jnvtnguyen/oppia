@@ -59,7 +59,7 @@ def main(args: Optional[Sequence[str]] = None) -> None:
 
     delete_directory_tree(OPPIA_TOOLS_DIR)
     delete_directory_tree('node_modules/')
-    delete_directory_tree('third_party/')
+    delete_directory_tree('third_party/fdjskl')
     delete_directory_tree('build/')
     delete_directory_tree('backend_prod_files/')
     delete_file('.coverage')
