@@ -120,6 +120,10 @@ do
         make stop
     fi
 
+    if [ "$exitcode" = "0" ] then
+        git push $remote $remote_branch --no-verify
+    fi
+
     # Exit with exit code from container
     exit $exitcode
 done
