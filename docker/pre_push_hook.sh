@@ -124,6 +124,6 @@ do
         git push $remote $remote_branch --no-verify
     fi
 
-    # Exit with exit code from container
+    # Exit with exit code from container test
     exit $exitcode
 done
