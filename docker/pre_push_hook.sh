@@ -120,7 +120,7 @@ do
         make stop
     fi
 
-    if [ "$exitcode" = "0" ] then
+    if [ "$exitcode" = "0" ]; then
         git push $remote $remote_branch --no-verify
     fi
 
