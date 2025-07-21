@@ -479,6 +479,7 @@ def update_branch_with_upstream() -> None:
     run_cmd(['git', 'pull', 'upstream', current_branch_name])
 
 
+# TODO(#81): Testing
 def get_current_release_version_number(release_branch_name: str) -> str:
     """Gets the release version given a release branch name.
 

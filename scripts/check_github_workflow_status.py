@@ -42,6 +42,7 @@ class GithubJobResultEnum(enum.Enum):
     CANCELLED = 'cancelled'
 
 
+# TODO(#81): Testing
 class WorkflowStatusEnum(enum.Enum):
     """The possible statuses of a GitHub workflow."""
 
