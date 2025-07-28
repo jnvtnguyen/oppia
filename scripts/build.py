@@ -219,6 +219,7 @@ def run_webpack_compilation(source_maps: bool = False) -> None:
         sys.exit(1)
 
 
+# TODO(#81): Testing
 def build_js_files(dev_mode: bool, source_maps: bool = False) -> None:
     """Build the javascript files.
 

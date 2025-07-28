@@ -84,6 +84,7 @@ def reformat_xml_dict_into_yaml_dict(
     return {'indexes': yaml_index_entries}
 
 
+# TODO(#81): Testing
 def main() -> None:
     """Extends index.yaml file."""
     with open(INDEX_YAML_PATH, 'r', encoding='utf-8') as f:
