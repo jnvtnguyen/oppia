@@ -177,8 +177,17 @@ export class TestToModulesMatcher {
         return;
       }
       page.on('framenavigated', async (frame: Frame) => {
-        const url = frame.url();
-        TestToModulesMatcher.registerUrl(url);
+        const frames = [
+          ...frame.childFrames(),
+          frame,
+          frame.parentFrame()
+        ]
+        console.log(frame.url());
+        for (const frame of frames) {
+          if (!frame) continue;
+          console.log(frame.url());
+          TestToModulesMatcher.registerUrl(frame.url());
+        }
       });
     };
     browser.on('targetcreated', registerTarget);
